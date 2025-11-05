@@ -1,0 +1,444 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Swarnika Jewels — Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <script defer src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+  <link rel="stylesheet" href="chat.css">
+  <script defer src="chat.js"></script>
+  <style>
+    /* ✅ Circular logo with elegant animation */
+    .logo-img {
+      width: 260px;
+      height: 260px;
+      object-fit: cover;
+      border-radius: 50%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border: 4px solid #f8d7da; /* subtle rose gold border */
+      transition: transform 0.8s ease, box-shadow 0.8s ease;
+      animation: floatLogo 4s ease-in-out infinite;
+    }
+
+    .logo-img:hover {
+      transform: scale(1.05) rotate(5deg);
+      box-shadow: 0 6px 20px rgba(255,192,203,0.4);
+    }
+
+    /* Floating animation for elegance */
+    @keyframes floatLogo {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+  <img src="image.png" alt="Swarnika Logo" class="brand-logo">
+  <span>Swarnika Jewels</span>
+</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+          <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+<div class="hero py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-7">
+        <h1 class="display-5">Fine Jewellery, Crafted with Love</h1>
+        <p class="lead">Discover gold, silver, and diamond pieces designed for every occasion.</p>
+        <a href="#catalog" class="btn btn-primary btn-lg">Browse Collections</a>
+      </div>
+      <div class="col-md-5 d-none d-md-block text-center">
+        <img src="image.png" alt="Jewelry" class="img-fluid logo-img">
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+* {box-sizing: border-box;}
+body {font-family: Verdana, sans-serif;}
+.mySlides {display: none;}
+img {vertical-align: middle;}
+
+/* Slideshow container */
+.slideshow-container {
+  max-width: 1000px;
+  position: relative;
+  margin: auto;
+}
+
+/* Caption text */
+.text {
+  color: #f2f2f2;
+  font-size: 15px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+/* The dots/bullets/indicators */
+.dot {
+  height: 15px;
+  width: 15px;
+  margin: 0 2px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.active {
+  background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+@keyframes fade {
+  from {opacity: .4} 
+  to {opacity: 1}
+}
+
+/* On smaller screens, decrease text size */
+@media only screen and (max-width: 300px) {
+  .text {font-size: 11px}
+}
+</style>
+</head>
+<body>
+
+
+<div class="slideshow-container">
+
+<div class="mySlides fade">
+  <div class="numbertext">1 / 3</div>
+  <img src="gold.avif" style="height: 300px;width:100%;object-fit: fill;">
+  <div class="text">100% Pure Gold Jewellery</div>
+</div>
+
+<div class="mySlides fade">
+  <div class="numbertext">2 / 3</div>
+  <img src="silver.avif" style="height: 300px;width:100%;object-fit:fill;">
+  <div class="text">100% Pure Silver Jewellery</div>
+</div>
+
+<div class="mySlides fade">
+  <div class="numbertext">3 / 3</div>
+  <img src="platinum.avif" style="height: 300px;width:100%;object-fit: fill;">
+  <div class="text">100% Pure Platinum Jewellery</div>
+</div>
+
+</div>
+<br>
+
+<div style="text-align:center">
+  <span class="dot"></span> 
+  <span class="dot"></span> 
+  <span class="dot"></span> 
+</div>
+
+<script>
+let slideIndex = 0;
+showSlides();
+
+function showSlides() {
+  let i;
+  let slides = document.getElementsByClassName("mySlides");
+  let dots = document.getElementsByClassName("dot");
+  for (i = 0; i < slides.length; i++) {
+    slides[i].style.display = "none";  
+  }
+  slideIndex++;
+  if (slideIndex > slides.length) {slideIndex = 1}    
+  for (i = 0; i < dots.length; i++) {
+    dots[i].className = dots[i].className.replace(" active", "");
+  }
+  slides[slideIndex-1].style.display = "block";  
+  dots[slideIndex-1].className += " active";
+  setTimeout(showSlides, 2000); // Change image every 4 seconds
+}
+</script>
+
+<div class="container py-5" id="catalog">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">Browse Products</h2>
+    <input id="search" class="form-control" placeholder="Search products..." style="max-width:260px;">
+  </div>
+  <div class="row" id="productsRow"></div>
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="qvTitle">Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6"><img id="qvImg" src="" alt="" class="img-fluid rounded border"></div>
+          <div class="col-md-6">
+            <p class="small text-muted" id="qvMeta"></p>
+            <h4 class="price" id="qvPrice"></h4>
+            <p id="qvDesc" class="mb-0"></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between flex-wrap gap-2">
+        <div class="d-flex gap-2">
+          <button id="qvAddBtn" class="btn btn-success">Add to Cart</button>
+          <a id="qvViewBtn" class="btn btn-outline-primary">Open product page</a>
+        </div>
+        <a href="#catalog" class="btn btn-secondary" data-bs-dismiss="modal">Back to collection</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:4000/api';
+
+// ✅ Load products with error handling and visible feedback
+async function loadProducts(query = '') {
+  const url = query
+    ? `${API}/products?q=${encodeURIComponent(query)}`
+    : `${API}/products`;
+
+  const row = document.getElementById('productsRow');
+  row.innerHTML = '<div class="text-center py-5 text-muted">⏳ Loading products...</div>';
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      row.innerHTML = '<div class="text-center py-5 text-muted">No products available.</div>';
+      return;
+    }
+
+    row.innerHTML = '';
+    data.forEach(p => {
+      const col = document.createElement('div');
+      col.className = 'col-12 col-sm-6 col-md-4 col-lg-3 mb-3';
+      const safeDesc = (p.description || '').replace(/"/g, '&quot;');
+      col.innerHTML = `
+        <div class="card h-100">
+          <img src="${p.image_url}" class="card-img-top" alt="${p.name}">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">${p.name}</h5>
+            <p class="card-text price">₹ ${p.price?.toLocaleString?.() || p.price}</p>
+            <p class="text-muted small">${p.metal || ''} • ${p.category || ''}</p>
+            <div class="mt-auto d-grid gap-2">
+              <button class="btn btn-sm btn-primary qv-btn" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-meta="${p.metal || ''} • ${p.category || ''}" data-img="${p.image_url}" data-desc="${safeDesc}">Quick view</button>
+              <a class="btn btn-sm btn-outline-primary" href="product.html?id=${p.id}">View</a>
+            </div>
+          </div>
+        </div>`;
+      row.appendChild(col);
+    });
+
+    // Wire up quick view buttons
+    document.querySelectorAll('.qv-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const t = e.currentTarget;
+        document.getElementById('qvTitle').textContent = t.dataset.name;
+        document.getElementById('qvImg').src = t.dataset.img;
+        document.getElementById('qvImg').alt = t.dataset.name;
+        document.getElementById('qvMeta').textContent = t.dataset.meta;
+        document.getElementById('qvPrice').textContent = `₹ ${Number(t.dataset.price).toLocaleString()}`;
+        document.getElementById('qvDesc').textContent = t.dataset.desc || '';
+        const viewLink = document.getElementById('qvViewBtn');
+        viewLink.href = `product.html?id=${t.dataset.id}`;
+        const addBtn = document.getElementById('qvAddBtn');
+        addBtn.onclick = async () => {
+          try{
+            const res = await fetch(`${API}/cart/items`, {
+              method:'POST', credentials:'include',
+              headers:{ 'Content-Type':'application/json' },
+              body: JSON.stringify({ product_id: Number(t.dataset.id), quantity: 1 })
+            });
+            const data = await res.json();
+            if(!res.ok) { alert(data.error || 'Failed to add to cart'); return; }
+            // Update cart count in navbar if available
+            if (typeof getCartCount === 'function'){
+              const count = await getCartCount();
+              const countEl = document.querySelector('#cartBtn .cart-count');
+              if(countEl) countEl.textContent = count>0? `(${count})` : '';
+            }
+            alert('Added to cart');
+          }catch(err){ alert('Failed to add to cart'); }
+        };
+        const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+        modal.show();
+      });
+    });
+  } catch (err) {
+    console.error('❌ Failed to fetch products:', err);
+    row.innerHTML = `<div class="text-center py-5 text-danger">⚠️ Failed to load products.<br>${err.message}</div>`;
+  }
+}
+
+
+// ✅ Search box functionality
+const search = document.getElementById('search');
+if (search) {
+  search.addEventListener('input', (e) => loadProducts(e.target.value));
+}
+
+// ✅ “Browse Collection” button scrolls & reloads products
+const browseBtn = document.querySelector('a[href="#catalog"]');
+if (browseBtn) {
+  browseBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+    loadProducts();
+  });
+}
+
+</script>
+
+<script>
+// ✅ Get current cart count
+async function getCartCount() {
+  try {
+    const res = await fetch(`${API}/cart/count`, { credentials: 'include' });
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return data.count || 0;
+  } catch (err) {
+    console.warn('⚠️ Cart count fetch failed:', err);
+    return 0;
+  }
+}
+
+// ✅ Update cart count in navbar
+async function updateCartCount() {
+  const count = await getCartCount();
+  document.querySelectorAll('.cart-count').forEach(el => {
+    el.textContent = count > 0 ? `(${count})` : '';
+  });
+}
+
+// ✅ Ensure cart button always navigates correctly
+document.addEventListener('DOMContentLoaded', () => {
+  const cartBtn = document.getElementById('cartBtn');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = 'cart.html';
+    });
+  }
+  updateCartCount();
+});
+
+// ✅ Modify Add-to-Cart handlers to refresh count and redirect if not logged in
+document.addEventListener('click', async (e) => {
+  if (e.target.classList.contains('qv-btn')) return; // Skip quick view buttons
+  if (e.target.closest('#qvAddBtn')) {
+    try {
+      const res = await fetch(`${API}/cart/items`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: Number(document.getElementById('qvViewBtn').href.split('=')[1]), quantity: 1 })
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        alert('Please log in to add items to cart.');
+        window.location.href = 'login.html';
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Add to cart failed');
+      alert('✅ Product added to cart!');
+      updateCartCount();
+    } catch (err) {
+      alert('⚠️ Unable to add to cart.');
+      console.error(err);
+    }
+  }
+});
+</script>
+
+<script>
+// ✅ Navbar user handling
+async function setupNavbar() {
+  const navUserBtn = document.getElementById('navUserBtn');
+  const logoutLink = document.getElementById('logoutLink');
+  const profileLink = document.getElementById('profileLink');
+
+  try {
+    const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Not logged in');
+    const user = await res.json();
+    navUserBtn.textContent = user.name || 'User';
+    profileLink.href = '#'; // Link to future profile page
+  } catch {
+    // Not logged in
+    navUserBtn.textContent = 'Login';
+    navUserBtn.classList.remove('dropdown-toggle');
+    navUserBtn.removeAttribute('data-bs-toggle');
+    navUserBtn.href = 'login.html';
+    document.querySelector('.dropdown-menu').style.display = 'none';
+  }
+
+  logoutLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
+      if (!res.ok) throw new Error('Logout failed');
+      alert('Logged out successfully!');
+      location.href = 'index.html';
+    } catch (err) {
+      alert('Error logging out.');
+      console.error(err);
+    }
+  });
+}
+
+// Initialize navbar when page loads
+setupNavbar();
+
+// ✅ Load products initially
+loadProducts();
+</script>
+</body>
+</html>
