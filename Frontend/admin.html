@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="styles.css" rel="stylesheet">
+</head><body class="p-3">
+<nav class="navbar navbar-expand-lg bg-light">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+  <img src="image.png" alt="Swarnika Logo" class="brand-logo">
+  <span>Swarnika Jewels</span>
+</a>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <div id="navAuth"><a class="btn btn-outline-primary" href="login.html">Login</a></div>
+      <div id="navUser"></div>
+      <a id="cartBtn" class="btn btn-primary" href="cart.html">Cart <span class="cart-count"></span></a>
+    </div>
+  </div>
+</nav>
+<div class="container col-md-6">
+  <h3>Admin — Add Product</h3>
+  <input id="name" class="form-control mb-2" placeholder="Name">
+  <input id="sku" class="form-control mb-2" placeholder="SKU">
+  <input id="category" class="form-control mb-2" placeholder="Category">
+  <input id="metal" class="form-control mb-2" placeholder="Metal (gold/silver)">
+  <input id="price" class="form-control mb-2" placeholder="Price" type="number" step="0.01">
+  <input id="stock" class="form-control mb-2" placeholder="Stock" type="number">
+  <input id="weight" class="form-control mb-2" placeholder="Weight (g)" type="number" step="0.01">
+  <textarea id="desc" class="form-control mb-2" placeholder="Description"></textarea>
+  <input id="img" class="form-control mb-2" placeholder="Image URL">
+  <button id="btn" class="btn btn-primary">Create</button>
+</div>
+<script>
+const API = 'http://localhost:4000/api';
+setupNavbar();
+document.getElementById('btn').addEventListener('click', async ()=>{
+  const name = document.getElementById('name').value;
+  const sku = document.getElementById('sku').value;
+  const category = document.getElementById('category').value;
+  const metal = document.getElementById('metal').value;
+  const price = parseFloat(document.getElementById('price').value);
+  const stock = parseInt(document.getElementById('stock').value);
+  const weight = parseFloat(document.getElementById('weight').value);
+  const description = document.getElementById('desc').value;
+  const image_url = document.getElementById('img').value;
+  const res = await fetch(`${API}/admin/products`, {
+    method:'POST', credentials:'include',
+    headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ name, sku, category, metal, price, stock, weight, description, image_url })
+  });
+  const data = await res.json();
+  if(!res.ok) return alert(data.error || 'Failed');
+  alert('Created id ' + data.id);
+});
+</script>
+</body></html>
