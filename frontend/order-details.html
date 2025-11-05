@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details | Swarnika Jewellery</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <style>
+    body { background-color: #fffaf6; }
+    .order-container {
+      max-width: 900px;
+      margin: 3rem auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #f1e0d0;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light border-bottom" style="background-color:#fffaf6;">
+    <div class="container">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+        <img src="image.png" alt="Swarnika Logo" class="brand-logo" style="width:40px; height:40px;">
+        <span>Swarnika Jewels</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav align-items-center gap-2">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a></li>
+          <li class="nav-item dropdown">
+            <a id="navUserBtn" class="btn btn-outline-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">User</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" id="profileLink" href="profile.html">Profile</a></li>
+              <li><a class="dropdown-item" id="ordersLink" href="orders.html">Orders</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" id="logoutLink" href="index.html">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="order-container">
+    <div id="orderArea">
+      <div class="text-muted py-5 text-center">⏳ Loading order details...</div>
+    </div>
+  </div>
+
+  <footer class="text-center py-3 text-muted">© 2025 Swarnika Jewellery | All Rights Reserved</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API = 'http://localhost:4000/api';
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get('id');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupNavbar();
+      updateCartCount();
+      loadOrderDetails();
+    });
+
+    async function loadOrderDetails() {
+      const area = document.getElementById('orderArea');
+      if (!orderId) {
+        area.innerHTML = '<div class="alert alert-danger">No order ID specified.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/orders/${orderId}`, { credentials: 'include' });
+        if (res.status === 401) {
+          area.innerHTML = '<div class="alert alert-danger">Please <a href="login.html">login</a> to view this order.</div>';
+          return;
+        }
+        if (res.status === 404) {
+          area.innerHTML = '<div class="alert alert-warning">Order not found.</div>';
+          return;
+        }
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load order');
+
+        const { order, items } = data;
+
+        area.innerHTML = `
+          <h2 class="mb-3">Details for Order #${order.id}</h2>
+          <div class="row g-4">
+            <div class="col-md-6">
+              <h4>Order Summary</h4>
+              <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Order Status:</span>
+                  <span class="badge bg-info text-dark">${order.status || 'Processing'}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Payment Mode:</span>
+                  <strong>${order.payment_mode || 'N/A'}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Payment Status:</span>
+                  <strong>${order.payment_status || 'Pending'}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Order Date:</span>
+                  <strong>${new Date(order.created_at).toLocaleString()}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Order Total:</span>
+                  <strong class="text-success h5 mb-0">₹${order.order_total?.toLocaleString() || order.order_total}</strong>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="col-md-6">
+              <h4>Shipping Address</h4>
+              <div class="card card-body bg-light">
+                <p class="mb-0" style="white-space: pre-wrap;">${order.shipping_address || 'Address not provided.'}</p>
+              </div>
+            </div>
+            
+            <div class="col-12">
+              <h4 class="mt-4">Items in this Order</h4>
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col" class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${items.map(item => `
+                    <tr>
+                      <td>${item.name}</td>
+                      <td>₹${item.price.toLocaleString()}</td>
+                      <td>${item.quantity}</td>
+                      <td class="text-end">₹${(item.price * item.quantity).toLocaleString()}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="text-center mt-4">
+            <a href="orders.html" class="btn btn-outline-primary">← Back to All Orders</a>
+          </div>
+        `;
+
+      } catch (err) {
+        console.error('❌ Failed to load order details:', err);
+        area.innerHTML = `<div class="alert alert-danger">⚠️ Unable to load order details.<br>${err.message}</div>`;
+      }
+    }
+
+    // --- Standard Navbar Functions ---
+
+    async function getCartCount() {
+      try {
+        const res = await fetch(`${API}/cart`, { credentials: 'include' });
+        if (!res.ok) return 0;
+        const data = await res.json();
+        return data.items ? data.items.length : 0;
+      } catch (err) { return 0; }
+    }
+
+    async function updateCartCount() {
+      const count = await getCartCount();
+      document.querySelectorAll('.cart-count').forEach(el => {
+        el.textContent = count > 0 ? `(${count})` : '';
+      });
+    }
+
+    async function setupNavbar() {
+      const navUserBtn = document.getElementById('navUserBtn');
+      const logoutLink = document.getElementById('logoutLink');
+      const profileLink = document.getElementById('profileLink');
+
+      try {
+        const res = await fetch(`${API}/auth/profile`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Not logged in');
+        const user = await res.json();
+        navUserBtn.textContent = user.name || 'User';
+        profileLink.href = 'profile.html';
+      } catch {
+        navUserBtn.textContent = 'Login';
+        navUserBtn.classList.remove('dropdown-toggle');
+        navUserBtn.removeAttribute('data-bs-toggle');
+        navUserBtn.href = 'login.html';
+        document.querySelector('.dropdown-menu').style.display = 'none';
+      }
+
+      logoutLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
+          alert('Logged out successfully!');
+          location.href = 'index.html';
+        } catch (err) {
+          alert('Error logging out.');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
