@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Login Test</title>
+  <script type="module" src="firebase.js"></script>
+</head>
+<body>
+  <h1>Simple Login Test</h1>
+  <input type="email" id="email" placeholder="your@email.com" style="padding:10px;width:300px"><br><br>
+  <input type="password" id="pass" placeholder="password" style="padding:10px;width:300px"><br><br>
+  <button id="btn" style="padding:10px 20px">Login & Sync</button>
+  <pre id="log" style="background:#000;color:#0f0;padding:20px;margin-top:20px;height:500px;overflow:auto"></pre>
+
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    
+    const log = document.getElementById('log');
+    const print = (msg) => {
+      log.textContent += msg + '\n';
+      console.log(msg);
+    };
+    
+    document.getElementById('btn').onclick = async () => {
+      const email = document.getElementById('email').value;
+      const pass = document.getElementById('pass').value;
+      
+      log.textContent = '';
+      print('Starting...');
+      print('Email: ' + email);
+      print('');
+      
+      try {
+        print('Step 1: Firebase Login...');
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        print Firebase OK - User: ' + cred.user.email);(
+        print('');
+        
+        print('Step 2: Get ID Token...');
+        const token = await cred.user.getIdToken();
+        print Token OK - Length: ' + token.length);(
+        print('Token: ' + token.substring(0, 80) + '...');
+        print('');
+        
+        print('Step 3: Sync with Backend...');
+        print('URL: http://localhost:5001/api/auth/firebase');
+        print('Origin: ' + window.location.origin);
+        print('Cookies before: "' + document.cookie + '"');
+        print('');
+        
+        const res = await fetch('http://localhost:5001/api/auth/firebase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ idToken: token })
+        });
+        
+        print('Response Status: ' + res.status + ' ' + res.statusText);
+        
+        const data = await res.json();
+        print('Response: ' + JSON.stringify(data, null, 2));
+        print('');
+        
+        print('Waiting 1 second for cookie...');
+        await new Promise(r => setTimeout(r, 1000));
+        print('Cookies after: "' + document.cookie + '"');
+        print('');
+        
+        if (document.cookie.includes('token')) {
+          print SUCCESS! Cookie is set!');(
+          print('');
+          print('Now testing cart API...');
+          
+          const cartRes = await fetch('http://localhost:5001/api/cart', {
+            credentials: 'include'
+          });
+          
+          print('Cart Status: ' + cartRes.status);
+          const cartData = await cartRes.json();
+          print('Cart Data: ' + JSON.stringify(cartData, null, 2));
+          
+          if (cartRes.ok) {
+            print('');
+            print CART WORKS! Everything is working!');(
+          } else {
+            print('');
+             Cart failed but cookie exists - backend issue');print('
+          }
+        } else {
+ FAILED! Cookie NOT set!');          print('
+          print('Problem: Browser blocked the cookie');
+          print('');
+          print('Solutions:');
+          print('1. Make sure you are on http://localhost:5500 (not 127.0.0.1)');
+          print('2. Clear all cookies and try again');
+          print('3. Check browser console for CORS errors');
+        }
+        
+      } catch (err) {
+        print('');
+         ERROR: ' + err.message);print('
+        print('Stack: ' + err.stack);
+      }
+    };
+  </script>
+</body>
+</html>

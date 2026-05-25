@@ -1,88 +1,121 @@
 const express = require('express');
-const db = require('../db');
 const { authMiddleware } = require('./middleware');
+const Cart = require('../models/Cart');
+const Product = require('../models/Product');
+const Order = require('../models/Order');
 
 const router = express.Router();
 
-router.post('/checkout', authMiddleware, (req,res)=>{
-  const uid = req.user.id;
-  const { shipping_address, payment_mode } = req.body;
-  // load cart & items
-  db.get("SELECT * FROM carts WHERE user_id = ?", [uid], (err, cart)=>{
-    if(err || !cart) return res.status(400).json({error:'No cart'});
-    
-    // ✅ FIX: Select 'ci.price_at_add' to lock in the price
-    db.all("SELECT ci.*, p.price, p.stock, ci.price_at_add FROM cart_items ci JOIN products p ON ci.product_id = p.id WHERE ci.cart_id = ?", [cart.id], (err, items)=>{
-      if(err) return res.status(500).json({error:'DB'});
-      if(!items || items.length === 0) return res.status(400).json({error:'Cart empty'});
-      // check stock
-      for(const it of items){
-        if(it.quantity > it.stock) return res.status(400).json({error:`Item ${it.product_id} out of stock`});
+// ✅ POST /checkout - Create a new order from the user's cart
+router.post('/checkout', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { shipping_address, payment_mode } = req.body;
+
+    const cart = await Cart.findOne({ user: userId }).populate('items.product');
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ error: 'Your cart is empty' });
+    }
+
+    // Check stock availability
+    for (const item of cart.items) {
+      if (item.quantity > item.product.stock) {
+        return res.status(400).json({ error: `Insufficient stock for ${item.product.name}` });
       }
-      
-      // ✅ FIX: Compute total using 'price_at_add'
-      const total = items.reduce((s,it)=> s + (it.quantity * it.price_at_add), 0);
-      
-      // create order
-      db.run("INSERT INTO orders (user_id, order_total, payment_mode, payment_status, shipping_address) VALUES (?,?,?,?,?)",
-        [uid, total, payment_mode || 'COD', 'Success', shipping_address || 'Not provided'], function(err2){
-          if(err2) return res.status(500).json({error:'DB'});
-          const orderId = this.lastID;
-          const insertItem = db.prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?,?,?,?)");
-          
-          for(const it of items){
-            // ✅ FIX: Insert the 'price_at_add' into order_items as the final price
-            insertItem.run(orderId, it.product_id, it.quantity, it.price_at_add);
-            // decrease stock
-            db.run("UPDATE products SET stock = stock - ? WHERE id = ?", [it.quantity, it.product_id]);
-          }
-          insertItem.finalize();
-          // clear cart
-          db.run("DELETE FROM cart_items WHERE cart_id = ?", [cart.id]);
-          res.json({message:'Order placed', order_id: orderId});
+    }
+
+    // Compute total
+    const total = cart.items.reduce(
+      (sum, item) => sum + item.quantity * item.price_at_add,
+      0
+    );
+
+    // Create order
+    const newOrder = new Order({
+      user: userId,
+      order_total: total,
+      payment_mode: payment_mode || 'COD',
+      payment_status: 'Success',
+      shipping_address: shipping_address || 'Not provided',
+      items: cart.items.map(item => ({
+        product: item.product._id,
+        quantity: item.quantity,
+        price: item.price_at_add
+      }))
+    });
+
+    await newOrder.save();
+
+    // Decrease product stock
+    for (const item of cart.items) {
+      await Product.findByIdAndUpdate(item.product._id, {
+        $inc: { stock: -item.quantity }
       });
+    }
+
+    // Clear cart after order
+    cart.items = [];
+    await cart.save();
+
+    res.json({ message: 'Order placed successfully', order_id: newOrder._id });
+  } catch (error) {
+    console.error('❌ Checkout error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ✅ GET / - Fetch all orders for logged-in user
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id })
+      .populate('items.product')
+      .sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    console.error('❌ Error fetching orders:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ✅ GET /:id - Fetch a specific order
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    }).populate('items.product');
+
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    res.json(order);
+  } catch (error) {
+    console.error('❌ Error fetching order:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ✅ DELETE /:id - Cancel (delete) an order
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id
     });
-  });
-});
 
-router.get('/', authMiddleware, (req,res)=>{
-  const uid = req.user.id;
-  db.all("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC", [uid], (err, rows)=>{
-    if(err) return res.status(500).json({error:'DB'});
-    res.json(rows);
-  });
-});
-
-router.get('/:id', authMiddleware, (req,res)=>{
-  const uid = req.user.id;
-  const oid = req.params.id;
-  db.get("SELECT * FROM orders WHERE id = ? AND user_id = ?", [oid, uid], (err, order)=>{
-    if(err || !order) return res.status(4404).json({error:'Not found'});
-    db.all("SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?", [oid], (err, items)=>{
-      res.json({order, items});
-    });
-  });
-});
-
-// ✅ Cancel (delete) order
-router.delete('/:id', authMiddleware, (req, res) => {
-  const uid = req.user.id;
-  const oid = req.params.id;
-
-  db.get("SELECT * FROM orders WHERE id = ? AND user_id = ?", [oid, uid], (err, order) => {
-    if (err) return res.status(500).json({ error: 'DB error' });
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
-    // delete order items first, then order
-    db.run("DELETE FROM order_items WHERE order_id = ?", [oid], (err2) => {
-      if (err2) return res.status(500).json({ error: 'Failed to remove order items' });
-
-      db.run("DELETE FROM orders WHERE id = ? AND user_id = ?", [oid, uid], (err3) => {
-        if (err3) return res.status(500).json({ error: 'Failed to remove order' });
-        res.json({ message: 'Order cancelled successfully', order_id: oid });
+    // Restore stock
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity }
       });
-    });
-  });
+    }
+
+    await Order.findByIdAndDelete(order._id);
+    res.json({ message: 'Order cancelled successfully', order_id: order._id });
+  } catch (error) {
+    console.error('❌ Error cancelling order:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;

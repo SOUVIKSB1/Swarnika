@@ -1,54 +1,450 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="styles.css" rel="stylesheet">
-</head><body class="p-3">
-<nav class="navbar navbar-expand-lg bg-light">
-  <div class="container">
-    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
-  <img src="image.png" alt="Swarnika Logo" class="brand-logo">
-  <span>Swarnika Jewels</span>
-</a>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <div id="navAuth"><a class="btn btn-outline-primary" href="login.html">Login</a></div>
-      <div id="navUser"></div>
-      <a id="cartBtn" class="btn btn-primary" href="cart.html">Cart <span class="cart-count"></span></a>
-    </div>
-  </div>
-</nav>
-<div class="container col-md-6">
-  <h3>Admin — Add Product</h3>
-  <input id="name" class="form-control mb-2" placeholder="Name">
-  <input id="sku" class="form-control mb-2" placeholder="SKU">
-  <input id="category" class="form-control mb-2" placeholder="Category">
-  <input id="metal" class="form-control mb-2" placeholder="Metal (gold/silver)">
-  <input id="price" class="form-control mb-2" placeholder="Price" type="number" step="0.01">
-  <input id="stock" class="form-control mb-2" placeholder="Stock" type="number">
-  <input id="weight" class="form-control mb-2" placeholder="Weight (g)" type="number" step="0.01">
-  <textarea id="desc" class="form-control mb-2" placeholder="Description"></textarea>
-  <input id="img" class="form-control mb-2" placeholder="Image URL">
-  <button id="btn" class="btn btn-primary">Create</button>
-</div>
-<script>
-const API = 'http://localhost:4000/api';
-setupNavbar();
-document.getElementById('btn').addEventListener('click', async ()=>{
-  const name = document.getElementById('name').value;
-  const sku = document.getElementById('sku').value;
-  const category = document.getElementById('category').value;
-  const metal = document.getElementById('metal').value;
-  const price = parseFloat(document.getElementById('price').value);
-  const stock = parseInt(document.getElementById('stock').value);
-  const weight = parseFloat(document.getElementById('weight').value);
-  const description = document.getElementById('desc').value;
-  const image_url = document.getElementById('img').value;
-  const res = await fetch(`${API}/admin/products`, {
-    method:'POST', credentials:'include',
-    headers:{ 'Content-Type':'application/json' },
-    body: JSON.stringify({ name, sku, category, metal, price, stock, weight, description, image_url })
-  });
-  const data = await res.json();
-  if(!res.ok) return alert(data.error || 'Failed');
-  alert('Created id ' + data.id);
-});
-</script>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Swarnika - Admin Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="admin.css" rel="stylesheet" />
+    <link rel="stylesheet" href="chat.css" />
+    <script type="module" src="firebase.js" defer></script>
+    <script src="apiHelper.js" defer></script>
+    <script defer src="navbar.js"></script>
+    <script defer src="chat.js"></script>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a
+          class="navbar-brand fw-bold d-flex align-items-center gap-2"
+          href="index.html"
+        >
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
+          <span style="color: #d4af37">Swarnika Jewels</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="cart.html"
+                >Cart <span class="cart-count"></span
+              ></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="admin.html">Admin Panel</a>
+            </li>
+            <li class="nav-item d-none" id="userNameDisplay">
+              <span class="nav-link text-primary fw-bold"></span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="loginBtn" href="login.html">Login</a>
+            </li>
+            <li class="nav-item d-none" id="logoutContainer">
+              <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4">
+      <div id="adminDebug" class="mb-3">
+        <div class="alert alert-info small" id="adminDebugContent">Checking admin status…</div>
+      </div>
+      <div class="card shadow-lg p-4 mb-5 bg-white rounded border-0">
+        <h3 class="text-center mb-4 text-gold">Product Management</h3>
+        <form id="productForm" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input id="name" class="form-control" required />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">SKU</label>
+            <input id="sku" class="form-control" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Category</label>
+            <input id="category" class="form-control" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Metal</label>
+            <select id="metal" class="form-select">
+              <option value="gold">Gold</option>
+              <option value="silver">Silver</option>
+              <option value="platinum">Platinum</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Price (₹)</label>
+            <input id="price" class="form-control" type="number" step="0.01" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Stock</label>
+            <input id="stock" class="form-control" type="number" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Weight (g)</label>
+            <input id="weight" class="form-control" type="number" step="0.01" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea id="desc" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Image URL</label>
+            <input id="img" class="form-control" placeholder="https://..." />
+          </div>
+          <div class="col-12 d-flex justify-content-center mt-3">
+            <button type="button" id="createBtn" class="btn btn-gold px-4">
+              Create Product
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card shadow-sm p-3">
+        <h5 class="text-gold mb-3">Manage Existing Products</h5>
+        <table class="table table-hover align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Metal</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productTable"></tbody>
+        </table>
+      </div>
+
+      <div class="card shadow-sm p-3 mt-4">
+        <h5 class="text-gold mb-3">Manage Demo Orders (local)</h5>
+        <p class="small text-muted">These orders are stored in this browser's <code>localStorage.demoOrders</code>. Admin actions affect only this local data unless you import the order to the backend.</p>
+        <div id="demoOrdersArea">
+          <div class="text-muted">Loading demo orders...</div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Dynamically determine API base URL (same as config.js)
+      const API = (function () {
+        const host = window.location.hostname;
+          if (host === "localhost" || host.startsWith("127.")) {
+            return `${location.protocol}//${host}:5001/api`;
+          }
+          return "/api";
+      })();
+
+      async function loadProducts() {
+        // Build auth headers for admin access
+        const headers = {};
+        const authToken = localStorage.getItem("authToken");
+        const firebaseToken = localStorage.getItem("firebaseIdToken");
+        if (authToken) {
+          headers["x-auth-token"] = authToken;
+        } else if (firebaseToken) {
+          headers["Authorization"] = `Bearer ${firebaseToken}`;
+        }
+        
+        const res = await fetchWithFallback('/products', {
+          headers,
+          credentials: "include"
+        });
+        const data = await res.json();
+        const tbody = document.getElementById("productTable");
+        tbody.innerHTML = "";
+        data.forEach((p) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.name}</td>
+        <td>${p.metal}</td>
+        <td>₹${p.price}</td>
+        <td>${p.stock}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="editProduct(${p.id})">Edit</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})">Delete</button>
+        </td>`;
+          tbody.appendChild(row);
+        });
+      }
+
+      document
+        .getElementById("createBtn")
+        .addEventListener("click", async () => {
+          // Build auth headers for admin access
+          const authHeaders = { "Content-Type": "application/json" };
+          const authToken = localStorage.getItem("authToken");
+          const firebaseToken = localStorage.getItem("firebaseIdToken");
+          if (authToken) {
+            authHeaders["x-auth-token"] = authToken;
+          } else if (firebaseToken) {
+            authHeaders["Authorization"] = `Bearer ${firebaseToken}`;
+          }
+          
+          const body = {
+            name: name.value,
+            sku: sku.value,
+            category: category.value,
+            metal: metal.value,
+            price: parseFloat(price.value),
+            stock: parseInt(stock.value),
+            weight: parseFloat(weight.value),
+            description: desc.value,
+            image_url: img.value,
+          };
+          const res = await fetchWithFallback('/admin/products', {
+            method: "POST",
+            credentials: "include",
+            headers: authHeaders,
+            body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          if (!res.ok) return alert(data.error || "Error creating product");
+          alert("✅ Product Created (ID: " + data.id + ")");
+          loadProducts();
+        });
+
+      async function deleteProduct(id) {
+        if (!confirm("Delete this product?")) return;
+        // Build auth headers
+        const authHeaders = {};
+        const authToken = localStorage.getItem("authToken");
+        const firebaseToken = localStorage.getItem("firebaseIdToken");
+        if (authToken) {
+          authHeaders["x-auth-token"] = authToken;
+        } else if (firebaseToken) {
+          authHeaders["Authorization"] = `Bearer ${firebaseToken}`;
+        }
+        
+        const res = await fetchWithFallback(`/admin/products/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+          headers: authHeaders
+        });
+        const data = await res.json();
+        if (!res.ok) return alert(data.error || "Failed to delete");
+        alert("🗑️ Deleted");
+        loadProducts();
+      }
+
+      async function editProduct(id) {
+        const newPrice = prompt("Enter new price:");
+        if (!newPrice) return;
+        // Build auth headers
+        const authHeaders = { "Content-Type": "application/json" };
+        const authToken = localStorage.getItem("authToken");
+        const firebaseToken = localStorage.getItem("firebaseIdToken");
+        if (authToken) {
+          authHeaders["x-auth-token"] = authToken;
+        } else if (firebaseToken) {
+          authHeaders["Authorization"] = `Bearer ${firebaseToken}`;
+        }
+        
+        const res = await fetchWithFallback(`/admin/products/${id}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: authHeaders,
+          body: JSON.stringify({ price: parseFloat(newPrice) }),
+        });
+        const data = await res.json();
+        if (!res.ok) return alert(data.error || "Update failed");
+        alert("✅ Updated");
+        loadProducts();
+      }
+
+      // Initialize admin page only if this browser is local admin or backend session confirms admin
+      async function initAdminPage(){
+        console.log('🔐 Initializing admin page...');
+        const isLocalAdmin = localStorage.getItem('localAdmin') === '1';
+        console.log('📌 isLocalAdmin:', isLocalAdmin);
+        
+        if (!isLocalAdmin) {
+          try {
+            const res = await fetchWithFallback('/auth/me', { credentials: 'include' });
+            if (!res.ok) {
+              console.error('❌ Backend auth failed:', res.status);
+              alert('Admin access required. Please login as admin.');
+              window.location.href = 'login.html';
+              return;
+            }
+            console.log('✅ Backend session confirmed');
+            // allow page to load - backend session exists (assumed admin)
+          } catch (e) {
+            console.error('❌ Auth check error:', e);
+            alert('Admin access required. Please login as admin.');
+            window.location.href = 'login.html';
+            return;
+          }
+        } else {
+          console.log('✅ Local admin confirmed');
+        }
+        
+        // Ensure navbar is initialized before loading content
+        console.log('⏳ Waiting for navbar.js to initialize...');
+        let attempts = 0;
+        while (!window.navbarInitialized && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          attempts++;
+        }
+        if (attempts >= 50) console.warn('⚠️ Navbar timeout');
+          // Update debug banner
+          try {
+            const dbg = document.getElementById('adminDebugContent');
+            if (dbg) dbg.textContent = `localAdmin=${localStorage.getItem('localAdmin')}, navbarInitialized=${!!window.navbarInitialized}`;
+
+            // Try /auth/me to show backend session info
+            try {
+              const meRes = await fetchWithFallback('/auth/me', { credentials: 'include' });
+              let meText = ` /auth/me: ${meRes.status}`;
+              try {
+                const j = await meRes.clone().json().catch(() => null);
+                if (j) meText += ` ${JSON.stringify(j)}`;
+              } catch (e) {}
+              dbg.textContent += meText;
+            } catch (e) {
+              dbg.textContent += ' /auth/me: fetch-failed';
+            }
+          } catch (e) {}
+        
+        // proceed to load admin data
+        console.log('📂 Loading products and demo orders...');
+        loadProducts();
+        loadDemoOrders();
+      }
+      
+      // Auto-run init on page load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAdminPage);
+      } else {
+        initAdminPage();
+      }
+
+      // Demo Orders management
+      function loadDemoOrders() {
+        const area = document.getElementById('demoOrdersArea');
+        try {
+          const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+          if (!Array.isArray(stored) || stored.length === 0) {
+            area.innerHTML = '<div class="text-center text-muted py-3">No demo orders saved in this browser.</div>';
+            return;
+          }
+          area.innerHTML = `
+            <table class="table table-sm">
+              <thead><tr><th>Order ID</th><th>Total</th><th>Created</th><th>Actions</th></tr></thead>
+              <tbody id="demoOrdersTable">${stored.map(o => `
+                <tr data-id="${o.id}">
+                  <td>${o.id}</td>
+                  <td>₹${(o.order_total||0).toLocaleString()}</td>
+                  <td>${new Date(o.created_at||Date.now()).toLocaleString()}</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="viewDemoOrder('${o.id}')">View</button>
+                    <button class="btn btn-sm btn-outline-warning me-1" onclick="editDemoOrder('${o.id}')">Edit</button>
+                    <button class="btn btn-sm btn-outline-success me-1" onclick="importDemoOrder('${o.id}')">Import</button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDemoOrder('${o.id}')">Delete</button>
+                  </td>
+                </tr>
+              `).join('')}</tbody>
+            </table>
+          `;
+        } catch (e) {
+          area.innerHTML = '<div class="text-danger">Failed to load demo orders.</div>';
+        }
+      }
+
+      function viewDemoOrder(id) {
+        window.open(`order-details.html?id=${id}`, '_blank');
+      }
+
+      function editDemoOrder(id) {
+        try {
+          const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+          const idx = (stored || []).findIndex(o => o.id === id);
+          if (idx === -1) return alert('Demo order not found');
+          const order = stored[idx];
+          const newAddress = prompt('Edit shipping address:', order.shipping_address || '');
+          if (newAddress === null) return; // cancelled
+          order.shipping_address = newAddress;
+          // Allow editing status and total
+          const newStatus = prompt('Edit status:', order.status || 'Demo');
+          if (newStatus !== null) order.status = newStatus;
+          const newTotal = prompt('Edit order total (numeric):', order.order_total || '0');
+          if (newTotal !== null && !isNaN(Number(newTotal))) order.order_total = Number(newTotal);
+          stored[idx] = order;
+          localStorage.setItem('demoOrders', JSON.stringify(stored));
+          alert('✅ Demo order updated locally.');
+          loadDemoOrders();
+        } catch (e) {
+          console.error(e);
+          alert('Failed to edit demo order.');
+        }
+      }
+
+      async function importDemoOrder(id) {
+        try {
+          const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+          const idx = (stored || []).findIndex(o => o.id === id);
+          if (idx === -1) return alert('Demo order not found');
+          const order = stored[idx];
+          if (!confirm('Import this demo order into the backend? This will attempt to POST to the /orders/import endpoint.')) return;
+          const res = await fetchWithFallback('/orders/import', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(order)
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || `HTTP ${res.status}`);
+          }
+          // On success, remove local demo order
+          stored.splice(idx,1);
+          localStorage.setItem('demoOrders', JSON.stringify(stored));
+          alert('✅ Imported demo order to backend and removed local copy.');
+          loadDemoOrders();
+        } catch (err) {
+          console.error('Import failed:', err);
+          alert('⚠️ Import failed: ' + (err.message || 'unknown'));
+        }
+      }
+
+      function deleteDemoOrder(id) {
+        if (!confirm('Delete this demo order locally?')) return;
+        try {
+          const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+          const filtered = (stored || []).filter(o => o.id !== id);
+          localStorage.setItem('demoOrders', JSON.stringify(filtered));
+          alert('✅ Demo order removed locally.');
+          loadDemoOrders();
+        } catch (e) {
+          console.error(e);
+          alert('Failed to delete demo order');
+        }
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

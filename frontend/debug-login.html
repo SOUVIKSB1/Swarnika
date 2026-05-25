@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Debug Login Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    button { margin: 10px 0; padding: 10px 20px; font-size: 16px; }
+    #log { background: #000; color: #0f0; padding: 20px; margin: 20px 0; height: 600px; overflow-y: auto; }
+    .error { color: #f00 !important; }
+    .success { color: #0f0 !important; }
+    .info { color: #ff0 !important; }
+  </style>
+  <script type="module" src="firebase.js"></script>
+</head>
+<body>
+  <h1>🔍 Debug Login & Cookie Test</h1>
+  
+  <div>
+    <input type="email" id="email" placeholder="Email" style="width: 300px; padding: 10px;">
+    <input type="password" id="password" placeholder="Password" style="width: 300px; padding: 10px;">
+  </div>
+  
+  <button id="step1">Step 1: Firebase Login</button>
+  <button id="step2" disabled>Step 2: Sync with Backend</button>
+  <button id="step3" disabled>Step 3: Test Cart API</button>
+  <button id="clearLog">Clear Log</button>
+  
+  <div id="log"></div>
+
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    
+    const API = (function(){ const h = location.hostname; if (h === 'localhost' || h.startsWith('127.')) return `${location.protocol}//${h}:5001/api`; return '/api'; })();
+    const logDiv = document.getElementById('log');
+    let firebaseUser = null;
+    let idToken = null;
+    
+    function log(msg, type = 'info') {
+      const div = document.createElement('div');
+      div.className = type;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logDiv.appendChild(div);
+      logDiv.scrollTop = logDiv.scrollHeight;
+      console.log(msg);
+    }
+    
+    document.getElementById('clearLog').onclick = () => {
+      logDiv.innerHTML = '';
+    };
+    
+    // Step 1: Firebase Login
+    document.getElementById('step1').onclick = async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      if (!email || !password) {
+        log('❌ Please enter email and password', 'error');
+        return;
+      }
+      
+      try {
+        log('🔐 Starting Firebase login...', 'info');
+        log(`📧 Email: ${email}`, 'info');
+        
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        firebaseUser = cred.user;
+        
+        log('✅ Firebase login successful!', 'success');
+        log(`👤 User: ${firebaseUser.email}`, 'success');
+        log(`🆔 UID: ${firebaseUser.uid}`, 'success');
+        
+        idToken = await firebaseUser.getIdToken();
+        log('🎫 Got Firebase ID token', 'success');
+        log(`🎫 Token length: ${idToken.length}`, 'info');
+        log(`🎫 Token start: ${idToken.substring(0, 50)}...`, 'info');
+        
+        document.getElementById('step2').disabled = false;
+        
+      } catch (err) {
+        log(`❌ Firebase login failed: ${err.code}`, 'error');
+        log(`❌ Error message: ${err.message}`, 'error');
+      }
+    };
+    
+    // Step 2: Sync with Backend
+    document.getElementById('step2').onclick = async () => {
+      if (!idToken) {
+        log('❌ No Firebase token available', 'error');
+        return;
+      }
+      
+      try {
+        log('🔄 Syncing with backend...', 'info');
+        log(`📍 URL: ${API}/auth/firebase`, 'info');
+        log(`🍪 Current cookies BEFORE sync: "${document.cookie}"`, 'info');
+        log(`🌐 Current origin: ${window.location.origin}`, 'info');
+        
+        const res = await fetch(`${API}/auth/firebase`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ idToken })
+        });
+        
+        log(`📡 Response status: ${res.status} ${res.statusText}`, res.ok ? 'success' : 'error');
+        log(`📡 Response headers:`, 'info');
+        for (let [key, value] of res.headers.entries()) {
+          log(`   ${key}: ${value}`, 'info');
+        }
+        
+        const data = await res.json();
+        log(`📦 Response body: ${JSON.stringify(data, null, 2)}`, 'info');
+        
+        if (res.ok) {
+          log('✅ Backend sync successful!', 'success');
+          
+          // Check cookies
+          await new Promise(resolve => setTimeout(resolve, 500));
+          log(`🍪 Cookies AFTER sync: "${document.cookie}"`, 'info');
+          
+          if (document.cookie.includes('token')) {
+            log('✅ Token cookie found in browser!', 'success');
+            document.getElementById('step3').disabled = false;
+          } else {
+            log('❌ Token cookie NOT found in browser!', 'error');
+            log('⚠️  This means the Set-Cookie header was blocked', 'error');
+            log('⚠️  Check: Are you using http://localhost:5500 (not 127.0.0.1)?', 'error');
+          }
+        } else {
+          log(`❌ Backend sync failed: ${data.error}`, 'error');
+        }
+        
+      } catch (err) {
+        log(`❌ Sync error: ${err.message}`, 'error');
+        log(`❌ Stack: ${err.stack}`, 'error');
+      }
+    };
+    
+    // Step 3: Test Cart API
+    document.getElementById('step3').onclick = async () => {
+      try {
+        log('🛒 Testing cart API...', 'info');
+        log(`🍪 Cookies being sent: "${document.cookie}"`, 'info');
+        
+        const res = await fetch(`${API}/cart`, {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        log(`📡 Cart response status: ${res.status}`, res.ok ? 'success' : 'error');
+        
+        const data = await res.json();
+        log(`📦 Cart data: ${JSON.stringify(data, null, 2)}`, res.ok ? 'success' : 'error');
+        
+        if (res.ok) {
+          log('✅ Cart API works! Authentication successful!', 'success');
+        } else {
+          log('❌ Cart API failed - check backend logs', 'error');
+        }
+        
+      } catch (err) {
+        log(`❌ Cart API error: ${err.message}`, 'error');
+      }
+    };
+  </script>
+</body>
+</html>

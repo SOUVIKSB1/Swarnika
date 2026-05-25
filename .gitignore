@@ -1,0 +1,58 @@
+# Environment variables (sensitive data)
+.env
+.env.local
+.env.*.local
+backend/.env
+functions/.env.local
+
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+firebase.json
+
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Logs
+logs/
+*.log
+
+# Service account credentials
+*firebase-adminsdk*.json
+
+# Sensitive MongoDB credentials
+*.mongodb
+
+# Test artifacts
+.nyc_output/
+coverage/
+
+# Local development
+.qodo/

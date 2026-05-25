@@ -1,168 +1,219 @@
 const express = require('express');
-const db = require('../db');
-const { authMiddleware } = require('./middleware');
-
+const { maybeAuth } = require('./middleware');
+const Cart = require('../models/Cart');
+const Product = require('../models/Product');
 const router = express.Router();
 
-// Utility: get or create cart for a user (async/await version)
-async function getOrCreateCart(userId) {
-  return new Promise((resolve, reject) => {
-    db.get("SELECT * FROM carts WHERE user_id = ?", [userId], (err, row) => {
-      if (err) {
-        console.error("❌ DB error fetching cart:", err.message);
-        return reject(err);
-      }
-      if (row) return resolve(row);
-      db.run("INSERT INTO carts (user_id) VALUES (?)", [userId], function (err2) {
-        if (err2) {
-          console.error("❌ DB error creating cart:", err2.message);
-          return reject(err2);
-        }
-        db.get("SELECT * FROM carts WHERE id = ?", [this.lastID], (err3, newCart) => {
-          if (err3) {
-            console.error("❌ DB error fetching new cart:", err3.message);
-            return reject(err3);
-          }
-          resolve(newCart);
-        });
-      });
-    });
-  });
-}
-
-// GET all cart items for user
-router.get('/', authMiddleware, async (req, res) => {
+// ✅ Get cart
+router.get('/', maybeAuth, async (req, res) => {
   try {
-    console.log('DEBUG: req.user in GET /cart:', req.user);
-    const user = req.user;
-    if (!user?.id) return res.status(401).json({ error: 'Not authenticated' });
-
-    const cart = await getOrCreateCart(user.id);
-
-    db.all(
-      `SELECT ci.id as item_id, p.*, ci.quantity, ci.price_at_add
-       FROM cart_items ci 
-       JOIN products p ON ci.product_id = p.id
-       WHERE ci.cart_id = ?`,
-      [cart.id],
-      (err, rows) => {
-        if (err) {
-          console.error("❌ Error fetching cart items:", err.message);
-          return res.status(500).json({ error: 'Database error' });
+    const identifier = req.user ? `user:${req.user._id}` : `guest:${req.guestId}`;
+    console.log('📦 Fetching cart for', identifier);
+    
+    let cart = null;
+    
+    if (req.user) {
+      // First check if user has a cart
+        cart = await Cart.findOne({ user: req.user._id }).populate('items.product').populate('user', 'name email phone address');
+      console.log('📦 User cart found:', cart ? `${cart.items.length} items` : 'None');
+      
+      // If no user cart but we have guestId, merge guest cart
+      if (!cart && req.guestId) {
+        console.log('🔍 Attempting to merge guest cart with guestId:', req.guestId);
+        const guestCart = await Cart.findOne({ guestId: req.guestId }).populate('items.product').populate('user', 'name email phone address');
+        if (guestCart) {
+          console.log('🔄 Merging guest cart into user cart, items:', guestCart.items.length);
+          guestCart.user = req.user._id;
+          guestCart.guestId = undefined;
+          await guestCart.save();
+          cart = guestCart;
+        } else {
+          console.log('❌ No guest cart found for guestId:', req.guestId);
         }
-        res.json({ cart_id: cart.id, items: rows });
       }
-    );
+    } else {
+      // Guest user - look for cart by guestId
+      cart = await Cart.findOne({ guestId: req.guestId }).populate('items.product');
+      console.log('📦 Guest cart found:', cart ? `${cart.items.length} items` : 'None');
+    }
+    
+    if (!cart) {
+      // If there's no cart, create an empty cart for authenticated users or for guests with guestId
+      if (req.user) {
+        console.log('📦 No user cart found — creating an empty cart for user:', req.user._id);
+        cart = new Cart({ user: req.user._id, items: [] });
+        await cart.save();
+          cart = await Cart.findById(cart._id).populate('items.product').populate('user', 'name email phone address');
+      } else if (req.guestId) {
+        console.log('📦 No guest cart found — creating an empty cart for guestId:', req.guestId);
+        cart = new Cart({ guestId: req.guestId, items: [] });
+        await cart.save();
+          cart = await Cart.findById(cart._id).populate('items.product').populate('user', 'name email phone address');
+      } else {
+        console.log('📦 No cart found and no guestId present, returning empty');
+        return res.json({ items: [] });
+      }
+    }
+    
+    if (cart.items.length > 0) {
+      console.log('📦 Cart items:', cart.items.filter(i => i.product).map(i => ({ productId: i.product._id, qty: i.quantity })));
+      
+      // Remove deleted products (where populate resulted in null)
+      const originalLength = cart.items.length;
+      cart.items = cart.items.filter(i => i.product !== null);
+      if (cart.items.length < originalLength) {
+        console.log(`🗑️ Removed ${originalLength - cart.items.length} deleted product(s) from cart`);
+        await cart.save();
+      }
+    }
+    
+    res.json(cart);
   } catch (error) {
-    console.error("❌ Unexpected error in GET /cart:", error);
+    console.error('❌ Error fetching cart:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// POST add item to cart
-router.post('/items', authMiddleware, async (req, res) => {
+// ✅ Add item to cart
+router.post('/add', maybeAuth, async (req, res) => {
   try {
-    console.log('DEBUG: req.user in POST /cart/items:', req.user);
-    const user = req.user;
-    if (!user?.id) return res.status(401).json({ error: 'Not authenticated' });
-
-    let { product_id, quantity } = req.body;
-    product_id = parseInt(product_id);
-    quantity = parseInt(quantity);
-    if (!product_id || isNaN(quantity) || quantity <= 0) {
+    console.log('🛒 Adding to cart; auth user:', !!req.user, 'guestId:', req.guestId);
+    const { productId, quantity, guestId } = req.body;
+    console.log('🛒 Payload:', { productId, quantity, guestId });
+    if (!productId || !quantity || quantity < 1) {
       return res.status(400).json({ error: 'Invalid product or quantity' });
     }
 
-    const cart = await getOrCreateCart(user.id);
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
 
-    db.get("SELECT price, stock FROM products WHERE id = ?", [product_id], (err, product) => {
-      if (err || !product) {
-        console.error("❌ Product not found or DB error:", err ? err.message : 'No product');
-        return res.status(400).json({ error: 'Product not found' });
-      }
-      if (product.stock < quantity) {
-        return res.status(400).json({ error: 'Out of stock' });
-      }
-
-      db.get("SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?", [cart.id, product_id], (err2, existingItem) => {
-        if (err2) {
-          console.error("❌ DB error checking existing cart item:", err2.message);
-          return res.status(500).json({ error: 'Database error' });
+    let cart = null;
+    
+    if (req.user) {
+      // Authenticated user - check for existing user cart
+      cart = await Cart.findOne({ user: req.user._id });
+      
+      // If no user cart but guestId provided, merge guest cart
+      if (!cart && (guestId || req.guestId)) {
+        const guestCartId = guestId || req.guestId;
+        const guestCart = await Cart.findOne({ guestId: guestCartId });
+        if (guestCart) {
+          console.log('🛒 Migrating guest cart to user');
+          guestCart.user = req.user._id;
+          guestCart.guestId = undefined;
+          cart = guestCart;
         }
+      }
+      
+      // Create new user cart if still doesn't exist
+      if (!cart) {
+        cart = new Cart({ user: req.user._id, items: [] });
+        console.log('🛒 Creating new user cart');
+      }
+    } else {
+      // Guest user - use guestId
+      const cartGuestId = guestId || req.guestId || `guest_${Date.now()}`;
+      cart = await Cart.findOne({ guestId: cartGuestId });
+      
+      if (!cart) {
+        cart = new Cart({ guestId: cartGuestId, items: [] });
+        console.log('🛒 Creating new guest cart with id:', cartGuestId);
+      }
+    }
 
-        if (existingItem) {
-          const newQty = existingItem.quantity + quantity;
-          db.run("UPDATE cart_items SET quantity = ? WHERE id = ?", [newQty, existingItem.id], function (err3) {
-            if (err3) {
-              console.error("❌ Failed to update item quantity:", err3.message);
-              return res.status(500).json({ error: 'Failed to update item quantity' });
-            }
-            res.json({ message: 'Cart item quantity updated', quantity: newQty });
-          });
-        } else {
-          db.run(
-            "INSERT INTO cart_items (cart_id, product_id, quantity, price_at_add) VALUES (?,?,?,?)",
-            [cart.id, product_id, quantity, product.price],
-            function (err4) {
-              if (err4) {
-                console.error("❌ Error inserting into cart:", err4.message);
-                return res.status(500).json({ error: 'Database insert failed' });
-              }
-              res.json({ message: 'Added to cart', cart_item_id: this.lastID });
-            }
-          );
-        }
+    const existingItem = cart.items.find(item => item.product.toString() === productId);
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      console.log('🛒 Updated existing item quantity:', existingItem.quantity);
+    } else {
+      cart.items.push({
+        product: productId,
+        quantity,
+        price_at_add: product.price,
       });
-    });
+      console.log('🛒 Added new item to cart');
+    }
+
+    await cart.save();
+    console.log('🛒 Cart saved with', cart.items.length, 'items, cartId:', cart._id);
+      const populatedCart = await cart.populate('items.product').populate('user', 'name email phone address');
+    res.json({ message: 'Item added to cart successfully', items: populatedCart.items, cart: populatedCart });
   } catch (error) {
-    console.error("❌ Unexpected error in POST /cart/items:", error);
+    console.error('❌ Error adding item:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// PUT update quantity of a cart item
-router.put('/items/:id', authMiddleware, async (req, res) => {
+// ✅ Update item quantity
+router.put('/items/:itemId', maybeAuth, async (req, res) => {
   try {
-    console.log('DEBUG: req.user in PUT /cart/items/:id:', req.user);
-    const user = req.user;
-    if (!user?.id) return res.status(401).json({ error: 'Not authenticated' });
+    const { quantity } = req.body;
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ error: 'Invalid quantity' });
+    }
 
-    const qty = parseInt(req.body.quantity);
-    if (isNaN(qty) || qty <= 0) return res.status(400).json({ error: 'Invalid quantity' });
+    const query = req.user ? { user: req.user._id } : { guestId: req.guestId || req.body?.guestId };
+    const cart = await Cart.findOne(query);
+    if (!cart) return res.status(404).json({ error: 'Cart not found' });
 
-    db.run("UPDATE cart_items SET quantity = ? WHERE id = ?", [qty, req.params.id], function (err) {
-      if (err) {
-        console.error("❌ DB error updating quantity:", err.message);
-        return res.status(500).json({ error: 'Database update failed' });
-      }
-      if (this.changes === 0) return res.status(404).json({ error: 'Item not found' });
-      res.json({ message: 'Quantity updated', id: req.params.id, quantity: qty });
-    });
+    const item = cart.items.find(i => i._id.toString() === req.params.itemId);
+    if (!item) return res.status(404).json({ error: 'Item not found in cart' });
+
+    item.quantity = quantity;
+    await cart.save();
+    const populatedCart = await cart.populate('items.product').populate('user', 'name email phone address');
+    res.json({ message: 'Item updated', cart: populatedCart });
   } catch (error) {
-    console.error("❌ Unexpected error in PUT /cart/items/:id:", error);
+    console.error('❌ Error updating item:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// DELETE remove item from cart
-router.delete('/items/:id', authMiddleware, async (req, res) => {
+// ✅ Remove item from cart
+router.delete('/items/:itemId', maybeAuth, async (req, res) => {
   try {
-    console.log('DEBUG: req.user in DELETE /cart/items/:id:', req.user);
-    const user = req.user;
-    if (!user?.id) return res.status(401).json({ error: 'Not authenticated' });
+    const query = req.user ? { user: req.user._id } : { guestId: req.guestId || req.body?.guestId };
+    const cart = await Cart.findOne(query);
+    if (!cart) return res.status(404).json({ error: 'Cart not found' });
 
-    db.run("DELETE FROM cart_items WHERE id = ?", [req.params.id], function (err) {
-      if (err) {
-        console.error("❌ DB error deleting item:", err.message);
-        return res.status(500).json({ error: 'Database delete failed' });
-      }
-      if (this.changes === 0) return res.status(404).json({ error: 'Item not found' });
-      res.json({ message: 'Item removed successfully', id: req.params.id });
-    });
+    cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
+    await cart.save();
+    const populatedCart = await cart.populate('items.product').populate('user', 'name email phone address');
+    res.json({ message: 'Item removed from cart', cart: populatedCart });
   } catch (error) {
-    console.error("❌ Unexpected error in DELETE /cart/items/:id:", error);
+    console.error('❌ Error removing item:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// ✅ Legacy: Remove by cart item ID (kept for backward compatibility)
+router.delete('/remove/:itemId', maybeAuth, async (req, res) => {
+  try {
+    const query = req.user ? { user: req.user._id } : { guestId: req.guestId || req.body?.guestId };
+    const cart = await Cart.findOne(query);
+    if (!cart) return res.status(404).json({ error: 'Cart not found' });
+
+    cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
+    await cart.save();
+
+    res.json({ message: 'Item removed from cart', cart });
+  } catch (error) {
+    console.error('❌ Error removing item:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Debug endpoint - shows request auth state
+router.get('/debug/headers', (req, res) => {
+  res.json({
+    user: req.user ? { id: req.user._id, email: req.user.email } : null,
+    guestId: req.guestId,
+    headers: {
+      'x-auth-token': req.headers['x-auth-token'] ? 'SET' : 'NOT SET',
+      'x-guest-id': req.headers['x-guest-id'] || 'NOT SET',
+      'authorization': req.headers.authorization ? 'SET' : 'NOT SET',
+    }
+  });
 });
 
 module.exports = router;

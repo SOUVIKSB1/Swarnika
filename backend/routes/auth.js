@@ -1,120 +1,445 @@
-// ✅ Authentication Routes
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const db = require('../db');
-const { authMiddleware } = require('./middleware'); // Import auth middleware
-
+const express = require("express");
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_THIS_SECRET';
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const User = require("../models/User");
+const Cart = require("../models/Cart");
+const crypto = require("crypto");
 
-// Function to set token cookie
-function setTokenCookie(res, user) {
-  const token = jwt.sign(
-    { id: user.id, name: user.name, email: user.email },
-    JWT_SECRET,
-    { expiresIn: '2h' }
-  );
-  res.cookie('token', token, {
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 2 * 60 * 60 * 1000, // 2 hours
-    path: '/', // ensure available across all routes
+// JWT generator
+function generateToken(user) {
+  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
   });
-  return token;
 }
 
-// ✅ Register new user
-router.post('/register', (req, res) => {
-  const { name, email, password, phone } = req.body;
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
+// ✅ Register
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password)
+      return res.status(400).json({ error: "All fields are required" });
 
-  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, row) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    if (row) return res.status(400).json({ error: 'Email already registered' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser)
+      return res.status(400).json({ error: "Email already registered" });
 
-    const hashed = await bcrypt.hash(password, 10);
-    db.run(
-      'INSERT INTO users (name, email, password_hash, phone) VALUES (?,?,?,?)',
-      [name, email, hashed, phone || ''],
-      function (err2) {
-        if (err2) {
-          console.error('DB error during registration:', err2.message);
-          return res.status(500).json({ error: 'Registration failed' });
-        }
-        
-        // ✅ Automatically log in user after registration
-        const userId = this.lastID;
-        const newUser = { id: userId, name, email };
-        setTokenCookie(res, newUser);
-        
-        res.json({ 
-          message: 'User registered successfully', 
-          user: newUser
-        });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+    const token = generateToken(newUser);
+
+    // Cookie options: In dev, allow cross-origin with Lax. In prod, use None with Secure
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // true on HTTPS production
+      sameSite: "Lax", // Works for both dev (localhost) and prod (same-site)
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+
+    res.cookie("token", token, cookieOptions);
+
+    console.log("🍪 Token cookie set on registration");
+    // If a guestId was provided, merge the guest cart into the new user
+    if (req.body?.guestId) {
+      try {
+        await mergeGuestCartToUser(req.body.guestId, newUser._id);
+        console.log('🔀 Merged guest cart into new user during registration');
+      } catch (e) {
+        console.warn('⚠️ Guest cart merge failed during registration:', e.message);
       }
-    );
-  });
+    }
+
+    res.json({
+      message: "Registered successfully",
+      user: { name: newUser.name, email: newUser.email, role: newUser.role || "user" },
+      token: token, // Send token in response so frontend can store it as fallback
+    });
+  } catch (err) {
+    console.error("❌ Registration error:", err);
+    res.status(500).json({ error: "Server error during registration" });
+  }
 });
 
 // ✅ Login
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ error: 'Email and password required' });
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
-  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-    setTokenCookie(res, user);
-    console.log('✅ Token cookie set for user:', user.email);
-    res.json({ message: 'Login successful', user: { id: user.id, name: user.name, email: user.email } });
-  });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax", // Works for both dev and prod
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+
+    res.cookie("token", token, cookieOptions);
+
+    console.log("🍪 Token cookie set on login");
+    // Merge guest cart if provided
+    if (req.body?.guestId) {
+      try {
+        await mergeGuestCartToUser(req.body.guestId, user._id);
+        console.log('🔀 Merged guest cart into user after login');
+      } catch (e) {
+        console.warn('⚠️ Guest cart merge failed during login:', e.message);
+      }
+    }
+
+    res.json({
+      message: "Login successful",
+      user: { name: user.name, email: user.email, role: user.role || "user" },
+      token: token, // Send token in response so frontend can store it as fallback
+    });
+  } catch (err) {
+    console.error("❌ Login error:", err);
+    res.status(500).json({ error: "Server error during login" });
+  }
+});
+
+// ✅ Get current user
+// Accepts JWT token from: cookies, x-auth-token header, or Bearer header
+router.get("/me", async (req, res) => {
+  try {
+    console.log("🔍 Checking authentication for /me request...");
+    console.log("🧠 Cookies received:", req.cookies);
+    console.log(
+      "🧠 Authorization Header:",
+      req.headers.authorization || "none"
+    );
+    console.log("🧠 x-auth-token Header:", req.headers["x-auth-token"] || "none");
+
+    // Extract token from cookie, x-auth-token, or Bearer header
+    let token = null;
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+      console.log("✅ Token found in cookies");
+    } else if (req.headers["x-auth-token"]) {
+      token = req.headers["x-auth-token"];
+      console.log("✅ Token found in x-auth-token header");
+    } else if (req.headers.authorization?.startsWith("Bearer ")) {
+      // Only accept Bearer for Firebase tokens, but try JWT verification first
+      token = req.headers.authorization.split(" ")[1];
+      console.log("✅ Token found in Authorization Bearer header");
+    } else {
+      console.warn("⚠️ No authentication token found in cookies or headers");
+      return res
+        .status(401)
+        .json({ error: "Authentication token missing. Please log in again." });
+    }
+
+    // Verify JWT token
+    let decoded;
+    try {
+      console.log("🔑 Attempting JWT verification...");
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("✅ JWT verified for user ID:", decoded.id);
+    } catch (jwtErr) {
+      console.warn("⚠️ JWT verification failed:", jwtErr.message);
+      
+      // If Bearer token and JWT fails, try Firebase verification
+      if (req.headers.authorization?.startsWith("Bearer ")) {
+        try {
+          console.log("🔥 Attempting Firebase token verification as fallback...");
+          const admin = require('firebase-admin');
+          const decodedFirebase = await admin.auth().verifyIdToken(token);
+          console.log("✅ Firebase token verified:", decodedFirebase.email);
+          
+          // Find user by Firebase UID
+          const firebaseUser = await User.findOne({ firebaseUid: decodedFirebase.uid });
+          if (!firebaseUser) {
+            console.warn("⚠️ Firebase user not found in database");
+            return res.status(404).json({ error: "User not found" });
+          }
+          
+          console.log("✅ Authenticated user (Firebase):", firebaseUser.name);
+          return res.status(200).json({
+            id: firebaseUser._id,
+            name: firebaseUser.name,
+            email: firebaseUser.email,
+            role: firebaseUser.role || "user",
+          });
+        } catch (firebaseErr) {
+          console.error("❌ Firebase verification also failed:", firebaseErr.message);
+          return res.status(401).json({ error: "Invalid or expired token" });
+        }
+      }
+      
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    if (!decoded?.id) {
+      console.warn("⚠️ Invalid token payload detected");
+      return res.status(401).json({ error: "Invalid token structure" });
+    }
+
+    // Fetch user
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      console.warn(`⚠️ User not found for decoded token ID: ${decoded.id}`);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // ✅ Respond with clean user info
+    console.log("✅ Authenticated user (JWT):", user.name);
+    res.status(200).json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role || "user",
+    });
+  } catch (err) {
+    console.error("❌ /me route error:", err);
+    res
+      .status(500)
+      .json({ error: "Internal server error during authentication check" });
+  }
+});
+
+// ✅ Get User Profile
+router.get("/profile", async (req, res) => {
+  try {
+    console.log("📋 GET /auth/profile called");
+    
+    // Extract token from cookie, x-auth-token, or Bearer header
+    let token = null;
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+    } else if (req.headers["x-auth-token"]) {
+      token = req.headers["x-auth-token"];
+    } else if (req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    } else {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Fetch user
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone || "",
+      address: user.address || "",
+      role: user.role || "user"
+    });
+  } catch (err) {
+    console.error("❌ GET /auth/profile error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ✅ Update User Profile
+router.put("/profile", async (req, res) => {
+  try {
+    console.log("✏️ PUT /auth/profile called");
+    const { name, phone, address } = req.body;
+
+    // Extract token
+    let token = null;
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+    } else if (req.headers["x-auth-token"]) {
+      token = req.headers["x-auth-token"];
+    } else if (req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    } else {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Update user
+    const user = await User.findByIdAndUpdate(
+      decoded.id,
+      { name: name || undefined, phone: phone || "", address: address || "" },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log("✅ Profile updated for user:", user.email);
+    res.json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || "",
+        address: user.address || "",
+        role: user.role || "user"
+      }
+    });
+  } catch (err) {
+    console.error("❌ PUT /auth/profile error:", err);
+    res.status(500).json({ error: "Server error during profile update" });
+  }
 });
 
 // ✅ Logout
-router.post('/logout', (req, res) => {
-  res.clearCookie('token');
-  res.json({ message: 'Logged out successfully' });
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", { path: "/" });
+  console.log("👋 Token cookie cleared on logout");
+  res.json({ message: "Logged out successfully" });
 });
 
-// ✅ Get Profile (was /me, fixed to /profile)
-router.get('/profile', authMiddleware, (req, res) => {
-  // authMiddleware already added req.user
-  db.get('SELECT id, name, email, phone, role, address FROM users WHERE id = ?', [req.user.id], (err, user) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
-  });
+// ✅ Social / Firebase token exchange
+// Accepts a Firebase ID token from client, verifies it with Firebase Admin SDK,
+// then finds or creates a corresponding user and issues a server JWT cookie.
+router.post("/firebase", async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ error: "idToken required" });
+
+    console.log("🔐 Received Firebase ID token, verifying...");
+
+    // Verify token with Firebase Admin SDK
+    const admin = require('firebase-admin');
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+    console.log("✅ Firebase token verified:", decodedToken.email);
+
+    const email = decodedToken.email;
+    const name = decodedToken.name || (email ? email.split("@")[0] : "User");
+    const firebaseUid = decodedToken.uid;
+    
+    if (!email) {
+      return res.status(400).json({ error: "Token payload missing email" });
+    }
+
+    // Find or create a user record
+    let user = await User.findOne({ email });
+    if (!user) {
+      // Create user with Firebase UID (no password needed)
+      user = await User.create({ 
+        name, 
+        email, 
+        firebaseUid,
+        // Password not required for Firebase users
+      });
+      console.log("🆕 Created user from Firebase login:", email);
+    } else if (!user.firebaseUid) {
+      // Update existing user with Firebase UID
+      user.firebaseUid = firebaseUid;
+      await user.save();
+      console.log("🔄 Updated user with Firebase UID:", email);
+    }
+
+    // Generate JWT token for backend session
+    const token = generateToken(user);
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax", // Works for both dev and prod
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+
+    res.cookie("token", token, cookieOptions);
+    console.log("🍪 JWT cookie set for Firebase user:", email);
+    console.log("🍪 Cookie options:", cookieOptions);
+    console.log("🍪 Response headers will include Set-Cookie");
+
+    // Merge guest cart into user if client sent guestId (optional)
+    if (req.body?.guestId) {
+      try {
+        await mergeGuestCartToUser(req.body.guestId, user._id);
+        console.log('🔀 Merged guest cart into user after Firebase exchange');
+      } catch (e) {
+        console.warn('⚠️ Guest cart merge failed during Firebase exchange:', e.message);
+      }
+    }
+
+    res.json({
+      message: "Firebase authentication successful",
+      user: { name: user.name, email: user.email, role: user.role || "user" },
+      token: token, // Also send token in response so frontend can store it
+      debug: {
+        cookieSet: true,
+        cookieName: 'token',
+        cookieOptions: cookieOptions
+      }
+    });
+  } catch (err) {
+    console.error("❌ Firebase token verification failed:", err);
+    res.status(401).json({ 
+      error: "Invalid Firebase token",
+      details: err.message 
+    });
+  }
 });
 
-// ✅ Update Profile (NEW ROUTE)
-router.put('/profile', authMiddleware, (req, res) => {
-  const { name, phone, address } = req.body;
-  const uid = req.user.id;
-
-  if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
+// Helper: merge a guest cart into a user's cart (summing quantities)
+async function mergeGuestCartToUser(guestId, userId) {
+  if (!guestId) return;
+  console.log('🔀 mergeGuestCartToUser called with', guestId, userId);
+  const guestCart = await Cart.findOne({ guestId });
+  if (!guestCart) {
+    console.log('🔍 No guest cart found for', guestId);
+    return;
   }
 
-  db.run(
-    'UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?',
-    [name, phone || '', address || '', uid],
-    function(err) {
-      if (err) {
-        console.error('Error updating profile:', err.message);
-        return res.status(500).json({ error: 'Database error' });
-      }
-      res.json({ message: 'Profile updated successfully' });
+  let userCart = await Cart.findOne({ user: userId });
+  if (!userCart) {
+    // Attach guest cart to user
+    guestCart.user = userId;
+    guestCart.guestId = undefined;
+    await guestCart.save();
+    console.log('✅ Guest cart reassigned to user:', userId);
+    return;
+  }
+
+  // Merge items: sum quantities for matching products
+  for (const gItem of guestCart.items) {
+    const existing = userCart.items.find(i => i.product.toString() === gItem.product.toString());
+    if (existing) {
+      existing.quantity += gItem.quantity;
+    } else {
+      userCart.items.push({ product: gItem.product, quantity: gItem.quantity, price_at_add: gItem.price_at_add });
     }
-  );
-});
+  }
+
+  await userCart.save();
+  // Remove guest cart
+  await Cart.deleteOne({ _id: guestCart._id });
+  console.log('✅ Merged guest cart into user cart and removed guest cart');
+}
 
 module.exports = router;

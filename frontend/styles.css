@@ -1,4 +1,3 @@
-
 /* 🌟 Swarnika Jewellery - Global Theme Styles */
 
 /* Color Palette */
@@ -29,8 +28,12 @@ body {
 
 /* Navbar */
 .navbar {
-  background-color: #fff !important;
-  border-bottom: 2px solid var(--border);
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(241, 224, 208, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
 /* Navbar brand */
@@ -48,17 +51,22 @@ body {
   border-radius: 50%;
   border: 2px solid var(--brand);
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.brand-logo:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
 }
 
 .navbar-brand:hover .brand-logo {
   transform: rotate(10deg) scale(1.05);
 }
 
-.navbar-nav .nav-link {
-  color: var(--dark);
-  font-weight: 500;
-  transition: color 0.2s ease;
+.navbar-nav .nav-link.active {
+  background: none !important;
+  box-shadow: none !important;
+  color: #b8860b !important; /* or whatever your text color is */
 }
 
 .navbar-nav .nav-link:hover,
@@ -225,3 +233,401 @@ footer {
     padding: 1.2rem;
   }
 }
+
+/* Chatbot Interaction Styles */
+.chatbot-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: linear-gradient(135deg, #f9f0e6, #fff7f0);
+  border-radius: 20px;
+  box-shadow: 0 6px 15px rgba(184, 134, 11, 0.2);
+  font-family: 'Georgia', serif;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1rem;
+  color: var(--dark);
+}
+
+.chatbot-message {
+  max-width: 80%;
+  padding: 1rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.15);
+  position: relative;
+  word-wrap: break-word;
+}
+
+.chatbot-message.user {
+  background: linear-gradient(135deg, #b8860b, #e6c96b);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+  font-style: normal;
+}
+
+.chatbot-message.bot {
+  background: linear-gradient(135deg, #fff7f0, #f9f0e6);
+  color: var(--dark);
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Quick Reply Buttons */
+.chatbot-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  justify-content: flex-start;
+}
+
+.chatbot-quick-reply {
+  background: linear-gradient(135deg, #e6c96b, #b8860b);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Georgia', serif;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(184, 134, 11, 0.3);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+}
+
+.chatbot-quick-reply:hover,
+.chatbot-quick-reply:focus {
+  background: linear-gradient(135deg, #fff7f0, #f9f0e6);
+  color: var(--brand);
+  outline: none;
+  box-shadow: 0 3px 8px rgba(184, 134, 11, 0.5);
+}
+
+/* Scrollable Chat Area */
+.chatbot-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
+  max-height: 400px;
+}
+
+/* Scrollbar Styling */
+.chatbot-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+  background-color: var(--brand-light);
+  border-radius: 3px;
+}
+
+/* Responsive Chatbot */
+@media (max-width: 576px) {
+  .chatbot-container {
+    max-width: 100%;
+    padding: 1rem;
+    border-radius: 15px;
+  }
+
+  .chatbot-message {
+    max-width: 100%;
+    font-size: 0.95rem;
+    padding: 0.8rem 1.2rem;
+  }
+
+  .chatbot-quick-replies {
+    justify-content: center;
+  }
+
+  .chatbot-quick-reply {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Demo item styling in cart */
+.demo-row {
+  background: linear-gradient(90deg, #fffaf6, #fff7f0);
+  border-left: 4px dashed rgba(184,134,11,0.25);
+}
+.demo-row td {
+  vertical-align: middle;
+}
+.demo-badge {
+  display: inline-block;
+  background: rgba(184,134,11,0.12);
+  color: var(--brand);
+  border: 1px solid rgba(184,134,11,0.08);
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.demo-name {
+  font-style: italic;
+  color: var(--muted);
+}
+.demo-img {
+  width: 72px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+
+/* Global Loader and Animation Utilities */
+.loader {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 5px solid rgba(184,134,11,0.12);
+  border-top-color: var(--brand);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Skeleton card for products while loading */
+.skeleton-card {
+  background: linear-gradient(90deg, #fffaf6 0%, #f6efe5 100%);
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 300px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 0%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* Fade-in for product cards */
+.product-fade-in {
+  animation: cardIn 0.45s ease both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ✨ Glass Effect (Glassmorphism) for Navbar */
+.navbar {
+  position: relative;
+}
+
+.navbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  pointer-events: none;
+  border-radius: 0;
+}
+
+/* Navbar links with glass effect hover */
+.navbar-nav .nav-link {
+  position: relative;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: #333 !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--brand) !important;
+  text-shadow: 0 2px 8px rgba(184, 134, 11, 0.2);
+  transform: translateY(-2px);
+}
+
+.navbar-nav .nav-link:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { width: 0; left: 50%; }
+  to { width: 100%; left: 0; }
+}
+
+/* Active nav link */
+.navbar-nav .nav-link.active {
+  color: var(--brand) !important;
+  font-weight: 600;
+}
+
+/* Navbar brand with glass effect */
+.navbar-brand {
+  position: relative;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+  background: rgba(184, 134, 11, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+/* Dropdown menu glass effect */
+.dropdown-menu {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(241, 224, 208, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  margin-top: 8px !important;
+}
+
+.dropdown-item {
+  color: #333 !important;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background: rgba(184, 134, 11, 0.12) !important;
+  color: var(--brand) !important;
+  padding-left: 1.8rem;
+}
+
+.dropdown-item.active {
+  background: rgba(184, 134, 11, 0.2) !important;
+  color: var(--brand) !important;
+}
+
+/* Navbar toggler (mobile menu button) */
+.navbar-toggler {
+  position: relative;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: rgba(184, 134, 11, 0.1);
+}
+
+.navbar-toggler:hover {
+  background: rgba(184, 134, 11, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23b8860b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M6 9h18M6 15h18M6 21h18'/%3e%3c/svg%3e");
+}
+
+/* Cart count badge with glass effect */
+.cart-count {
+  display: inline-block;
+  background: rgba(220, 53, 69, 0.85);
+  backdrop-filter: blur(8px);
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.cart-count:hover {
+  background: rgba(220, 53, 69, 1);
+  transform: scale(1.15);
+  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+/* Login/Logout buttons with glass effect */
+.navbar-nav .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.navbar-nav .btn-outline-secondary {
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  color: var(--brand) !important;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-nav .btn-outline-secondary:hover {
+  background: rgba(184, 134, 11, 0.15) !important;
+  border-color: var(--brand) !important;
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.2);
+  transform: translateY(-2px);
+}
+
+.navbar-nav .btn-primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-light));
+  border: none;
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
+}
+
+.navbar-nav .btn-primary:hover {
+  background: linear-gradient(135deg, var(--brand-light), var(--brand));
+  box-shadow: 0 6px 16px rgba(184, 134, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+/* User display name in navbar */
+.navbar-nav .text-primary {
+  color: var(--brand) !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.navbar-nav .text-primary:hover {
+  text-shadow: 0 2px 8px rgba(184, 134, 11, 0.3);
+}
+
+/* Smooth transition for navbar collapse */
+.navbar-collapse {
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 991px) {
+  .navbar-collapse {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px;
+    margin-top: 12px;
+    padding: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(241, 224, 208, 0.3);
+  }
+
+  .navbar-nav .nav-link {
+    padding: 12px 0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .navbar-nav .nav-link:hover {
+    background: rgba(184, 134, 11, 0.08);
+    padding-left: 12px;
+  }
+}
+

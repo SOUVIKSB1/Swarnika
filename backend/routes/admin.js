@@ -1,46 +1,67 @@
 const express = require('express');
-const db = require('../db');
-const { authMiddleware } = require('./middleware');
+const { authMiddleware, adminMiddleware } = require('./middleware');
+const Product = require('../models/Product');
 
 const router = express.Router();
 
-function adminOnly(req, res, next){
-  if(req.user.role !== 'admin') return res.status(403).json({error:'Forbidden'});
-  next();
-}
+// ✅ Create new product (admin only)
+router.post('/products', adminMiddleware, async (req, res) => {
+  try {
+    const { name, sku, category, metal, price, stock, weight, description, image } = req.body;
 
-// Create product (simple)
-router.post('/products', authMiddleware, adminOnly, (req,res)=>{
-  const { name, sku, category, metal, price, stock, weight, description, image_url } = req.body;
-  db.run("INSERT INTO products (name, sku, category, metal, price, stock, weight, description, image_url) VALUES (?,?,?,?,?,?,?,?,?)",
-    [name,sku,category,metal,price,stock,weight,description,image_url], function(err){
-      if(err) return res.status(500).json({error:'DB'});
-      res.json({message:'Created', id: this.lastID});
-  });
-});
+    if (!name || !price) {
+      return res.status(400).json({ error: 'Name and price are required' });
+    }
 
-router.put('/products/:id', authMiddleware, adminOnly, (req,res)=>{
-  const id = req.params.id;
-  const fields = req.body;
-  const allowed = ['name','sku','category','metal','price','stock','weight','description','image_url'];
-  const set = [];
-  const vals = [];
-  for(const k of allowed){
-    if(fields[k] !== undefined){ set.push(`${k} = ?`); vals.push(fields[k]); }
+    const newProduct = new Product({
+      name,
+      sku,
+      category,
+      metal,
+      price,
+      stock,
+      weight,
+      description,
+      image
+    });
+
+    await newProduct.save();
+    res.status(201).json({ message: 'Product created successfully', product: newProduct });
+  } catch (error) {
+    console.error('❌ Error creating product:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-  if(set.length === 0) return res.status(400).json({error:'No fields'});
-  vals.push(id);
-  db.run(`UPDATE products SET ${set.join(', ')} WHERE id = ?`, vals, function(err){
-    if(err) return res.status(500).json({error:'DB'});
-    res.json({message:'Updated'});
-  });
 });
 
-router.delete('/products/:id', authMiddleware, adminOnly, (req,res)=>{
-  db.run("DELETE FROM products WHERE id = ?", [req.params.id], function(err){
-    if(err) return res.status(500).json({error:'DB'});
-    res.json({message:'Deleted'});
-  });
+// ✅ Update product by ID (admin only)
+router.put('/products/:id', adminMiddleware, async (req, res) => {
+  try {
+    const updates = req.body;
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updates, { new: true });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json({ message: 'Product updated successfully', product: updatedProduct });
+  } catch (error) {
+    console.error('❌ Error updating product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ✅ Delete product by ID (admin only)
+router.delete('/products/:id', adminMiddleware, async (req, res) => {
+  try {
+    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('❌ Error deleting product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;

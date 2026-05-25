@@ -1,764 +1,917 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Swarnika Jewels — Home</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="styles.css" rel="stylesheet">
-  <link rel="stylesheet" href="chat.css">
-  <script defer src="app.js"></script>
-  <script defer src="chat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Swarnika Jewels — Home</title>
 
-  <style>
-    /* General theme colors & fonts */
-    body {
-      background-color: #fff;
-      font-family: 'Georgia', serif;
-      color: #3a2f2f;
-      margin: 0;
-      padding: 0;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Georgia', serif;
-      color: #8c6d5a; /* soft beige/gold */
-      font-weight: 600;
-    }
-    a, .nav-link {
-      color: #6b4c3b;
-      font-weight: 500;
-      font-family: 'Georgia', serif;
-    }
-    a:hover, .nav-link:hover {
-      color: #b88a56;
-      text-decoration: none;
-    }
-    /* Navbar styles */
-    .navbar {
-      background-color: #fff;
-      border-bottom: 1px solid #f0e6dc;
-      padding: 0.5rem 1rem;
-      font-family: 'Georgia', serif;
-    }
-    .navbar-brand {
-      font-weight: 700;
-      font-size: 1.5rem;
-      color: #8c6d5a;
-    }
-    .navbar-brand:hover {
-      color: #b88a56;
-      text-decoration: none;
-    }
-    .brand-logo {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-    }
-    /* Navbar category links */
-    .navbar-nav .nav-link {
-      padding: 0.5rem 0.75rem;
-      font-size: 0.9rem;
-      color: #6b4c3b;
-    }
-    .navbar-nav .nav-link.active {
-      color: #b88a56;
-      font-weight: 700;
-      border-bottom: 2px solid #b88a56;
-    }
-    /* Search bar in navbar center */
-    .navbar-search {
-      flex-grow: 1;
-      max-width: 480px;
-      margin: 0 1rem;
-    }
-    .navbar-search input {
-      width: 100%;
-      border-radius: 30px;
-      border: 1.5px solid #d8cbb7;
-      padding: 0.375rem 1.25rem;
-      font-family: 'Georgia', serif;
-      font-size: 0.95rem;
-      color: #6b4c3b;
-      transition: border-color 0.3s ease;
-    }
-    .navbar-search input::placeholder {
-      color: #b7a68d;
-      font-style: italic;
-    }
-    .navbar-search input:focus {
-      outline: none;
-      border-color: #b88a56;
-      box-shadow: 0 0 5px #b88a56aa;
-    }
-    /* Navbar right icons */
-    .navbar-icons {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      font-size: 1.2rem;
-      color: #6b4c3b;
-      cursor: pointer;
-      position: relative;
-    }
-    .navbar-icons a {
-      color: #6b4c3b;
-      text-decoration: none;
-      position: relative;
-    }
-    .navbar-icons a:hover {
-      color: #b88a56;
-    }
-    .cart-count {
-      position: absolute;
-      top: -6px;
-      right: -10px;
-      background-color: #b88a56;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 700;
-      border-radius: 50%;
-      padding: 2px 6px;
-      line-height: 1;
-      user-select: none;
-    }
-    /* Dropdown menu for More */
-    .dropdown-menu {
-      font-family: 'Georgia', serif;
-      font-size: 0.9rem;
-      border-color: #d8cbb7;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgb(184 138 86 / 0.25);
-    }
-    .dropdown-item {
-      color: #6b4c3b;
-    }
-    .dropdown-item:hover, .dropdown-item:focus {
-      background-color: #f3e8d7;
-      color: #b88a56;
-    }
-    /* Secondary banner with 3 cards */
-    .secondary-banner {
-      background-color: #f9f5ef;
-      padding: 2rem 1rem;
-    }
-    .secondary-banner .card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgb(184 138 86 / 0.15);
-      overflow: hidden;
-      transition: transform 0.3s ease;
-      cursor: pointer;
-      background-color: #fff;
-    }
-    .secondary-banner .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 20px rgb(184 138 86 / 0.3);
-    }
-    .secondary-banner .card img {
-      height: 160px;
-      object-fit: cover;
-      width: 100%;
-    }
-    .secondary-banner .card-body {
-      text-align: center;
-      padding: 1rem 0.75rem;
-    }
-    .secondary-banner .card-title {
-      font-size: 1.25rem;
-      color: #8c6d5a;
-      margin: 0;
-      font-weight: 600;
-    }
-    /* Main content wrapper */
-    .main-content {
-      max-width: 1200px;
-      margin: 2rem auto 4rem;
-      padding: 0 1rem;
-      display: flex;
-      gap: 2rem;
-    }
-    /* Filters sidebar */
-    .filters-sidebar {
-      width: 260px;
-      font-family: 'Georgia', serif;
-      color: #6b4c3b;
-    }
-    .filters-sidebar h5 {
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 0.75rem;
-      color: #8c6d5a;
-    }
-    .filter-section {
-      border-bottom: 1px solid #e6dfd4;
-      padding-bottom: 1rem;
-      margin-bottom: 1rem;
-    }
-    .filter-section button {
-      background: none;
-      border: none;
-      width: 100%;
-      text-align: left;
-      font-size: 1rem;
-      color: #6b4c3b;
-      font-weight: 600;
-      padding: 0;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .filter-section button:focus {
-      outline: none;
-      color: #b88a56;
-    }
-    .filter-options {
-      margin-top: 0.5rem;
-      padding-left: 1rem;
-      font-weight: 400;
-      font-size: 0.95rem;
-    }
-    .filter-options label {
-      display: block;
-      margin-bottom: 0.4rem;
-      cursor: pointer;
-    }
-    .filter-options input[type="checkbox"] {
-      margin-right: 0.5rem;
-      cursor: pointer;
-    }
-    /* Sort & products container */
-    .products-container {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .products-header {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      margin-bottom: 1rem;
-      font-family: 'Georgia', serif;
-      color: #6b4c3b;
-    }
-    .products-header label {
-      margin-right: 0.5rem;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-    .products-header select {
-      border: 1.5px solid #d8cbb7;
-      border-radius: 30px;
-      padding: 0.3rem 1rem;
-      font-family: 'Georgia', serif;
-      font-size: 0.95rem;
-      color: #6b4c3b;
-      cursor: pointer;
-      background-color: #fff;
-      transition: border-color 0.3s ease;
-    }
-    .products-header select:focus {
-      outline: none;
-      border-color: #b88a56;
-      box-shadow: 0 0 5px #b88a56aa;
-    }
-    /* Product grid */
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
-    }
-    .product-card {
-      border: 1px solid #f0e6dc;
-      border-radius: 12px;
-      overflow: hidden;
-      background-color: #fff;
-      box-shadow: 0 2px 8px rgb(184 138 86 / 0.1);
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    .product-card:hover {
-      box-shadow: 0 6px 16px rgb(184 138 86 / 0.3);
-      transform: translateY(-4px);
-    }
-    .product-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-bottom: 1px solid #f0e6dc;
-    }
-    .product-card-body {
-      padding: 0.75rem 1rem 1rem;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .product-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #6b4c3b;
-      margin-bottom: 0.25rem;
-      min-height: 2.4em; /* approx 2 lines */
-      line-height: 1.2em;
-      overflow: hidden;
-    }
-    .product-price {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #b88a56;
-    }
-    /* Quick View & View buttons styling */
-    .btn-rose {
-      background-color: #b88a56;
-      color: #fff;
-      border-radius: 30px;
-      border: 1.5px solid #b88a56;
-      font-family: 'Georgia', serif;
-      font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    .btn-rose:hover, .btn-rose:focus {
-      background-color: #fff;
-      color: #b88a56;
-      border-color: #b88a56;
-      box-shadow: none;
-    }
-    .btn-outline-rose {
-      color: #b88a56;
-      border: 1.5px solid #b88a56;
-      border-radius: 30px;
-      font-family: 'Georgia', serif;
-      font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    .btn-outline-rose:hover, .btn-outline-rose:focus {
-      background-color: #b88a56;
-      color: #fff;
-      border-color: #b88a56;
-      box-shadow: none;
-    }
-    /* Modal content overrides */
-    #quickViewModal .modal-content {
-      border-radius: 16px;
-      font-family: 'Georgia', serif;
-      color: #6b4c3b;
-    }
-    #quickViewModal .modal-header {
-      border-bottom: 1px solid #f0e6dc;
-    }
-    #quickViewModal .modal-title {
-      font-weight: 700;
-      color: #8c6d5a;
-    }
-    #quickViewModal .price {
-      color: #b88a56;
-      font-weight: 700;
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-    #quickViewModal .btn-close {
-      filter: invert(40%) sepia(28%) saturate(400%) hue-rotate(340deg) brightness(90%) contrast(85%);
-    }
-    /* Footer */
-    footer {
-      background-color: #fff;
-      border-top: 1px solid #f0e6dc;
-      padding: 1.25rem 0;
-      text-align: center;
-      font-family: 'Georgia', serif;
-      font-weight: 500;
-      color: #6b4c3b;
-      font-size: 0.9rem;
-      user-select: none;
-    }
-    /* Responsive adjustments */
-    @media (max-width: 1199px) {
-      .product-grid {
-        grid-template-columns: repeat(3, 1fr);
+    <!-- CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="productSeed.css" />
+    <link rel="stylesheet" href="chat.css" />
+
+    <!-- Inline styles (kept from original file) -->
+    <style>
+      /* ======= Mobile Responsive Enhancements ======= */
+
+      /* General adjustments */
+      @media (max-width: 768px) {
+        body {
+          font-size: 0.95rem;
+          overflow-x: hidden;
+        }
+
+        .navbar-brand span {
+          font-size: 1.05rem;
+        }
+
+        .navbar-toggler {
+          border: none;
+          background-color: #f8f8f8;
+        }
+
+        .navbar-nav .nav-link {
+          text-align: center;
+          padding: 10px 0;
+        }
+
+        .hero {
+          text-align: center;
+          padding: 2rem 1rem;
+        }
+
+        .hero h1 {
+          font-size: 1.8rem;
+          line-height: 1.3;
+        }
+
+        .hero p {
+          font-size: 1rem;
+          color: #555;
+        }
+
+        .hero .btn {
+          width: 100%;
+          margin-top: 1rem;
+        }
+
+        .logo-img {
+          width: 180px;
+          height: 180px;
+          margin: 1.5rem auto;
+        }
+
+        /* Slideshow */
+        .slideshow-wrapper {
+          margin: 1.5rem 0.5rem;
+          padding: 1rem;
+        }
+
+        .rose-slideshow {
+          height: 200px;
+        }
+
+        .rose-slide img {
+          height: 130px;
+        }
+
+        .rose-slide .rose-caption {
+          font-size: 1rem;
+          padding: 0.6rem 1rem;
+        }
+
+        /* Category sections */
+        .category-section {
+          margin-bottom: 1.2rem;
+          box-shadow: 0 3px 10px rgba(220, 180, 120, 0.1);
+        }
+
+        .category-img-anim {
+          height: 150px;
+        }
+
+        .category-title {
+          font-size: 1.2rem;
+          text-align: center;
+        }
+
+        .category-desc {
+          font-size: 0.9rem;
+          text-align: center;
+        }
+
+        /* Product Grid */
+        #productsRow {
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+          gap: 1rem;
+        }
+
+        .card-img-top {
+          height: 180px;
+        }
+
+        .card-title {
+          font-size: 0.95rem;
+        }
+
+        .card-text.price {
+          font-size: 1rem;
+        }
+
+        .modal-content {
+          border-radius: 12px;
+        }
+
+        .modal-body img {
+          height: 220px;
+        }
+
+        /* Footer */
+        footer,
+        .text-center {
+          font-size: 0.8rem;
+          line-height: 1.4;
+          padding: 0.5rem 0;
+        }
       }
-      .main-content {
+
+      /* Extra small devices */
+      @media (max-width: 480px) {
+        .navbar-brand span {
+          font-size: 0.95rem;
+        }
+
+        .hero h1 {
+          font-size: 1.5rem;
+        }
+
+        .hero p {
+          font-size: 0.9rem;
+        }
+
+        .logo-img {
+          width: 150px;
+          height: 150px;
+        }
+
+        .rose-slide .rose-caption {
+          font-size: 0.9rem;
+        }
+
+        .category-title {
+          font-size: 1rem;
+        }
+
+        .card-img-top {
+          height: 160px;
+        }
+
+        .modal-body img {
+          height: 200px;
+        }
+
+        .btn {
+          font-size: 0.85rem;
+          padding: 0.5rem 0.8rem;
+        }
+      }
+
+      /* Elegant Product Animation */
+      #productsRow {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+      .product-card-wrapper {
+        padding: 0;
+      }
+      .card.h-100 {
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+      }
+      .card.h-100:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
+      }
+      .card-img-top {
+        height: 260px;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+      .card.h-100:hover .card-img-top {
+        transform: scale(1.07);
+      }
+      .card-body {
+        padding: 1rem 1rem 1.25rem;
+        text-align: center;
+      }
+      .card-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #3a3a3a;
+        margin-bottom: 0.5rem;
+      }
+      .card-text.price {
+        color: #b6862e;
+        font-weight: bold;
+        margin-bottom: 0.2rem;
+      }
+      .qv-btn,
+      .btn-outline-primary {
+        transition: all 0.25s ease;
+      }
+      .qv-btn:hover {
+        background: #b6862e;
+        border-color: #b6862e;
+        color: #fff;
+      }
+      .btn-outline-primary:hover {
+        background: #b6862e;
+        color: #fff;
+      }
+
+      /* ===== Enhanced Quick View Modal ===== */
+      .modal-content {
+        border-radius: 18px;
+        overflow: hidden;
+        animation: qvFadeIn 0.45s ease;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(180deg, #fffdf9 0%, #fff7f0 100%);
+        border: 1px solid #f2e3d5;
+        position: relative;
+      }
+      @keyframes qvFadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.93) translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+      .modal-header {
+        background: linear-gradient(90deg, #b6862e, #e1c28b);
+        color: #fff;
+        border: none;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        letter-spacing: 0.3px;
+        box-shadow: 0 3px 8px rgba(182, 134, 46, 0.25);
+      }
+      .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+      .modal-body {
+        padding: 1.8rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: stretch;
+      }
+      .modal-body .col-md-6 {
+        flex: 1 1 300px;
+      }
+      .modal-body img {
+        width: 100%;
+        border-radius: 14px;
+        object-fit: cover;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+      .modal-body img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 25px rgba(182, 134, 46, 0.25);
+      }
+      .modal-body h4.price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #b6862e;
+        margin-top: 0.5rem;
+      }
+      .modal-body p {
+        font-size: 1rem;
+        color: #444;
+        line-height: 1.5;
+        margin-top: 0.8rem;
+      }
+      .modal-footer {
+        border-top: 1px solid #f0e2ce;
+        padding: 1rem 1.5rem;
+        background: #fffaf5;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.8rem;
+      }
+      .modal-footer button,
+      .modal-footer a {
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.25s ease;
+      }
+      .modal-footer .btn-success {
+        background: linear-gradient(90deg, #b6862e, #dcbf7f);
+        border: none;
+        color: #fff;
+      }
+      .modal-footer .btn-success:hover {
+        background: linear-gradient(90deg, #a77418, #c9ad64);
+        box-shadow: 0 3px 10px rgba(182, 134, 46, 0.3);
+      }
+      .modal-footer .btn-outline-primary {
+        border-color: #b6862e;
+        color: #b6862e;
+      }
+      .modal-footer .btn-outline-primary:hover {
+        background-color: #b6862e;
+        color: #fff;
+      }
+      .modal-footer .btn-secondary {
+        background: #f4f4f4;
+        color: #555;
+        border: none;
+      }
+      .modal-footer .btn-secondary:hover {
+        background: #e4e4e4;
+      }
+
+      /* Logo animation */
+      .logo-img {
+        width: 260px;
+        height: 260px;
+        object-fit: cover;
+        border-radius: 50%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        border: 4px solid #f8d7da;
+        transition: transform 0.8s ease, box-shadow 0.8s ease;
+        animation: floatLogo 4s ease-in-out infinite;
+      }
+      .logo-img:hover {
+        transform: scale(1.05) rotate(5deg);
+        box-shadow: 0 6px 20px rgba(255, 192, 203, 0.4);
+      }
+      @keyframes floatLogo {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      /* Category and slideshow styles */
+      .category-section {
+        cursor: pointer;
+        transition: box-shadow 0.4s, transform 0.4s;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(220, 180, 120, 0.08);
+        background: #fff;
+        margin-bottom: 2rem;
+        position: relative;
+        min-height: 100%;
+      }
+      .category-section:hover {
+        box-shadow: 0 6px 32px rgba(220, 180, 120, 0.18);
+        transform: translateY(-4px) scale(1.025);
+      }
+      .category-img-anim {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+          opacity 0.7s;
+        opacity: 0.93;
+      }
+      .category-section:hover .category-img-anim {
+        transform: scale(1.07);
+        opacity: 1;
+      }
+      .category-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-top: 1rem;
+        color: #bfa24a;
+        letter-spacing: 1px;
+      }
+      .category-title.silver {
+        color: #848484;
+      }
+      .category-title.platinum {
+        color: #b8b8d1;
+      }
+      .category-desc {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 1.2rem;
+      }
+      @media (max-width: 767px) {
+        .category-img-anim {
+          height: 160px;
+        }
+        .category-title {
+          font-size: 1.2rem;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Verdana, sans-serif;
+      }
+
+      .slideshow-wrapper {
+        max-width: 900px;
+        margin: 0 auto 2.5rem auto;
+        padding: 2.5rem 1rem 2.2rem 1rem;
+        background: linear-gradient(135deg, #f8e3e8 0%, #fdf6f0 100%);
+        border-radius: 2.2rem;
+        box-shadow: 0 8px 32px 0 rgba(223, 155, 121, 0.18),
+          0 1.5px 8px 0 rgba(183, 119, 92, 0.14);
+        position: relative;
+      }
+      .rose-slideshow {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        overflow: hidden;
+        border-radius: 1.25rem;
+        background: #fff8f4;
+        box-shadow: 0 6px 32px 0 rgba(223, 155, 121, 0.11);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .rose-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transform: translateX(40px) scale(0.98);
+        transition: opacity 0.8s cubic-bezier(0.7, 0.2, 0.18, 1),
+          transform 0.8s cubic-bezier(0.7, 0.2, 0.18, 1);
+        z-index: 1;
+        pointer-events: none;
+        display: flex;
         flex-direction: column;
-        max-width: 100%;
+        align-items: center;
+        justify-content: flex-end;
       }
-      .filters-sidebar {
+      .rose-slide.active {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        z-index: 2;
+        pointer-events: auto;
+      }
+      .rose-slide img {
         width: 100%;
-        margin-bottom: 1.5rem;
-      }
-      .products-container {
-        width: 100%;
-      }
-      .navbar-search {
-        max-width: 320px;
-        margin: 0 0.5rem;
-      }
-    }
-    @media (max-width: 767px) {
-      .product-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .navbar-nav {
-        display: none;
-      }
-      .navbar-search {
         max-width: 100%;
-        margin: 0 0.5rem;
+        height: 220px;
+        object-fit: cover;
+        border-radius: 1.1rem;
+        box-shadow: 0 4px 24px 0 rgba(223, 155, 121, 0.18),
+          0 1.5px 8px 0 rgba(183, 119, 92, 0.13);
+        border: 2.5px solid #f9dad2;
+        transition: box-shadow 0.4s;
       }
-      .navbar-icons {
-        gap: 0.75rem;
-        font-size: 1.1rem;
+      .rose-slide .rose-caption {
+        background: rgba(255, 246, 240, 0.89);
+        color: #b0765a;
+        font-size: 1.22rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        padding: 0.8rem 1.7rem 0.7rem 1.7rem;
+        border-radius: 2rem;
+        margin-top: 1.2rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 2px 12px 0 rgba(223, 155, 121, 0.09);
+        text-align: center;
+        min-width: 60%;
+        max-width: 90%;
+        display: inline-block;
       }
-      .secondary-banner .card img {
-        height: 140px;
+      .rose-dots {
+        margin-top: 0.9rem;
+        text-align: center;
       }
-      .secondary-banner {
-        padding: 1rem 0.5rem;
+      .rose-dot {
+        height: 13px;
+        width: 13px;
+        margin: 0 7px;
+        background: linear-gradient(135deg, #f7c6b7 0%, #eec2b0 100%);
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0.5px 2.5px rgba(183, 119, 92, 0.17);
+        opacity: 0.65;
+        border: 2px solid #f9dad2;
+        transition: opacity 0.4s, box-shadow 0.4s, border-color 0.4s;
+        cursor: pointer;
       }
-    }
-  </style>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-<body>
+      .rose-dot.active {
+        opacity: 1;
+        box-shadow: 0 0 0 3px #f6e3dd;
+        border-color: #c9937d;
+        background: linear-gradient(135deg, #f8d7da 0%, #eec2b0 100%);
+      }
+      @media (max-width: 767px) {
+        .slideshow-wrapper {
+          padding: 1.2rem 0.2rem 1.1rem 0.2rem;
+        }
+        .rose-slideshow {
+          height: 180px;
+        }
+        .rose-slide img {
+          height: 120px;
+        }
+        .rose-slide .rose-caption {
+          font-size: 1rem;
+          min-width: 80%;
+          padding: 0.6rem 0.8rem;
+        }
+      }
+      @media (max-width: 500px) {
+        .slideshow-wrapper {
+          border-radius: 1.1rem;
+        }
+        .rose-slideshow {
+          border-radius: 0.7rem;
+        }
+        .rose-slide img {
+          border-radius: 0.7rem;
+        }
+      }
+    </style>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg">
-  <div class="container d-flex align-items-center justify-content-between flex-wrap">
-    <a class="navbar-brand d-flex align-items-center" href="index.html" aria-label="Swarnika Jewels Home">
-      <img src="image.png" alt="Swarnika Logo" class="brand-logo">
-      Swarnika Jewels
-    </a>
-
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCategories" aria-controls="navbarCategories" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse flex-grow-1" id="navbarCategories">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
-        <li class="nav-item"><a class="nav-link active" href="#">All Jewellery</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Gold <i class="bi bi-gem"></i></a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Diamond <i class="bi bi-sparkles"></i></a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Earrings <i class="bi bi-ear"></i></a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Rings <i class="bi bi-gem"></i></a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Daily Wear</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Collections</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Wedding</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Gifting</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">More</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Necklaces</a></li>
-            <li><a class="dropdown-item" href="#">Bracelets</a></li>
-            <li><a class="dropdown-item" href="#">Anklets</a></li>
-            <li><a class="dropdown-item" href="#">Pendants</a></li>
-          </ul>
-        </li>
-      </ul>
-
-      <form class="d-flex navbar-search" role="search" onsubmit="return false;">
-        <input type="search" class="form-control" placeholder="Search for Gold, Diamond Jewellery and more…" aria-label="Search products" id="search">
-      </form>
-
-      <div class="navbar-icons ms-3">
-        <a href="wishlist.html" aria-label="Wishlist" title="Wishlist"><i class="bi bi-heart"></i></a>
-        <a href="login.html" aria-label="Account" title="Account"><i class="bi bi-person"></i></a>
-        <a href="cart.html" id="cartBtn" aria-label="Cart" title="Cart" style="position: relative;">
-          <i class="bi bi-cart3"></i>
-          <span class="cart-count" aria-live="polite" aria-atomic="true"></span>
+    <!-- Firebase modules (module scripts loaded as modules) -->
+    <script type="module" src="firebase.js" defer></script>
+    <script type="module" src="firebaseHelpers.js" defer></script>
+    <!-- app script (non-module) -->
+    <script defer src="app.js"></script>
+    <!-- auth helper for backend API calls -->
+    <!-- navbar script for auth state management -->
+    <script defer src="navbar.js"></script>
+    <!-- chatbot script -->
+    <script defer src="chat.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a
+          class="navbar-brand fw-bold d-flex align-items-center gap-2"
+          href="index.html"
+        >
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
+          <span>Swarnika Jewels</span>
         </a>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- Secondary banner with 3 cards -->
-<section class="secondary-banner container my-4">
-  <div class="row g-4 justify-content-center">
-    <div class="col-12 col-sm-6 col-md-4 col-lg-4">
-      <div class="card" tabindex="0" role="button" aria-label="14Kt Jewellery">
-        <img src="gold.avif" alt="14Kt Jewellery" loading="lazy">
-        <div class="card-body">
-          <h3 class="card-title">14Kt Jewellery</h3>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="cart.html"
+                >Cart <span class="cart-count"></span
+              ></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="admin.html">Admin Panel</a>
+            </li>
+            <li class="nav-item d-none" id="userNameDisplay">
+              <span class="nav-link text-primary fw-bold"></span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="loginBtn" href="login.html">Login</a>
+            </li>
+            <li class="nav-item d-none" id="logoutContainer">
+              <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+            </li>
+          </ul>
         </div>
       </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-4 col-lg-4">
-      <div class="card" tabindex="0" role="button" aria-label="18Kt Jewellery">
-        <img src="silver.avif" alt="18Kt Jewellery" loading="lazy">
-        <div class="card-body">
-          <h3 class="card-title">18Kt Jewellery</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-4 col-lg-4">
-      <div class="card" tabindex="0" role="button" aria-label="22Kt Jewellery">
-        <img src="platinum.avif" alt="22Kt Jewellery" loading="lazy">
-        <div class="card-body">
-          <h3 class="card-title">22Kt Jewellery</h3>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </nav>
 
-<!-- Main content: Filters and Products -->
-<main class="main-content container" role="main" aria-label="All Jewellery section">
-
-  <!-- Filters sidebar -->
-  <aside class="filters-sidebar" aria-label="Product Filters">
-    <h5>Filters</h5>
-
-    <div class="filter-section">
-      <button class="filter-toggle d-flex justify-content-between align-items-center" aria-expanded="true" aria-controls="filter-price" type="button" data-bs-toggle="collapse" data-bs-target="#filter-price" id="filterPriceBtn">
-        Price
-        <i class="bi bi-chevron-down"></i>
-      </button>
-      <div class="collapse show filter-options" id="filter-price" aria-labelledby="filterPriceBtn">
-        <label><input type="checkbox" name="price" value="under5000"> Under ₹5,000</label>
-        <label><input type="checkbox" name="price" value="5000to10000"> ₹5,000 - ₹10,000</label>
-        <label><input type="checkbox" name="price" value="10000to20000"> ₹10,000 - ₹20,000</label>
-        <label><input type="checkbox" name="price" value="above20000"> Above ₹20,000</label>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <button class="filter-toggle d-flex justify-content-between align-items-center" aria-expanded="true" aria-controls="filter-gender" type="button" data-bs-toggle="collapse" data-bs-target="#filter-gender" id="filterGenderBtn">
-        Gender
-        <i class="bi bi-chevron-down"></i>
-      </button>
-      <div class="collapse show filter-options" id="filter-gender" aria-labelledby="filterGenderBtn">
-        <label><input type="checkbox" name="gender" value="women"> Women</label>
-        <label><input type="checkbox" name="gender" value="men"> Men</label>
-        <label><input type="checkbox" name="gender" value="unisex"> Unisex</label>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <button class="filter-toggle d-flex justify-content-between align-items-center" aria-expanded="true" aria-controls="filter-metal" type="button" data-bs-toggle="collapse" data-bs-target="#filter-metal" id="filterMetalBtn">
-        Metal
-        <i class="bi bi-chevron-down"></i>
-      </button>
-      <div class="collapse show filter-options" id="filter-metal" aria-labelledby="filterMetalBtn">
-        <label><input type="checkbox" name="metal" value="gold"> Gold</label>
-        <label><input type="checkbox" name="metal" value="silver"> Silver</label>
-        <label><input type="checkbox" name="metal" value="platinum"> Platinum</label>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <button class="filter-toggle d-flex justify-content-between align-items-center" aria-expanded="true" aria-controls="filter-type" type="button" data-bs-toggle="collapse" data-bs-target="#filter-type" id="filterTypeBtn">
-        Type
-        <i class="bi bi-chevron-down"></i>
-      </button>
-      <div class="collapse show filter-options" id="filter-type" aria-labelledby="filterTypeBtn">
-        <label><input type="checkbox" name="type" value="necklace"> Necklace</label>
-        <label><input type="checkbox" name="type" value="earrings"> Earrings</label>
-        <label><input type="checkbox" name="type" value="ring"> Ring</label>
-        <label><input type="checkbox" name="type" value="bracelet"> Bracelet</label>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Products container -->
-  <section class="products-container" aria-label="Product Listings">
-    <div class="products-header">
-      <label for="sortSelect">Sort By:</label>
-      <select id="sortSelect" aria-label="Sort products">
-        <option value="best">Best Matches</option>
-        <option value="newest">New Arrivals</option>
-        <option value="priceLow">Price: Low to High</option>
-        <option value="priceHigh">Price: High to Low</option>
-      </select>
-    </div>
-    <div class="product-grid" id="productsRow" aria-live="polite" aria-atomic="true">
-      <!-- Products loaded here dynamically -->
-    </div>
-  </section>
-
-</main>
-
-<!-- Quick View Modal -->
-<div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true" aria-labelledby="qvTitle" role="dialog">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="qvTitle">Product</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-3">
-          <div class="col-md-6"><img id="qvImg" src="" alt="" class="img-fluid rounded border"></div>
-          <div class="col-md-6 d-flex flex-column justify-content-center">
-            <p class="small text-muted" id="qvMeta"></p>
-            <h4 class="price" id="qvPrice"></h4>
-            <p id="qvDesc" class="mb-0"></p>
+    <div class="hero py-5">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-7">
+            <h1 class="display-5">Fine Jewellery, Crafted with Love</h1>
+            <p class="lead">
+              Discover gold, silver, and diamond pieces designed for every
+              occasion.
+            </p>
+            <a href="#catalog" class="btn btn-primary btn-lg"
+              >Browse Collections</a
+            >
+          </div>
+          <div class="col-md-5 d-none d-md-block text-center">
+            <img src="image.png" alt="Jewelry" class="img-fluid logo-img" />
           </div>
         </div>
       </div>
-      <div class="modal-footer d-flex justify-content-between flex-wrap gap-2">
-        <div class="d-flex gap-2">
-          <button id="qvAddBtn" class="btn btn-rose">Add to Cart</button>
-          <a id="qvViewBtn" class="btn btn-outline-rose" href="#">Open product page</a>
+    </div>
+
+    <!-- ====== Rose Gold Slideshow Section ====== -->
+    <div class="slideshow-wrapper">
+      <div class="rose-slideshow" id="roseSlideshow">
+        <div class="rose-slide active">
+          <img
+            src="http://127.0.0.1:5001/images/gold.avif"
+            alt="Gold jewelry"
+          />
+          <div class="rose-caption">100% Pure Gold Jewellery</div>
         </div>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back to collection</button>
+        <div class="rose-slide">
+          <img
+            src="http://127.0.0.1:5001/images/silver.avif"
+            alt="Silver Jewellery"
+          />
+          <div class="rose-caption">100% Pure Silver Jewelry</div>
+        </div>
+        <div class="rose-slide">
+          <img
+            src="http://127.0.0.1:5001/images/platinum.avif"
+            alt="Platinum Jewellery"
+          />
+          <div class="rose-caption">100% Pure Platinum jewelry</div>
+        </div>
+      </div>
+      <div class="rose-dots mt-2">
+        <span class="rose-dot active" data-slide="0"></span>
+        <span class="rose-dot" data-slide="1"></span>
+        <span class="rose-dot" data-slide="2"></span>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Footer -->
-<footer>
-  © 2025 Swarnika Jewels. Crafted with love.
-</footer>
-
-<script>
-const API = 'http://localhost:4000/api';
-
-// Load products with error handling and visible feedback
-async function loadProducts(query = '') {
-  const url = query
-    ? `${API}/products?q=${encodeURIComponent(query)}`
-    : `${API}/products`;
-
-  const row = document.getElementById('productsRow');
-  row.innerHTML = '<div class="text-center py-5 text-muted" style="grid-column: span 4;">⏳ Loading products...</div>';
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      row.innerHTML = '<div class="text-center py-5 text-muted" style="grid-column: span 4;">No products available.</div>';
-      return;
-    }
-
-    row.innerHTML = '';
-    data.forEach(p => {
-      const col = document.createElement('div');
-      col.className = 'product-card';
-      const safeDesc = (p.description || '').replace(/"/g, '&quot;');
-      col.innerHTML = `
-        <img src="${p.image_url}" alt="${p.name}" loading="lazy">
-        <div class="product-card-body">
-          <div class="product-name">${p.name}</div>
-          <div class="product-price">₹ ${p.price?.toLocaleString?.() || p.price}</div>
-          <div class="mt-2 d-flex gap-2">
-            <button class="btn btn-rose btn-sm qv-btn flex-grow-1" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}" data-meta="${p.metal || ''} • ${p.category || ''}" data-img="${p.image_url}" data-desc="${safeDesc}">Quick View</button>
-            <a class="btn btn-outline-rose btn-sm flex-grow-1 text-center" href="product.html?id=${p.id}">View</a>
+    <div class="container py-3">
+      <div class="row g-4 justify-content-center">
+        <div class="col-12 col-md-4">
+          <div class="category-section h-100" onclick="loadProducts('gold')">
+            <img
+              src="http://127.0.0.1:5001/images/gold.avif"
+              alt="Gold Jewellery"
+              class="category-img-anim"
+            />
+            <div class="px-3 pb-3 pt-2">
+              <div class="category-title">Gold Collection</div>
+              <div class="category-desc">
+                Timeless elegance in 100% pure gold. Explore rings, necklaces,
+                and more.
+              </div>
+            </div>
           </div>
-        </div>`;
-      row.appendChild(col);
-    });
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="category-section h-100" onclick="loadProducts('silver')">
+            <img
+              src="http://127.0.0.1:5001/images/silver.avif"
+              alt="Silver Jewellery"
+              class="category-img-anim"
+            />
+            <div class="px-3 pb-3 pt-2">
+              <div class="category-title silver">Silver Collection</div>
+              <div class="category-desc">
+                Modern classics in pure silver. Discover bracelets, anklets, and
+                more.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div
+            class="category-section h-100"
+            onclick="loadProducts('platinum')"
+          >
+            <img
+              src="http://127.0.0.1:5001/images/platinum.avif"
+              alt="Platinum Jewellery"
+              class="category-img-anim"
+            />
+            <div class="px-3 pb-3 pt-2">
+              <div class="category-title platinum">Platinum Collection</div>
+              <div class="category-desc">
+                Rare, radiant platinum pieces for the truly special moments.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    // Wire up quick view buttons
-    document.querySelectorAll('.qv-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const t = e.currentTarget;
-        document.getElementById('qvTitle').textContent = t.dataset.name;
-        document.getElementById('qvImg').src = t.dataset.img;
-        document.getElementById('qvImg').alt = t.dataset.name;
-        document.getElementById('qvMeta').textContent = t.dataset.meta;
-        document.getElementById('qvPrice').textContent = `₹ ${Number(t.dataset.price).toLocaleString()}`;
-        document.getElementById('qvDesc').textContent = t.dataset.desc || '';
-        const viewLink = document.getElementById('qvViewBtn');
-        viewLink.href = `product.html?id=${t.dataset.id}`;
-        const addBtn = document.getElementById('qvAddBtn');
-        addBtn.onclick = async () => {
-          try{
-            const res = await fetch(`${API}/cart/items`, {
-              method:'POST', credentials:'include',
-              headers:{ 'Content-Type':'application/json' },
-              body: JSON.stringify({ product_id: Number(t.dataset.id), quantity: 1 })
-            });
-            const data = await res.json();
-            if(!res.ok) { alert(data.error || 'Failed to add to cart'); return; }
-            if (typeof getCartCount === 'function'){
-              const count = await getCartCount();
-              const countEl = document.querySelector('#cartBtn .cart-count');
-              if(countEl) countEl.textContent = count>0? `(${count})` : '';
-            }
-            alert('Added to cart');
-          }catch(err){ alert('Failed to add to cart'); }
-        };
-        const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
-        modal.show();
+    <script>
+      // ====== Smooth Rose-Gold Slideshow ======
+      const roseSlides = document.querySelectorAll(".rose-slide");
+      const roseDots = document.querySelectorAll(".rose-dot");
+      let roseIndex = 0,
+        roseTimeout,
+        roseAnimating = false;
+
+      function showRoseSlide(idx, direction = 1) {
+        if (roseAnimating || idx === roseIndex) return;
+        roseAnimating = true;
+        roseSlides[roseIndex].classList.remove("active");
+        roseDots[roseIndex].classList.remove("active");
+        roseIndex = idx;
+        roseSlides[roseIndex].classList.add("active");
+        roseDots[roseIndex].classList.add("active");
+        setTimeout(() => {
+          roseAnimating = false;
+        }, 420); // Prevent rapid flicker
+      }
+
+      function nextRoseSlide() {
+        let next = (roseIndex + 1) % roseSlides.length;
+        showRoseSlide(next);
+      }
+      function startRoseSlideshow() {
+        clearTimeout(roseTimeout);
+        roseTimeout = setTimeout(() => {
+          nextRoseSlide();
+          startRoseSlideshow();
+        }, 3500);
+      }
+      roseDots.forEach((dot) =>
+        dot.addEventListener("click", () => {
+          let idx = parseInt(dot.getAttribute("data-slide"));
+          showRoseSlide(idx);
+          startRoseSlideshow();
+        })
+      );
+      let touchStartX = null;
+      const roseSlideshowEl = document.getElementById("roseSlideshow");
+      if (roseSlideshowEl) {
+        roseSlideshowEl.addEventListener("touchstart", (e) => {
+          if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
+        });
+        roseSlideshowEl.addEventListener("touchend", (e) => {
+          if (touchStartX === null) return;
+          let dx = e.changedTouches[0].clientX - touchStartX;
+          if (Math.abs(dx) > 40) {
+            let next =
+              dx > 0
+                ? (roseIndex + roseSlides.length - 1) % roseSlides.length
+                : (roseIndex + 1) % roseSlides.length;
+            showRoseSlide(next);
+            startRoseSlideshow();
+          }
+          touchStartX = null;
+        });
+        roseSlideshowEl.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft") {
+            showRoseSlide(
+              (roseIndex + roseSlides.length - 1) % roseSlides.length
+            );
+            startRoseSlideshow();
+          } else if (e.key === "ArrowRight") {
+            showRoseSlide((roseIndex + 1) % roseSlides.length);
+            startRoseSlideshow();
+          }
+        });
+        roseSlideshowEl.setAttribute("tabindex", "0");
+      }
+      startRoseSlideshow();
+    </script>
+
+    <div class="container py-5" id="catalog">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0">Browse Products</h2>
+        <input
+          id="search"
+          class="form-control"
+          placeholder="Search products..."
+          style="max-width: 260px"
+        />
+      </div>
+      <div id="productsRow"></div>
+    </div>
+
+    <!-- Quick View Modal -->
+    <div
+      class="modal fade"
+      id="quickViewModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-overlay"></div>
+          <div class="modal-header">
+            <h5 class="modal-title" id="qvTitle">Products</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <img
+                  id="qvImg"
+                  src=""
+                  alt=""
+                  class="img-fluid rounded border"
+                />
+              </div>
+              <div class="col-md-6">
+                <p class="small text-muted" id="qvMeta">.</p>
+                <h4 class="price" id="qvPrice"></h4>
+                <p id="qvDesc" class="mb-0"></p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="modal-footer d-flex justify-content-between flex-wrap gap-2"
+          >
+            <div class="d-flex gap-2">
+              <button id="qvAddBtn" class="btn btn-success">Add to Cart</button>
+              <a id="qvViewBtn" class="btn btn-outline-primary"
+                >Open product page</a
+              >
+            </div>
+            <a href="#" class="btn btn-secondary" data-bs-dismiss="modal"
+              >Back to collection</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Use the central updateCartCountUI from app.js (prefers Firestore, falls back to backend)
+      document.addEventListener("DOMContentLoaded", () => {
+        if (typeof updateCartCountUI === "function") updateCartCountUI();
+        if (typeof loadProducts === "function") loadProducts();
+        if (typeof setupNavbar === "function") setupNavbar();
       });
-    });
-  } catch (err) {
-    console.error('❌ Failed to fetch products:', err);
-    row.innerHTML = `<div class="text-center py-5 text-danger" style="grid-column: span 4;">⚠️ Failed to load products.<br>${err.message}</div>`;
-  }
-}
+    </script>
 
-// Search box functionality
-const search = document.getElementById('search');
-if (search) {
-  search.addEventListener('input', (e) => loadProducts(e.target.value));
-}
+    <!-- Toast container for transient UI messages -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+      <div
+        id="appToast"
+        class="toast align-items-center text-bg-primary border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div class="toast-body" id="appToastBody">Message</div>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+      </div>
+    </div>
 
-// Sort dropdown functionality (basic client-side sorting)
-const sortSelect = document.getElementById('sortSelect');
-sortSelect.addEventListener('change', () => {
-  // For demo: simply reload products (could implement client-side sorting if data cached)
-  loadProducts(search.value || '');
-});
+    <footer class="mt-5 text-center">
+      <div
+        class="text-center"
+        style="font-size: 1.35rem; font-weight: 600; letter-spacing: 1.5px"
+      >
+        Swarnika Jewels
+      </div>
+      <div class="text-center">© all rights reserved</div>
+      <div class="text-center" style="font-size: smaller">
+        Project Developed by - Souvik Sinhababu
+      </div>
+    </footer>
 
-// Get current cart count
-async function getCartCount() {
-  try {
-    const res = await fetch(`${API}/cart/count`, { credentials: 'include' });
-    if (!res.ok) return 0;
-    const data = await res.json();
-    return data.count || 0;
-  } catch (err) {
-    console.warn('⚠️ Cart count fetch failed:', err);
-    return 0;
-  }
-}
+    <!-- Chatbot script (toggle + panel) -->
+    <script defer src="chat.js"></script>
 
-// Update cart count in navbar
-async function updateCartCount() {
-  const count = await getCartCount();
-  document.querySelectorAll('.cart-count').forEach(el => {
-    el.textContent = count > 0 ? `(${count})` : '';
-  });
-}
-
-// Ensure cart button always navigates correctly
-document.addEventListener('DOMContentLoaded', () => {
-  const cartBtn = document.getElementById('cartBtn');
-  if (cartBtn) {
-    cartBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = 'cart.html';
-    });
-  }
-  updateCartCount();
-});
-
-// Navbar user handling
-async function setupNavbar() {
-  const navUserBtn = document.querySelector('.navbar-icons a[href="login.html"]');
-  try {
-    const res = await fetch(`${API}/auth/me`, { credentials: 'include' });
-    if (!res.ok) throw new Error('Not logged in');
-    const user = await res.json();
-    navUserBtn.innerHTML = `<i class="bi bi-person-circle"></i> ${user.name || 'User'}`;
-    navUserBtn.href = '#'; // Link to future profile page
-  } catch {
-    // Not logged in, keep as login link
-  }
-}
-
-// Initialize navbar and load products when page loads
-document.addEventListener('DOMContentLoaded', () => {
-  setupNavbar();
-  loadProducts();
-});
-</script>
-</body>
+    <!-- Scripts (bootstrap bundle last) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

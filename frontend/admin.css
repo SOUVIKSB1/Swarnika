@@ -1,0 +1,83 @@
+body {
+  background-color: #fff8f4;
+  font-family: 'Georgia', serif;
+}
+
+.text-gold {
+  color: #b8860b;
+}
+
+.btn-gold {
+  background-color: #b8860b;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+  background-color: #e6b65c;
+  color: #fff;
+}
+
+.card {
+  border-radius: 16px;
+  background-color: #fff;
+}
+
+input, textarea, select {
+  border-radius: 10px !important;
+  border: 1px solid #eac7a4 !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #b8860b !important;
+  box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.2);
+}
+.admin-navbar {
+  background-color: #fff !important;
+  border-bottom: 2px solid var(--border);
+}
+
+/* Navbar brand */
+.admin-navbar a {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--brand) !important;
+}
+
+.admin-navbar a:hover {
+  color: #d4af37;
+}
+
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--brand);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+
+.navbar-brand:hover .brand-logo {
+  transform: rotate(10deg) scale(1.05);
+}
+
+.navbar-nav .nav-link.active {
+  background: none !important;
+  box-shadow: none !important;
+  color:#b8860b !important; /* or whatever your text color is */
+}
+.nav-link.logout {
+  background: none !important;
+  box-shadow: none !important;
+  color: red !important; /* or whatever your text color is */
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+  color: goldenrod;
+}

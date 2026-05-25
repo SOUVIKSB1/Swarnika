@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cookie Test</title>
+  <script type="module" src="firebase.js"></script>
+</head>
+<body>
+  <h1>Cookie Debug Test</h1>
+  <button id="loginTest">1. Test Login</button>
+  <button id="cookieTest">2. Check Cookies</button>
+  <button id="cartTest">3. Test Cart</button>
+  <pre id="output"></pre>
+
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    
+    const API = (function(){ const h = location.hostname; if (h === 'localhost' || h.startsWith('127.')) return `${location.protocol}//${h}:5001/api`; return '/api'; })();
+    const output = document.getElementById('output');
+    
+    function log(msg) {
+      output.textContent += msg + '\n';
+      console.log(msg);
+    }
+
+    document.getElementById('loginTest').onclick = async () => {
+      output.textContent = '';
+      const email = prompt('Email:');
+      const pass = prompt('Password:');
+      
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, pass);        log('
+        log Firebase login OK');(
+        
+        const token = await cred.user.getIdToken();
+                log('
+        const res = await fetch(`${API}/auth/firebase`, {        log('
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ idToken: token })
+        });
+        
+        const data = await res.json();        log('
+                log('
+        // Check cookies
+                log('
+      } catch (err) {
+         Error: ' + err.message);log('
+      }
+    };
+    
+    document.getElementById('cookieTest').onclick = () => {
+      output.textContent = '';
+    };      log('      log('
+    
+    document.getElementById('cartTest').onclick = async () => {
+      output.textContent = '';
+            log('      log('
+      try {
+        const res = await fetch(`${API}/cart`, { 
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+        
+                log('        log('
+        const data = await res.json();
+      } catch (err) {        log('
+         Error: ' + err.message);log('
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,108 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Details | Swarnika Jewellery</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .product-container {
-      max-width: 1000px;
-      margin: 3rem auto;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 2rem;
-    }
-    .product-img {
-      border-radius: 10px;
-      border: 1px solid #f1e0d0;
-    }
-    .btn-primary {
-      background-color: #b8860b;
-      border-color: #b8860b;
-    }
-    .btn-primary:hover {
-      background-color: #e6c96b;
-      border-color: #e6c96b;
-      color: #1a1a1a;
-    }
-    footer {
-      background-color: #f1e0d0;
-      text-align: center;
-      padding: 1rem;
-      margin-top: 3rem;
-    }
-  </style>
-</head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-light border-bottom" style="background-color:#fffaf6;">
-    <div class="container">
-      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
-        <img src="image.png" alt="Swarnika Logo" class="brand-logo" style="width:40px; height:40px;">
-        <span>Swarnika Jewels</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav align-items-center gap-2">
-          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a></li>
-          <li class="nav-item dropdown">
-            <a id="navUserBtn" class="btn btn-outline-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Login</a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" id="profileLink" href="profile.html">Profile</a></li>
-              <li><a class="dropdown-item" id="ordersLink" href="orders.html">Orders</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" id="logoutLink" href="#">Logout</a></li>
-            </ul>
-          </li>
-        </ul>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Details | Swarnika Jewellery</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="chat.css" />
+    <script type="module" src="firebase.js" defer></script>
+    <script defer src="navbar.js"></script>
+    <style>
+      .product-container {
+        max-width: 1000px;
+        margin: 3rem auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+      }
+      .product-img {
+        border-radius: 10px;
+        border: 1px solid #f1e0d0;
+      }
+      .btn-primary {
+        background-color: #b8860b;
+        border-color: #b8860b;
+      }
+      .btn-primary:hover {
+        background-color: #e6c96b;
+        border-color: #e6c96b;
+        color: #1a1a1a;
+      }
+      footer {
+        background-color: #f1e0d0;
+        text-align: center;
+        padding: 1rem;
+        margin-top: 3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a
+          class="navbar-brand fw-bold d-flex align-items-center gap-2"
+          href="index.html"
+        >
+          <img
+            src="image.png"
+            alt="Swarnika Logo"
+            class="brand-logo"
+            style="width: 40px; height: 40px"
+          />
+          <span>Swarnika Jewels</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="cart.html"
+                >Cart <span class="cart-count"></span
+              ></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="admin.html">Admin Panel</a>
+            </li>
+            <li class="nav-item d-none" id="userNameDisplay">
+              <span class="nav-link text-primary fw-bold"></span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="loginBtn" href="login.html">Login</a>
+            </li>
+            <li class="nav-item d-none" id="logoutContainer">
+              <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="product-container" id="productArea">
+      <div class="text-center py-5 text-muted">
+        ⏳ Loading product details...
       </div>
     </div>
-  </nav>
 
-  <div class="product-container" id="productArea">
-    <div class="text-center py-5 text-muted">⏳ Loading product details...</div>
-  </div>
+    <footer>© 2025 Swarnika Jewellery | All Rights Reserved</footer>
 
-  <footer>© 2025 Swarnika Jewellery | All Rights Reserved</footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="apiHelper.js" defer></script>
+    <script>
+      // Dynamic API base: use localhost during local dev, otherwise assume backend will be served under the same origin at /api
+      const API = (function () {
+        const h = location.hostname;
+        if (h === "localhost" || h.startsWith("127."))
+          return `${location.protocol}//${h}:5001/api`;
+        return "/api";
+      })();
+      const PLACEHOLDER_DATAURI = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="16">No%20image</text></svg>';
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const API = 'http://localhost:4000/api';
-    const params = new URLSearchParams(location.search);
-    const id = params.get('id');
+      document.addEventListener("DOMContentLoaded", () => {
+        setupNavbar(); // ✅ Was missing, now added
+        loadProduct();
+        updateCartCount(); // ✅ Was missing, now added
+      });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      setupNavbar(); // ✅ Was missing, now added
-      loadProduct();
-      updateCartCount(); // ✅ Was missing, now added
-    });
-
-    async function loadProduct() {
-      const area = document.getElementById('productArea');
-      if (!id) {
-        area.innerHTML = '<div class="text-danger text-center py-5">❌ Invalid product ID.</div>';
-        return;
-      }
-      try {
-        const res = await fetch(`${API}/products/${id}`, { credentials: 'include' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const p = await res.json();
-        if (!p || !p.name) throw new Error('Product not found.');
-        area.innerHTML = `
-          <div class="row align-items-start">
+      async function loadProduct() {
+        const area = document.getElementById("productArea");
+        if (!id) {
+          area.innerHTML =
+            '<div class="text-danger text-center py-5">❌ Invalid product ID.</div>';
+          return;
+        }
+        area.innerHTML = '<div class="text-center py-5"><div class="loader" aria-hidden="true"></div><div class="mt-2 text-muted">Loading product...</div></div>';
+        try {
+          // Try Firestore first (client-side helpers), then fall back to backend
+          let p = null;
+          if (
+            window.firebaseHelpers &&
+            typeof window.firebaseHelpers.getProduct === "function"
+          ) {
+            p = await window.firebaseHelpers.getProduct(id);
+          }
+          if (!p) {
+            const fetchFn = window.fetchWithFallback || fetch;
+            const res = await fetchFn(`/products/${id}`, {
+              credentials: "include",
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const pdata = await res.json();
+            p = { id: pdata._id || pdata.id, ...pdata };
+          }
+          if (!p || !p.name) throw new Error("Product not found.");
+          // Construct image URL: if relative path, use API base + path; if absolute, use as-is
+          let imgSrc = p.image || PLACEHOLDER_DATAURI;
+          if (imgSrc.startsWith("/images/")) {
+            // Relative image path: prefer contacting the backend image host on the same
+            // machine using the current page hostname. This avoids hardcoding
+            // "localhost" which can break when the page is opened via 127.0.0.1.
+            const h = location.hostname;
+            const proto = location.protocol;
+            // Construct backend base using the page hostname but keep the backend port (5001).
+            // Examples:
+            //  - page on localhost  -> http://localhost:5001/images/...
+            //  - page on 127.0.0.1 -> http://127.0.0.1:5001/images/...
+            imgSrc = `${proto}//${h}:5001${imgSrc}`;
+          }
+          area.innerHTML = `
+          <div class="row align-items-start product-fade-in">
             <div class="col-md-6 mb-4">
-              <img src="${p.image_url || 'placeholder.jpg'}" class="img-fluid product-img" alt="${p.name}">
+              <img src="${imgSrc}" class="img-fluid product-img" alt="${p.name}" onerror="if(!this.dataset.errorHandled){this.dataset.errorHandled='1';this.src='${PLACEHOLDER_DATAURI}'}">
             </div>
             <div class="col-md-6">
               <h2>${p.name}</h2>
-              <p class="text-muted">${p.metal || ''} • ${p.category || ''}</p>
-              <h3 class="text-primary mb-3">₹ ${p.price?.toLocaleString?.() || p.price || 'N/A'}</h3>
-              <p>${p.description || 'No description available.'}</p>
+              <p class="text-muted">${p.metal || ""} • ${p.category || ""}</p>
+              <h3 class="text-primary mb-3">₹ ${
+                p.price?.toLocaleString?.() || p.price || "N/A"
+              }</h3>
+              <p>${p.description || "No description available."}</p>
               <div class="my-3">
                 <label class="form-label">Quantity</label>
                 <input id="qty" class="form-control" type="number" min="1" value="1" style="max-width: 100px;">
@@ -111,96 +187,163 @@
               <div id="msg" class="text-center mt-3"></div>
             </div>
           </div>`;
-        document.getElementById('addBtn').addEventListener('click', addToCart);
-      } catch (err) {
-        console.error('❌ Failed to load product:', err);
-        area.innerHTML = `<div class="text-danger text-center py-5">⚠️ Unable to load product.<br>${err.message}</div>`;
-      }
-    }
-
-    async function addToCart() {
-      const qty = parseInt(document.getElementById('qty').value) || 1;
-      const msg = document.getElementById('msg');
-      msg.textContent = '⏳ Adding to cart...';
-      msg.className = 'text-muted text-center mt-3';
-      try {
-        const res = await fetch(`${API}/cart/items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ product_id: parseInt(id), quantity: qty })
-        });
-        const data = await res.json();
-        
-        // ✅ FIXED: Handle not logged in
-        if (res.status === 401) {
-          msg.textContent = 'Please log in to add items to cart.';
-          msg.className = 'text-danger text-center mt-3';
-          window.location.href = 'login.html';
-          return;
-        }
-        if (!res.ok) throw new Error(data.error || 'Failed to add product');
-        
-        msg.textContent = '✅ Product added to cart!';
-        msg.className = 'text-success text-center mt-3';
-        updateCartCount();
-      } catch (err) {
-        console.error('❌ Add to cart failed:', err);
-        msg.textContent = `❌ ${err.message}`;
-        msg.className = 'text-danger text-center mt-3';
-      }
-    }
-    
-    // ✅ ADDED: Missing function
-    async function updateCartCount() {
-      try {
-        // ✅ FIXED: API route and logic
-        const res = await fetch(`${API}/cart`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Could not fetch cart count');
-        const data = await res.json();
-        const count = data.items ? data.items.length : 0;
-        document.querySelectorAll('.cart-count').forEach(el => {
-          el.textContent = count > 0 ? `(${count})` : '';
-        });
-      } catch (err) {
-        console.warn('⚠️ Cart count unavailable:', err);
-      }
-    }
-    
-    // ✅ ADDED: Missing function
-    async function setupNavbar() {
-      const navUserBtn = document.getElementById('navUserBtn');
-      const logoutLink = document.getElementById('logoutLink');
-      const profileLink = document.getElementById('profileLink');
-
-      try {
-        // ✅ FIXED: API route
-        const res = await fetch(`${API}/auth/profile`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Not logged in');
-        const user = await res.json();
-        navUserBtn.textContent = user.name || 'User';
-        profileLink.href = 'profile.html';
-      } catch {
-        navUserBtn.textContent = 'Login';
-        navUserBtn.classList.remove('dropdown-toggle');
-        navUserBtn.removeAttribute('data-bs-toggle');
-        navUserBtn.href = 'login.html';
-        document.querySelector('.dropdown-menu').style.display = 'none';
-      }
-
-      logoutLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-          const res = await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
-          if (!res.ok) throw new Error('Logout failed');
-          alert('Logged out successfully!');
-          location.href = 'index.html';
+          document
+            .getElementById("addBtn")
+            .addEventListener("click", addToCart);
+          document
+            .getElementById("addBtn")
+            .addEventListener("click", addToCart);
         } catch (err) {
-          alert('Error logging out.');
-          console.error(err);
+          console.error("❌ Failed to load product:", err);
+          area.innerHTML = `<div class="text-danger text-center py-5">⚠️ Unable to load product.<br>${err.message}</div>`;
         }
-      });
-    }
-  </script>
-</body>
+      }
+
+      async function addToCart() {
+        const qty = parseInt(document.getElementById("qty").value) || 1;
+        const msg = document.getElementById("msg");
+        msg.textContent = "⏳ Adding to cart...";
+        msg.className = "text-muted text-center mt-3";
+        try {
+          // Determine uid / guestId up-front so we can include it when syncing to backend
+          let uid = (window.firebaseAuth && window.firebaseAuth.currentUser && window.firebaseAuth.currentUser.uid) || localStorage.getItem("guestId");
+          if (!uid) {
+            // create persistent guest id for anonymous users
+            uid = `guest_${Date.now()}`;
+            localStorage.setItem("guestId", uid);
+          }
+
+          // Prefer Firestore cart helper when available
+          if (
+            window.firebaseHelpers &&
+            typeof window.firebaseHelpers.addToCart === "function"
+          ) {
+            try {
+              await window.firebaseHelpers.addToCart(uid, id, qty);
+              msg.textContent = "✅ Product added to cart!";
+              msg.className = "text-success text-center mt-3";
+              updateCartCount();
+              // Also sync to backend so server-side cart matches Firestore
+              try {
+                const body = { productId: id, quantity: qty };
+                if (uid && uid.startsWith('guest_')) body.guestId = uid;
+                const cartFetch = window.fetchWithFallback || fetch;
+                await cartFetch(`/cart/add`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "x-guest-id": uid && uid.startsWith('guest_') ? uid : undefined },
+                  credentials: "include",
+                  body: JSON.stringify(body),
+                });
+                console.log('🔁 Synced Firestore cart to backend');
+              } catch (syncErr) {
+                console.warn('⚠️ Backend sync after Firestore add failed:', syncErr);
+              }
+              return;
+            } catch (e) {
+              console.warn(
+                "Firestore addToCart failed, falling back to backend",
+                e
+              );
+            }
+          }
+
+          // Fallback: Use backend cart API endpoint expected by server
+          // include guestId in fallback backend POST if present
+          const fallbackBody = { productId: id, quantity: qty };
+          const storedGuest = localStorage.getItem('guestId');
+          if (storedGuest) fallbackBody.guestId = storedGuest;
+          const res = await fetch(`${API}/cart/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(fallbackBody),
+          });
+          const data = await res.json();
+
+          // ✅ Handle not logged in
+          if (res.status === 401) {
+            msg.textContent = "Please log in to add items to cart.";
+            msg.className = "text-danger text-center mt-3";
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 1500);
+            return;
+          }
+          
+          if (!res.ok) throw new Error(data.error || "Failed to add product");
+
+          msg.textContent = "✅ Product added to cart!";
+          msg.className = "text-success text-center mt-3";
+          updateCartCount();
+        } catch (err) {
+          console.error("❌ Add to cart failed:", err);
+          msg.textContent = `❌ ${err.message}`;
+          msg.className = "text-danger text-center mt-3";
+        }
+      }
+
+      // ✅ ADDED: Missing function
+      async function updateCartCount() {
+        try {
+          // ✅ FIXED: API route and logic
+          const cartFetch = window.fetchWithFallback || fetch;
+          const res = await cartFetch(`/cart`, { credentials: "include" });
+          if (!res.ok) throw new Error("Could not fetch cart count");
+          const data = await res.json();
+          const count = data.items ? data.items.length : 0;
+          document.querySelectorAll(".cart-count").forEach((el) => {
+            el.textContent = count > 0 ? `(${count})` : "";
+          });
+        } catch (err) {
+          console.warn("⚠️ Cart count unavailable:", err);
+        }
+      }
+
+      // ✅ ADDED: Missing function
+
+      // called on DOMContentLoaded
+      async function setupNavbar() {
+        const navUserBtn = document.getElementById("navUserBtn");
+        const logoutLink = document.getElementById("logoutLink");
+        const profileLink = document.getElementById("profileLink");
+
+        try {
+          const authFetch = window.fetchWithFallback || fetch;
+          const res = await authFetch(`/auth/me`, { credentials: "include" });
+          if (!res.ok) throw new Error("Not logged in");
+          const user = await res.json();
+          navUserBtn.textContent =
+            user.name || (user.email ? user.email.split("@")[0] : "User");
+          profileLink.href = "profile.html";
+          navUserBtn.classList.add("dropdown-toggle");
+          navUserBtn.setAttribute("data-bs-toggle", "dropdown");
+        } catch {
+          navUserBtn.textContent = "Login";
+          navUserBtn.classList.remove("dropdown-toggle");
+          navUserBtn.removeAttribute("data-bs-toggle");
+          navUserBtn.href = "login.html";
+          document.querySelector(".dropdown-menu").style.display = "none";
+        }
+
+        if (logoutLink) {
+          logoutLink.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+              const r = await fetch(`${API}/auth/logout`, {
+                method: "POST",
+                credentials: "include",
+              });
+              if (!r.ok) throw new Error("Logout failed");
+              window.location.href = "index.html";
+            } catch (err) {
+              console.error("Logout error:", err);
+              alert("Error logging out.");
+            }
+          });
+        }
+      }
+    </script>
+    <!-- Chatbot script -->
+    <script defer src="chat.js"></script>
+  </body>
 </html>

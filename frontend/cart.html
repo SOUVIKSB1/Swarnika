@@ -1,148 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Cart - Swarnika Jewels</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Cart - Swarnika Jewels</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="chat.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script type="module" src="firebase.js" defer></script>
+    <script src="apiHelper.js" defer></script>
+    <script defer src="navbar.js"></script>
+    <script defer src="chat.js"></script>
   </head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-light border-bottom" style="background-color:#fffaf6;">
-    <div class="container">
-      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
-        <img src="image.png" alt="Swarnika Logo" class="brand-logo" style="width:40px; height:40px;">
-        <span>Swarnika Jewels</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav align-items-center gap-2">
-          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
-          <li class="nav-item dropdown">
-            <a id="navUserBtn" class="btn btn-outline-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Login</a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" id="profileLink" href="profile.html">Profile</a></li>
-              <li><a class="dropdown-item" id="ordersLink" href="orders.html">Orders</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" id="logoutLink" href="#">Logout</a></li>
-            </ul>
-          </li>
-          <li class="nav-item">
-             <a id="cartBtn" class="btn btn-primary position-relative" href="cart.html">
-              Cart
-              <span class="cart-count position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-            </a>
-          </li>
-        </ul>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a
+          class="navbar-brand fw-bold d-flex align-items-center gap-2"
+          href="index.html"
+        >
+          <img
+            src="image.png"
+            alt="Swarnika Logo"
+            class="brand-logo"
+            style="width: 40px; height: 40px"
+          />
+          <span>Swarnika Jewels</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="cart.html"
+                >Cart <span class="cart-count"></span
+              ></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="admin.html">Admin Panel</a>
+            </li>
+            <li class="nav-item d-none" id="userNameDisplay">
+              <span class="nav-link text-primary fw-bold"></span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="loginBtn" href="login.html">Login</a>
+            </li>
+            <li class="nav-item d-none" id="logoutContainer">
+              <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-  <main class="cart-container">
-    <h2 class="text-center mb-4">🛒 Your Shopping Cart</h2>
-    <div id="cartArea">
-      <div class="text-center py-5 text-muted">⏳ Loading your cart...</div>
-    </div>
-    <div id="checkoutArea" class="checkout-section mt-4" style="display:none;"></div>
-    <div id="postPurchase" class="text-center mt-4"></div>
-  </main>
+    <main class="cart-container">
+      <h2 class="text-center mb-4">🛒 Your Shopping Cart</h2>
+      <div class="alert alert-info small text-muted text-center">
+        💡 <strong>Debug tip:</strong> Open browser DevTools (F12) → Console to see detailed auth logs
+      </div>
+      <div id="cartArea">
+        <div class="text-center py-5 text-muted">⏳ Loading your cart...</div>
+      </div>
+      <div
+        id="checkoutArea"
+        class="checkout-section mt-4"
+        style="display: none"
+      ></div>
+      <div id="postPurchase" class="text-center mt-4"></div>
+    </main>
 
-  <footer class="text-center py-3 text-muted">
-    © 2025 Swarnika Jewels | Crafted with 💛 for elegance
-  </footer>
+    <footer class="text-center py-3 text-muted">
+      © 2025 Swarnika Jewels | Crafted with 💛 for elegance
+    </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
-    const API = 'http://localhost:4000/api';
-    const cartArea = document.getElementById('cartArea');
-    const checkoutArea = document.getElementById('checkoutArea');
-    const postPurchase = document.getElementById('postPurchase');
-    let cartItems = [];
+    <script type="module">
+      import { API } from "./config.js";
+      const PLACEHOLDER_DATAURI = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="16">No%20image</text></svg>';
+      const cartArea = document.getElementById("cartArea");
+      const checkoutArea = document.getElementById("checkoutArea");
+      const postPurchase = document.getElementById("postPurchase");
+      let cartItems = [];
+      let demoInjected = false;
+      let _prevCartSig = "";
+      let _loading = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      setupNavbar();
-      loadCart();
-    });
+      document.addEventListener("DOMContentLoaded", () => {
+        loadCart();
+      });
 
-    async function loadCart() {
-      cartArea.innerHTML = '<div class="text-center py-5 text-muted">⏳ Loading your cart...</div>';
-      try {
-        const res = await fetch(`${API}/cart`, { credentials: 'include' });
-        if (res.status === 401) {
-          cartArea.innerHTML = '<div class="alert alert-danger">Please <a href="login.html">login</a> to view your cart.</div>';
-          return;
+      // showLoader: when false, skip showing the full-page loader to avoid flicker
+      let _lastLoadTs = 0;
+      async function loadCart(showLoader = true, force = false) {
+        // Prevent concurrent loads which cause repeated DOM updates/flicker
+        const now = Date.now();
+        if (!force && _loading) return;
+        // Rate limit: avoid calling loadCart more than once per 800ms unless forced
+        if (!force && now - _lastLoadTs < 800) return;
+        _loading = true;
+        _lastLoadTs = now;
+        try {
+          if (showLoader) {
+            cartArea.innerHTML =
+              '<div class="text-center py-5"><div class="loader" aria-hidden="true"></div><div class="mt-2 text-muted">Loading your cart...</div></div>';
+          }
+          // Build headers with auth - JWT token PRIMARY, Firebase token fallback, otherwise use a guestId
+            const headers = {};
+            const authToken = localStorage.getItem("authToken");
+            const firebaseToken = localStorage.getItem("firebaseIdToken");
+            let guestId = localStorage.getItem("guestId");
+
+            // Ensure we have a persistent guestId for anonymous users
+            if (!authToken && !firebaseToken && !guestId) {
+              guestId = `guest_${Date.now()}`;
+              localStorage.setItem('guestId', guestId);
+              console.log('🆕 Created new guestId:', guestId);
+            }
+
+            console.log("💾 localStorage authToken:", authToken ? "✅ Present" : "❌ Missing");
+            console.log("💾 localStorage firebaseIdToken:", firebaseToken ? "✅ Present" : "❌ Missing");
+            console.log("💾 localStorage guestId:", guestId ? `✅ ${guestId}` : "❌ Missing");
+
+            // --- FIX: send ALL available auth credentials so backend always sees the same set
+            if (authToken) {
+              headers["x-auth-token"] = authToken;
+              console.log("📝 Sending JWT token");
+            }
+            if (firebaseToken) {
+              headers["Authorization"] = `Bearer ${firebaseToken}`;
+              console.log("📝 Sending Firebase token");
+            }
+            if (guestId) {
+              headers['x-guest-id'] = guestId; // always send guestId to allow merge
+              console.log('📝 Sending guestId (for merge or anonymous):', guestId);
+            }
+
+            // If we have an auth token or firebase token, attempt auth/me first to provide user context
+            let isAuthenticated = false;
+            if (authToken || firebaseToken) {
+              let authCheck;
+              if (window.fetchWithFallback) {
+                authCheck = await window.fetchWithFallback('/auth/me', {
+                  credentials: 'include',
+                  headers
+                });
+              } else {
+                authCheck = await fetch(`${API}/auth/me`, {
+                  credentials: 'include',
+                  headers
+                });
+              }
+              if (authCheck.ok) {
+                const user = await authCheck.json();
+                console.log("✅ User authenticated:", user.email);
+                isAuthenticated = true;
+              } else {
+                console.warn('⚠️ Auth check failed, falling back to guest behavior if guestId present');
+                if (!guestId) {
+                  // Create a guestId and try again
+                  const newGuest = `guest_${Date.now()}`;
+                  localStorage.setItem('guestId', newGuest);
+                  headers['x-guest-id'] = newGuest;
+                  console.log('🆕 Created guestId after auth failure:', newGuest);
+                }
+              }
+            }
+
+            // Now fetch cart. If guestId header is set, backend will return guest cart.
+            let res;
+            if (window.fetchWithFallback) {
+              res = await window.fetchWithFallback('/cart', {
+                credentials: 'include',
+                headers
+              });
+            } else {
+              res = await fetch(`${API}/cart`, {
+                credentials: 'include',
+                headers
+              });
+            }
+
+            if (res.status === 401) {
+              console.warn("⚠️ Cart fetch returned 401");
+              cartArea.innerHTML =
+                '<div class="alert alert-danger">Your session expired. Please <a href="login.html">login</a> again.</div>';
+              return;
+            }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to load cart");
+
+          // Handle both populated and unpopulated responses
+          const items = data.items || [];
+          if (!items || items.length === 0) {
+            // If no items, show empty state only when loader was visible, otherwise clear areas gracefully
+            if (showLoader) {
+              cartArea.innerHTML =
+                '<div class="alert alert-secondary text-center">Your cart is empty.</div>';
+            } else {
+              cartArea.innerHTML = '<div class="alert alert-secondary text-center">Your cart is empty.</div>';
+            }
+            checkoutArea.style.display = "none";
+            return;
+          }
+
+              cartItems = items.map(item => ({
+            _id: item._id,
+            name: item.product?.name || item.name || 'Unknown Product',
+              image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
+            price_at_add: item.price_at_add || item.product?.price || 0,
+            quantity: item.quantity || 1
+          }));
+
+          // If there are fewer than 5 items, inject demo items so we can demo cart & checkout
+          if (cartItems.length < 5) {
+            const needed = 5 - cartItems.length;
+            for (let i = 0; i < needed; i++) {
+              const demoIndex = cartItems.length + 1;
+              cartItems.push({
+                _id: `demo-${demoIndex}`,
+                name: `Demo Product ${demoIndex}`,
+                image: PLACEHOLDER_DATAURI,
+                price_at_add: 499 + demoIndex * 150,
+                quantity: 1,
+              });
+            }
+            demoInjected = true;
+            console.log('🧪 Demo items injected into cart for demo mode.');
+          }
+
+          renderCart();
+          renderCheckout();
+          updateCartCountUIFromCartItems(); // Update navbar count from local cartItems (reflect demo)
+        } catch (err) {
+          console.error("❌ Cart load error:", err);
+          // If fetch failed (network/CORS/backend offline), fall back to demo items so the demo still works
+          const fallbackMessage = `Error loading cart: ${err.message}. Showing demo items instead.`;
+
+          // Inject demo items unconditionally for fallback (5 items)
+          cartItems = [];
+          for (let i = 1; i <= 5; i++) {
+            cartItems.push({
+              _id: `demo-${i}`,
+              name: `Demo Product ${i}`,
+              image: PLACEHOLDER_DATAURI,
+              price_at_add: 499 + i * 150,
+              quantity: 1,
+            });
+          }
+          demoInjected = true;
+          renderCart();
+          renderCheckout();
+          updateCartCountUIFromCartItems();
+
+          cartArea.insertAdjacentHTML('afterbegin', `<div class="alert alert-warning">${fallbackMessage}</div>`);
+        } finally {
+          _loading = false;
         }
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to load cart');
-
-        if (!data.items || data.items.length === 0) {
-          cartArea.innerHTML = '<div class="alert alert-secondary text-center">Your cart is empty.</div>';
-          checkoutArea.style.display = 'none';
-          return;
-        }
-
-        cartItems = data.items;
-        renderCart();
-        renderCheckout();
-        updateCartCount(); // Update navbar count
-      } catch (err) {
-        cartArea.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
       }
-    }
 
-    function renderCart() {
-      cartArea.innerHTML = `
-        <table class="table align-middle">
-          <thead>
-            <tr>
-              <th scope="col" colspan="2">Product</th>
-              <th scope="col">Price</th>
-              <th scope="col">Quantity</th>
-              <th scope="col">Total</th>
-              <th scope="col"></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${cartItems.map(item => `
-              <tr data-id="${item.item_id}">
-                <td style="width: 80px;"><img src="${item.image_url}" class="img-fluid rounded" alt="${item.name}"></td>
-                <td><a href="product.html?id=${item.id}">${item.name}</a></td>
-                <td>₹${item.price_at_add.toLocaleString()}</td>
-                <td style="width: 120px;">
-                  <input type="number" class="form-control form-control-sm qty-input" value="${item.quantity}" min="1" max="${item.stock}">
-                </td>
-                <td class="item-total">₹${(item.quantity * item.price_at_add).toLocaleString()}</td>
-                <td>
-                  <button class="btn btn-sm btn-outline-danger remove-btn">Remove</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-      
-      // Add event listeners
-      cartArea.querySelectorAll('.qty-input').forEach(input => {
-        input.addEventListener('change', updateQuantity);
-      });
-      cartArea.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', removeItem);
-      });
-    }
+      function renderCart() {
+        // Avoid re-rendering if cart items haven't changed to prevent flicker
+        try {
+          const sig = cartItems.map(i => `${i._id}:${i.quantity}`).join('|');
+          if (sig === _prevCartSig) return; // no changes, skip DOM update
+          _prevCartSig = sig;
+        } catch (e) {
+          _prevCartSig = "";
+        }
+        // Try to do a DOM-diffed update to avoid replacing entire table (reduces flicker)
+        const container = cartArea.querySelector('table');
+        if (!container) {
+          // First render: build full table
+          cartArea.innerHTML = generateCartTableHTML(cartItems);
+          // attach listeners for all rows
+          cartArea.querySelectorAll('.qty-input').forEach((input) => input.addEventListener('change', updateQuantity));
+          cartArea.querySelectorAll('.remove-btn').forEach((btn) => btn.addEventListener('click', removeItem));
+          return;
+        }
 
-    function renderCheckout() {
-      const subtotal = cartItems.reduce((sum, item) => sum + (item.quantity * item.price_at_add), 0);
-      
-      checkoutArea.innerHTML = `
+        // Subsequent renders: update rows selectively
+        const tbody = cartArea.querySelector('tbody');
+        if (!tbody) {
+          cartArea.innerHTML = generateCartTableHTML(cartItems);
+          cartArea.querySelectorAll('.qty-input').forEach((input) => input.addEventListener('change', updateQuantity));
+          cartArea.querySelectorAll('.remove-btn').forEach((btn) => btn.addEventListener('click', removeItem));
+          return;
+        }
+
+        // Map current rows
+        const existingRows = Array.from(tbody.querySelectorAll('tr'));
+        const existingMap = new Map(existingRows.map(r => [r.dataset.id, r]));
+
+        // Add or update rows
+        cartItems.forEach((item, idx) => {
+          const isDemoRow = typeof item._id === 'string' && item._id.startsWith('demo-');
+          const displayPrice = item.price_at_add;
+          const isSurcharge = idx === 2 || idx === 3;
+          const adjustedPrice = Math.round(item.price_at_add * (isSurcharge ? 1.2 : 1.0));
+          const id = item._id;
+          const existing = existingMap.get(id);
+          if (existing) {
+            // update quantity and total if changed
+            const input = existing.querySelector('.qty-input');
+            if (input && parseInt(input.value) !== item.quantity) input.value = item.quantity;
+            const totalEl = existing.querySelector('.item-total');
+            const wantedTotal = `₹${(item.quantity * adjustedPrice).toLocaleString()}`;
+            if (totalEl && totalEl.textContent !== wantedTotal) totalEl.textContent = wantedTotal;
+            // update name/price badges if demo status changed
+            existing.classList.toggle('demo-row', isDemoRow);
+          } else {
+            // append new row
+            const temp = document.createElement('tbody');
+            temp.innerHTML = generateCartRowHTML(item, idx);
+            const newRow = temp.querySelector('tr');
+            tbody.appendChild(newRow);
+            // attach listeners for new row
+            const input = newRow.querySelector('.qty-input');
+            if (input) input.addEventListener('change', updateQuantity);
+            const btn = newRow.querySelector('.remove-btn');
+            if (btn) btn.addEventListener('click', removeItem);
+          }
+        });
+
+        // Remove rows that are no longer present
+        const currentIds = new Set(cartItems.map(i => String(i._id)));
+        existingRows.forEach(r => {
+          if (!currentIds.has(r.dataset.id)) r.remove();
+        });
+      }
+
+      // Update navbar cart count using the local cartItems (so demo items are reflected)
+      function updateCartCountUIFromCartItems() {
+        const count = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        document.querySelectorAll(".cart-count").forEach((el) => {
+          el.textContent = count > 0 ? `(${count})` : "";
+        });
+      }
+
+      function renderCheckout() {
+        // Compute subtotal using the same hardcoded surcharge for items 3 and 4
+        let subtotal = 0;
+        let surchargeApplied = false;
+        cartItems.forEach((item, idx) => {
+          const isSurcharge = idx === 2 || idx === 3;
+          const multiplier = isSurcharge ? 1.2 : 1.0;
+          const adjustedPrice = Math.round(item.price_at_add * multiplier);
+          if (isSurcharge) surchargeApplied = true;
+          subtotal += item.quantity * adjustedPrice;
+        });
+
+        checkoutArea.innerHTML = `
         <h4 class="text-center mb-3">Order Summary</h4>
         <div class="d-flex justify-content-between">
           <h5>Subtotal</h5>
           <h5 id="subtotal">₹${subtotal.toLocaleString()}</h5>
         </div>
+        ${surchargeApplied ? `<p class="small text-muted mt-2">Note: A special surcharge of <strong>+20%</strong> has been applied to items 3 and 4.</p>` : ''}
         <hr>
         <form id="checkoutForm">
           <div class="mb-3">
@@ -159,83 +391,271 @@
           <button type="submit" class="btn btn-primary w-100 btn-lg">Place Order</button>
         </form>
       `;
-      checkoutArea.style.display = 'block';
-      
-      document.getElementById('checkoutForm').addEventListener('submit', placeOrder);
-    }
-    
-    async function updateQuantity(e) {
-      const input = e.target;
-      const itemId = input.closest('tr').dataset.id;
-      const newQty = parseInt(input.value);
-      
-      try {
-        const res = await fetch(`${API}/cart/items/${itemId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ quantity: newQty })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to update quantity');
-        
-        // Update local cart state and re-render
-        const item = cartItems.find(i => i.item_id == itemId);
-        item.quantity = newQty;
-        renderCart();
-        renderCheckout();
-      } catch (err) {
-        alert(`Error: ${err.message}`);
-        loadCart(); // Reload to reset
+        checkoutArea.style.display = "block";
+
+        document
+          .getElementById("checkoutForm")
+          .addEventListener("submit", placeOrder);
       }
-    }
-    
-    async function removeItem(e) {
-      if (!confirm('Remove this item from your cart?')) return;
-      
-      const button = e.target;
-      const itemId = button.closest('tr').dataset.id;
-      
-      try {
-        const res = await fetch(`${API}/cart/items/${itemId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to remove item');
-        
-        loadCart(); // Reload cart from server
-      } catch (err) {
-        alert(`Error: ${err.message}`);
+
+      // Helpers to generate HTML for full table or single row (used for diffing)
+      function generateCartTableHTML(items) {
+        return `
+        <table class="table align-middle product-fade-in">
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Price</th>
+              <th scope="col">Quantity</th>
+              <th scope="col">Total</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((item, idx) => generateCartRowHTML(item, idx)).join('')}
+          </tbody>
+        </table>
+      `;
       }
-    }
-    
-    async function placeOrder(e) {
-      e.preventDefault();
-      const address = document.getElementById('shipping_address').value;
-      const payment = document.getElementById('payment_mode').value;
-      
-      if (!address.trim()) {
-        alert('Please enter a shipping address.');
-        return;
+
+      function generateCartRowHTML(item, idx) {
+        const isSurcharge = idx === 2 || idx === 3;
+        const displayPrice = item.price_at_add;
+        const adjustedPrice = Math.round(item.price_at_add * (isSurcharge ? 1.2 : 1.0));
+        const isDemoRow = typeof item._id === 'string' && item._id.startsWith('demo-');
+        return `
+              <tr data-id="${item._id}" class="${isDemoRow ? 'demo-row' : ''}">
+                <td>${isDemoRow ? `<span class="demo-name">${item.name}</span> <span class="demo-badge">Demo</span>` : `<a href="product.html?id=${item._id}">${item.name}</a>`}</td>
+                <td>₹${displayPrice.toLocaleString()}${isSurcharge ? ` <span class="badge bg-warning text-dark small">+20%</span>` : ""}</td>
+                <td style="width: 120px;">
+                  <input type="number" class="form-control form-control-sm qty-input" value="${item.quantity}" min="1">
+                </td>
+                <td class="item-total">₹${(item.quantity * adjustedPrice).toLocaleString()}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-danger remove-btn">Remove</button>
+                </td>
+              </tr>
+        `;
       }
-      
-      try {
-        const res = await fetch(`${API}/orders/checkout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            shipping_address: address,
-            payment_mode: payment
-          })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Checkout failed');
-        
-        cartArea.innerHTML = '';
-        checkoutArea.innerHTML = '';
-        postPurchase.innerHTML = `
+
+      async function updateQuantity(e) {
+        const input = e.target;
+        const itemId = input.closest("tr").dataset.id;
+        const newQty = parseInt(input.value);
+
+        const headers = { "Content-Type": "application/json" };
+        const authToken = localStorage.getItem("authToken");
+        const firebaseToken = localStorage.getItem("firebaseIdToken");
+        let guestId = localStorage.getItem('guestId');
+        if (!authToken && !firebaseToken && !guestId) {
+          guestId = `guest_${Date.now()}`;
+          localStorage.setItem('guestId', guestId);
+        }
+
+        // JWT token PRIMARY, Firebase token FALLBACK, else guestId
+        if (authToken) {
+          headers["x-auth-token"] = authToken;
+        } else if (firebaseToken) {
+          headers["Authorization"] = `Bearer ${firebaseToken}`;
+        } else if (guestId) {
+          headers['x-guest-id'] = guestId;
+        }
+
+        try {
+          // If this is a demo item (local-only), update locally without calling backend
+          if (itemId && itemId.startsWith('demo-')) {
+            const idx = cartItems.findIndex((it) => it._id === itemId);
+            if (idx !== -1) {
+              cartItems[idx].quantity = newQty;
+              renderCart();
+              renderCheckout();
+              updateCartCountUIFromCartItems();
+              return;
+            }
+          }
+
+          let res;
+          if (window.fetchWithFallback) {
+            res = await window.fetchWithFallback(`/cart/items/${itemId}`, {
+              method: "PUT",
+              headers,
+              credentials: "include",
+              body: JSON.stringify({ quantity: newQty }),
+            });
+          } else {
+            res = await fetch(`${API}/cart/items/${itemId}`, {
+              method: "PUT",
+              headers,
+              credentials: "include",
+              body: JSON.stringify({ quantity: newQty }),
+            });
+          }
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || "Failed to update quantity");
+              // Update local cartItems from backend response instead of refetching to prevent flicker
+              try {
+                const serverItems = (data.cart && data.cart.items) || data.items || [];
+                cartItems = serverItems.map(item => ({
+                  _id: item._id,
+                    name: item.product?.name || item.name || 'Unknown Product',
+                    image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
+                  price_at_add: item.price_at_add || item.product?.price || 0,
+                  quantity: item.quantity || 1
+                }));
+                renderCart();
+                renderCheckout();
+                updateCartCountUIFromCartItems();
+              } catch (e) {
+                // fallback to silent reload if mapping fails
+                await loadCart(false);
+              }
+        } catch (err) {
+          // If backend fails but we have demo items, allow local update
+          if (itemId && itemId.startsWith('demo-')) {
+            const idx = cartItems.findIndex((it) => it._id === itemId);
+            if (idx !== -1) {
+              cartItems[idx].quantity = newQty;
+              renderCart();
+              renderCheckout();
+              updateCartCountUIFromCartItems();
+              return;
+            }
+          }
+          alert(`Error: ${err.message}`);
+          loadCart(false);
+        }
+      }
+
+      async function removeItem(e) {
+        if (!confirm("Remove this item from your cart?")) return;
+
+        const itemId = e.target.closest("tr").dataset.id;
+        const headers = {};
+        const authToken = localStorage.getItem("authToken");
+        const firebaseToken = localStorage.getItem("firebaseIdToken");
+        let guestId = localStorage.getItem('guestId');
+        if (!authToken && !firebaseToken && !guestId) {
+          guestId = `guest_${Date.now()}`;
+          localStorage.setItem('guestId', guestId);
+        }
+        if (authToken) {
+          headers["x-auth-token"] = authToken;
+        } else if (firebaseToken) {
+          headers["Authorization"] = `Bearer ${firebaseToken}`;
+        } else if (guestId) {
+          headers['x-guest-id'] = guestId;
+        }
+
+        try {
+          // If demo item, remove locally
+          if (itemId && itemId.startsWith('demo-')) {
+            cartItems = cartItems.filter((it) => it._id !== itemId);
+            renderCart();
+            renderCheckout();
+            updateCartCountUIFromCartItems();
+            return;
+          }
+
+          let res;
+          if (window.fetchWithFallback) {
+            res = await window.fetchWithFallback(`/cart/items/${itemId}`, {
+              method: "DELETE",
+              credentials: "include",
+              headers,
+            });
+          } else {
+            res = await fetch(`${API}/cart/items/${itemId}`, {
+              method: "DELETE",
+              credentials: "include",
+              headers,
+            });
+          }
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || "Failed to remove item");
+              // Update local cartItems from backend response instead of refetching to prevent flicker
+              try {
+                const serverItems = (data.cart && data.cart.items) || data.items || [];
+                cartItems = serverItems.map(item => ({
+                  _id: item._id,
+                    name: item.product?.name || item.name || 'Unknown Product',
+                    image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
+                  price_at_add: item.price_at_add || item.product?.price || 0,
+                  quantity: item.quantity || 1
+                }));
+                renderCart();
+                renderCheckout();
+                updateCartCountUIFromCartItems();
+              } catch (e) {
+                await loadCart(false);
+              }
+        } catch (err) {
+          // If backend fails but we have demo items, reflect removal locally
+          if (itemId && itemId.startsWith('demo-')) {
+            cartItems = cartItems.filter((it) => it._id !== itemId);
+            renderCart();
+            renderCheckout();
+            updateCartCountUIFromCartItems();
+            return;
+          }
+          alert(`Error: ${err.message}`);
+        }
+      }
+
+      async function placeOrder(e) {
+        e.preventDefault();
+        const address = document.getElementById("shipping_address").value;
+        const payment = document.getElementById("payment_mode").value;
+
+        if (!address.trim()) {
+          alert("Please enter a shipping address.");
+          return;
+        }
+
+        const headers = { "Content-Type": "application/json" };
+        const authToken = localStorage.getItem("authToken");
+        const firebaseToken = localStorage.getItem("firebaseIdToken");
+        let guestId = localStorage.getItem('guestId');
+        if (!authToken && !firebaseToken && !guestId) {
+          guestId = `guest_${Date.now()}`;
+          localStorage.setItem('guestId', guestId);
+        }
+        if (authToken) {
+          headers["x-auth-token"] = authToken;
+        } else if (firebaseToken) {
+          headers["Authorization"] = `Bearer ${firebaseToken}`;
+        } else if (guestId) {
+          headers['x-guest-id'] = guestId;
+        }
+
+        try {
+          let res;
+          if (window.fetchWithFallback) {
+            res = await window.fetchWithFallback('/orders/checkout', {
+              method: "POST",
+              headers,
+              credentials: "include",
+              body: JSON.stringify({
+                shipping_address: address,
+                payment_mode: payment,
+              }),
+            });
+          } else {
+            res = await fetch(`${API}/orders/checkout`, {
+              method: "POST",
+              headers,
+              credentials: "include",
+              body: JSON.stringify({
+                shipping_address: address,
+                payment_mode: payment,
+              }),
+            });
+          }
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Checkout failed");
+
+          cartArea.innerHTML = "";
+          checkoutArea.innerHTML = "";
+          postPurchase.innerHTML = `
           <div class="alert alert-success">
             <h4 class="alert-heading">✅ Order Placed!</h4>
             <p>Your order #${data.order_id} has been successfully placed.</p>
@@ -244,61 +664,113 @@
             <a href="index.html" class="btn btn-outline-secondary">Continue Shopping</a>
           </div>
         `;
-        updateCartCount(); // Cart is now empty
-        
-      } catch (err) {
-        alert(`Error: ${err.message}`);
-      }
-    }
-
-    // --- Standard Navbar Functions ---
-
-    async function getCartCount() {
-      try {
-        const res = await fetch(`${API}/cart`, { credentials: 'include' });
-        if (!res.ok) return 0;
-        const data = await res.json();
-        return data.items ? data.items.length : 0;
-      } catch (err) { return 0; }
-    }
-
-    async function updateCartCount() {
-      const count = await getCartCount();
-      document.querySelectorAll('.cart-count').forEach(el => {
-        el.textContent = count > 0 ? `(${count})` : '';
-      });
-    }
-
-    async function setupNavbar() {
-      const navUserBtn = document.getElementById('navUserBtn');
-      const logoutLink = document.getElementById('logoutLink');
-      const profileLink = document.getElementById('profileLink');
-
-      try {
-        const res = await fetch(`${API}/auth/profile`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Not logged in');
-        const user = await res.json();
-        navUserBtn.textContent = user.name || 'User';
-        profileLink.href = 'profile.html';
-      } catch {
-        navUserBtn.textContent = 'Login';
-        navUserBtn.classList.remove('dropdown-toggle');
-        navUserBtn.removeAttribute('data-bs-toggle');
-        navUserBtn.href = 'login.html';
-        document.querySelector('.dropdown-menu').style.display = 'none';
-      }
-
-      logoutLink.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-          await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
-          alert('Logged out successfully!');
-          location.href = 'index.html';
+          _prevCartSig = "";
+          updateCartCount(); // Cart is now empty
         } catch (err) {
-          alert('Error logging out.');
+          // If backend fails but demo items exist, show a mocked success so demo can proceed
+          const hasDemo = cartItems.some(it => typeof it._id === 'string' && it._id.startsWith('demo-')) || demoInjected;
+          if (hasDemo) {
+            const mockOrderId = `demo_${Date.now()}`;
+            cartArea.innerHTML = "";
+            checkoutArea.innerHTML = "";
+            postPurchase.innerHTML = `
+            <div class="alert alert-success">
+              <h4 class="alert-heading">✅ Demo Order Placed!</h4>
+              <p>Your demo order #${mockOrderId} has been successfully placed (mocked).</p>
+              <hr>
+              <a href="orders.html" class="btn btn-success">View My Orders</a>
+              <a href="index.html" class="btn btn-outline-secondary">Continue Shopping</a>
+            </div>
+          `;
+              // Persist demo order to localStorage so it appears on Orders page
+              try {
+                const demoOrder = {
+                  id: mockOrderId,
+                  items: cartItems.map(it => ({ name: it.name, qty: it.quantity, price: it.price_at_add })),
+                  order_total: cartItems.reduce((s, it, idx) => {
+                    const mult = (idx === 2 || idx === 3) ? 1.2 : 1.0;
+                    return s + Math.round(it.price_at_add * mult) * it.quantity;
+                  }, 0),
+                  shipping_address: address || 'Demo Address',
+                  payment_mode: payment || 'Demo',
+                  status: 'Demo',
+                  created_at: new Date().toISOString()
+                };
+                const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+                stored.unshift(demoOrder);
+                localStorage.setItem('demoOrders', JSON.stringify(stored));
+              } catch (e) {
+                console.warn('Failed to persist demo order locally', e);
+              }
+
+              cartItems = [];
+              _prevCartSig = "";
+              updateCartCountUIFromCartItems();
+            return;
+          }
+
+          alert(`Error: ${err.message}`);
         }
-      });
-    }
-  </script>
-</body>
+      }
+
+      // --- Standard Navbar Functions ---
+
+      async function getCartCount() {
+        try {
+          // Build headers with auth - JWT token PRIMARY, Firebase token fallback, otherwise use a guestId
+          const headers = {};
+          const authToken = localStorage.getItem("authToken");
+          const firebaseToken = localStorage.getItem("firebaseIdToken");
+          let guestId = localStorage.getItem("guestId");
+
+          if (authToken) {
+            headers["x-auth-token"] = authToken;
+          } else if (firebaseToken) {
+            headers["Authorization"] = `Bearer ${firebaseToken}`;
+          } else if (guestId) {
+            headers['x-guest-id'] = guestId;
+          }
+
+          let res;
+          if (window.fetchWithFallback) {
+            res = await window.fetchWithFallback('/cart', {
+              credentials: "include",
+              headers
+            });
+          } else {
+            res = await fetch(`${API}/cart`, { 
+              credentials: "include",
+              headers
+            });
+          }
+          if (!res.ok) return 0;
+          const data = await res.json();
+          return data.items ? data.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
+        } catch (err) {
+          return 0;
+        }
+      }
+
+      // Debounced updateCartCount: prefer local demo/cartItems when available
+      let _cartCountTimer = null;
+      async function updateCartCount() {
+        // If demo items are present, reflect local state immediately and skip backend fetch
+        const hasDemo = demoInjected || cartItems.some(it => typeof it._id === 'string' && it._id.startsWith('demo-'));
+        if (hasDemo) {
+          updateCartCountUIFromCartItems();
+          return;
+        }
+
+        // Debounce rapid calls to avoid race conditions between frontend and backend updates
+        if (_cartCountTimer) clearTimeout(_cartCountTimer);
+        _cartCountTimer = setTimeout(async () => {
+          const count = await getCartCount();
+          document.querySelectorAll(".cart-count").forEach((el) => {
+            el.textContent = count > 0 ? `(${count})` : "";
+          });
+          _cartCountTimer = null;
+        }, 300);
+      }
+    </script>
+  </body>
 </html>
