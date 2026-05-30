@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const Cart = require("../models/Cart");
+const { authMiddleware } = require("./middleware");
 const crypto = require("crypto");
 
 // JWT generator
@@ -457,5 +458,46 @@ async function mergeGuestCartToUser(guestId, userId) {
   await Cart.deleteOne({ _id: guestCart._id });
   console.log('✅ Merged guest cart into user cart and removed guest cart');
 }
+
+// ✅ GET notifications for current user
+router.get("/notifications", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("notifications");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const sorted = (user.notifications || []).sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    res.json(sorted);
+  } catch (err) {
+    console.error("❌ GET /auth/notifications error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ✅ PUT mark notifications as read
+router.put("/notifications/read", authMiddleware, async (req, res) => {
+  try {
+    const { notificationId } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (notificationId) {
+      const notif = user.notifications.id(notificationId);
+      if (notif) notif.read = true;
+    } else {
+      user.notifications.forEach(n => n.read = true);
+    }
+
+    await user.save();
+    res.json({ message: "Notifications marked as read" });
+  } catch (err) {
+    console.error("❌ PUT /auth/notifications/read error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = router;

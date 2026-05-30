@@ -53,6 +53,131 @@
       el.textContent = count > 0 ? `(${count})` : "";
     });
   };
+
+  // --- Notifications Helper Functions ---
+  let notifInterval = null;
+
+  async function fetchAndRenderNotifications() {
+    const badge = document.getElementById("notificationBadge");
+    const container = document.getElementById("notificationsContainer");
+    if (!badge || !container) return;
+
+    try {
+      const headers = {};
+      const authToken = localStorage.getItem("authToken");
+      const firebaseToken = localStorage.getItem("firebaseIdToken");
+      if (authToken) headers["x-auth-token"] = authToken;
+      if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
+
+      const fetchFn = window.fetchWithFallback || fetch;
+      const endpoint = window.fetchWithFallback ? '/auth/notifications' : `${API}/auth/notifications`;
+      const res = await fetchFn(endpoint, { credentials: "include", headers });
+
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const notifications = await res.json();
+
+      const unreadCount = notifications.filter(n => !n.read).length;
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.classList.remove("d-none");
+      } else {
+        badge.classList.add("d-none");
+      }
+
+      if (notifications.length === 0) {
+        container.innerHTML = `<li class="text-center py-4 text-muted small">🎉 All caught up! No notifications.</li>`;
+        return;
+      }
+
+      container.innerHTML = notifications.map(n => {
+        const dateStr = new Date(n.createdAt).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        let typeIcon = '🔔';
+        if (n.type === 'shipping') typeIcon = '🚚';
+        else if (n.type === 'delivery') typeIcon = '✅';
+        else if (n.type === 'cancelled') typeIcon = '❌';
+        else if (n.type === 'admin_message') typeIcon = '✉️';
+
+        const unreadClass = n.read ? '' : 'bg-light border-start border-primary border-3';
+        
+        return `
+          <li class="dropdown-item p-3 border-bottom text-wrap notif-item ${unreadClass}" style="cursor: pointer;" onclick="handleNotificationClick('${n._id || n.id}', '${n.type}', '${n.message}')">
+            <div class="d-flex gap-2">
+              <div class="notif-icon-circle">${typeIcon}</div>
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="fw-bold small text-dark d-flex justify-content-between align-items-center">
+                  <span>${n.title}</span>
+                  ${n.read ? '' : '<span class="notif-dot bg-primary"></span>'}
+                </div>
+                <div class="text-muted small mt-1 text-wrap" style="font-size: 0.78rem; line-height: 1.3;">${n.message}</div>
+                <div class="text-muted text-end mt-1" style="font-size: 0.65rem;">${dateStr}</div>
+              </div>
+            </div>
+          </li>
+        `;
+      }).join('');
+      
+    } catch (e) {
+      console.warn("Error loading notifications in navbar:", e);
+      container.innerHTML = `<li class="text-center py-3 text-danger small">⚠️ Error loading notifications.</li>`;
+    }
+  }
+
+  window.handleNotificationClick = async function(id, type, message) {
+    try {
+      const headers = { "Content-Type": "application/json" };
+      const authToken = localStorage.getItem("authToken");
+      const firebaseToken = localStorage.getItem("firebaseIdToken");
+      if (authToken) headers["x-auth-token"] = authToken;
+      if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
+
+      const fetchFn = window.fetchWithFallback || fetch;
+      const endpoint = window.fetchWithFallback ? '/auth/notifications/read' : `${API}/auth/notifications/read`;
+      await fetchFn(endpoint, {
+        method: "PUT",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ notificationId: id })
+      });
+
+      fetchAndRenderNotifications();
+
+      const orderMatch = message.match(/order #([a-f0-9]+)/i);
+      if (orderMatch && orderMatch[1]) {
+        window.location.href = `order-details.html?id=${orderMatch[1]}`;
+      }
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+
+  async function markAllNotificationsRead() {
+    try {
+      const headers = { "Content-Type": "application/json" };
+      const authToken = localStorage.getItem("authToken");
+      const firebaseToken = localStorage.getItem("firebaseIdToken");
+      if (authToken) headers["x-auth-token"] = authToken;
+      if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
+
+      const fetchFn = window.fetchWithFallback || fetch;
+      const endpoint = window.fetchWithFallback ? '/auth/notifications/read' : `${API}/auth/notifications/read`;
+      const res = await fetchFn(endpoint, {
+        method: "PUT",
+        headers,
+        credentials: "include"
+      });
+      if (res.ok) {
+        fetchAndRenderNotifications();
+      }
+    } catch (err) {
+      console.error("Error marking all read:", err);
+    }
+  }
   
   // Wait for Firebase Auth to be available
   function initNavbar() {
@@ -247,6 +372,56 @@
         userNameDisplay.classList.remove("d-none");
       }
 
+      // Inject notification bell into navbar
+      let notifLi = document.getElementById("notificationNavItem");
+      if (!notifLi) {
+        const navUl = document.querySelector("#navbarNav ul.navbar-nav");
+        if (navUl) {
+          notifLi = document.createElement("li");
+          notifLi.className = "nav-item dropdown ms-lg-2";
+          notifLi.id = "notificationNavItem";
+          notifLi.innerHTML = `
+            <a class="nav-link dropdown-toggle position-relative d-flex align-items-center" href="#" id="notificationDropdownBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding-right: 0.5rem !important;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bell-fill text-secondary" viewBox="0 0 16 16">
+                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
+              </svg>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notificationBadge" style="font-size: 0.65rem; padding: 0.2em 0.45em; transform: translate(-20%, 20%) !important;">
+                0
+              </span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 border-light notification-dropdown-menu" aria-labelledby="notificationDropdownBtn" style="width: 320px; max-height: 400px; overflow-y: auto; right: 0; left: auto; border-radius: var(--radius-md);">
+              <li class="dropdown-header border-bottom pb-2 d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-primary">Notifications</span>
+                <button class="btn btn-link btn-xs text-primary p-0 text-decoration-none fw-semibold" id="markAllReadBtn" style="font-size: 0.75rem;">Mark all as read</button>
+              </li>
+              <div id="notificationsContainer" class="py-1">
+                <li class="text-center py-3 text-muted small">Loading notifications...</li>
+              </div>
+            </ul>
+          `;
+          const userDisplayLi = document.getElementById("userNameDisplay");
+          if (userDisplayLi) {
+            navUl.insertBefore(notifLi, userDisplayLi);
+          } else {
+            navUl.appendChild(notifLi);
+          }
+
+          const markReadBtn = document.getElementById("markAllReadBtn");
+          if (markReadBtn) {
+            markReadBtn.addEventListener("click", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              markAllNotificationsRead();
+            });
+          }
+        }
+      }
+
+      fetchAndRenderNotifications();
+      if (!notifInterval) {
+        notifInterval = setInterval(fetchAndRenderNotifications, 30000);
+      }
+
       // Setup Firebase/Backend logout button
       if (logoutBtn && !logoutBtn.dataset.firebaseLogoutHandler) {
         logoutBtn.dataset.firebaseLogoutHandler = '1';
@@ -308,6 +483,14 @@
           span.textContent = "";
         }
       }
+      
+      // Cleanup notifications
+      if (notifInterval) {
+        clearInterval(notifInterval);
+        notifInterval = null;
+      }
+      const notifLi = document.getElementById("notificationNavItem");
+      if (notifLi) notifLi.remove();
     }
   }
 

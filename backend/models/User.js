@@ -41,7 +41,16 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  notifications: [
+    {
+      title: { type: String, required: true },
+      message: { type: String, required: true },
+      type: { type: String, default: 'info' }, // 'info', 'shipping', 'delivery', 'admin_message', 'cancelled'
+      read: { type: Boolean, default: false },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ]
 });
 
 // Hash password before saving (only if password exists)
