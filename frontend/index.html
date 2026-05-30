@@ -14,551 +14,11 @@
     <link rel="stylesheet" href="productSeed.css" />
     <link rel="stylesheet" href="chat.css" />
 
-    <!-- Inline styles (kept from original file) -->
-    <style>
-      /* ======= Mobile Responsive Enhancements ======= */
-
-      /* General adjustments */
-      @media (max-width: 768px) {
-        body {
-          font-size: 0.95rem;
-          overflow-x: hidden;
-        }
-
-        .navbar-brand span {
-          font-size: 1.05rem;
-        }
-
-        .navbar-toggler {
-          border: none;
-          background-color: #f8f8f8;
-        }
-
-        .navbar-nav .nav-link {
-          text-align: center;
-          padding: 10px 0;
-        }
-
-        .hero {
-          text-align: center;
-          padding: 2rem 1rem;
-        }
-
-        .hero h1 {
-          font-size: 1.8rem;
-          line-height: 1.3;
-        }
-
-        .hero p {
-          font-size: 1rem;
-          color: #555;
-        }
-
-        .hero .btn {
-          width: 100%;
-          margin-top: 1rem;
-        }
-
-        .logo-img {
-          width: 180px;
-          height: 180px;
-          margin: 1.5rem auto;
-        }
-
-        /* Slideshow */
-        .slideshow-wrapper {
-          margin: 1.5rem 0.5rem;
-          padding: 1rem;
-        }
-
-        .rose-slideshow {
-          height: 200px;
-        }
-
-        .rose-slide img {
-          height: 130px;
-        }
-
-        .rose-slide .rose-caption {
-          font-size: 1rem;
-          padding: 0.6rem 1rem;
-        }
-
-        /* Category sections */
-        .category-section {
-          margin-bottom: 1.2rem;
-          box-shadow: 0 3px 10px rgba(220, 180, 120, 0.1);
-        }
-
-        .category-img-anim {
-          height: 150px;
-        }
-
-        .category-title {
-          font-size: 1.2rem;
-          text-align: center;
-        }
-
-        .category-desc {
-          font-size: 0.9rem;
-          text-align: center;
-        }
-
-        /* Product Grid */
-        #productsRow {
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          gap: 1rem;
-        }
-
-        .card-img-top {
-          height: 180px;
-        }
-
-        .card-title {
-          font-size: 0.95rem;
-        }
-
-        .card-text.price {
-          font-size: 1rem;
-        }
-
-        .modal-content {
-          border-radius: 12px;
-        }
-
-        .modal-body img {
-          height: 220px;
-        }
-
-        /* Footer */
-        footer,
-        .text-center {
-          font-size: 0.8rem;
-          line-height: 1.4;
-          padding: 0.5rem 0;
-        }
-      }
-
-      /* Extra small devices */
-      @media (max-width: 480px) {
-        .navbar-brand span {
-          font-size: 0.95rem;
-        }
-
-        .hero h1 {
-          font-size: 1.5rem;
-        }
-
-        .hero p {
-          font-size: 0.9rem;
-        }
-
-        .logo-img {
-          width: 150px;
-          height: 150px;
-        }
-
-        .rose-slide .rose-caption {
-          font-size: 0.9rem;
-        }
-
-        .category-title {
-          font-size: 1rem;
-        }
-
-        .card-img-top {
-          height: 160px;
-        }
-
-        .modal-body img {
-          height: 200px;
-        }
-
-        .btn {
-          font-size: 0.85rem;
-          padding: 0.5rem 0.8rem;
-        }
-      }
-
-      /* Elegant Product Animation */
-      #productsRow {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1.5rem;
-      }
-      .product-card-wrapper {
-        padding: 0;
-      }
-      .card.h-100 {
-        border: 1px solid #e5e5e5;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        background: #fff;
-      }
-      .card.h-100:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
-      }
-      .card-img-top {
-        height: 260px;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-      }
-      .card.h-100:hover .card-img-top {
-        transform: scale(1.07);
-      }
-      .card-body {
-        padding: 1rem 1rem 1.25rem;
-        text-align: center;
-      }
-      .card-title {
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: #3a3a3a;
-        margin-bottom: 0.5rem;
-      }
-      .card-text.price {
-        color: #b6862e;
-        font-weight: bold;
-        margin-bottom: 0.2rem;
-      }
-      .qv-btn,
-      .btn-outline-primary {
-        transition: all 0.25s ease;
-      }
-      .qv-btn:hover {
-        background: #b6862e;
-        border-color: #b6862e;
-        color: #fff;
-      }
-      .btn-outline-primary:hover {
-        background: #b6862e;
-        color: #fff;
-      }
-
-      /* ===== Enhanced Quick View Modal ===== */
-      .modal-content {
-        border-radius: 18px;
-        overflow: hidden;
-        animation: qvFadeIn 0.45s ease;
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-        background: linear-gradient(180deg, #fffdf9 0%, #fff7f0 100%);
-        border: 1px solid #f2e3d5;
-        position: relative;
-      }
-      @keyframes qvFadeIn {
-        from {
-          opacity: 0;
-          transform: scale(0.93) translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1) translateY(0);
-        }
-      }
-      .modal-header {
-        background: linear-gradient(90deg, #b6862e, #e1c28b);
-        color: #fff;
-        border: none;
-        padding: 1rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        letter-spacing: 0.3px;
-        box-shadow: 0 3px 8px rgba(182, 134, 46, 0.25);
-      }
-      .modal-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-      }
-      .modal-body {
-        padding: 1.8rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        align-items: stretch;
-      }
-      .modal-body .col-md-6 {
-        flex: 1 1 300px;
-      }
-      .modal-body img {
-        width: 100%;
-        border-radius: 14px;
-        object-fit: cover;
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-      }
-      .modal-body img:hover {
-        transform: scale(1.05);
-        box-shadow: 0 10px 25px rgba(182, 134, 46, 0.25);
-      }
-      .modal-body h4.price {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #b6862e;
-        margin-top: 0.5rem;
-      }
-      .modal-body p {
-        font-size: 1rem;
-        color: #444;
-        line-height: 1.5;
-        margin-top: 0.8rem;
-      }
-      .modal-footer {
-        border-top: 1px solid #f0e2ce;
-        padding: 1rem 1.5rem;
-        background: #fffaf5;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 0.8rem;
-      }
-      .modal-footer button,
-      .modal-footer a {
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.25s ease;
-      }
-      .modal-footer .btn-success {
-        background: linear-gradient(90deg, #b6862e, #dcbf7f);
-        border: none;
-        color: #fff;
-      }
-      .modal-footer .btn-success:hover {
-        background: linear-gradient(90deg, #a77418, #c9ad64);
-        box-shadow: 0 3px 10px rgba(182, 134, 46, 0.3);
-      }
-      .modal-footer .btn-outline-primary {
-        border-color: #b6862e;
-        color: #b6862e;
-      }
-      .modal-footer .btn-outline-primary:hover {
-        background-color: #b6862e;
-        color: #fff;
-      }
-      .modal-footer .btn-secondary {
-        background: #f4f4f4;
-        color: #555;
-        border: none;
-      }
-      .modal-footer .btn-secondary:hover {
-        background: #e4e4e4;
-      }
-
-      /* Logo animation */
-      .logo-img {
-        width: 260px;
-        height: 260px;
-        object-fit: cover;
-        border-radius: 50%;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        border: 4px solid #f8d7da;
-        transition: transform 0.8s ease, box-shadow 0.8s ease;
-        animation: floatLogo 4s ease-in-out infinite;
-      }
-      .logo-img:hover {
-        transform: scale(1.05) rotate(5deg);
-        box-shadow: 0 6px 20px rgba(255, 192, 203, 0.4);
-      }
-      @keyframes floatLogo {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-      }
-
-      /* Category and slideshow styles */
-      .category-section {
-        cursor: pointer;
-        transition: box-shadow 0.4s, transform 0.4s;
-        border-radius: 1rem;
-        overflow: hidden;
-        box-shadow: 0 2px 12px rgba(220, 180, 120, 0.08);
-        background: #fff;
-        margin-bottom: 2rem;
-        position: relative;
-        min-height: 100%;
-      }
-      .category-section:hover {
-        box-shadow: 0 6px 32px rgba(220, 180, 120, 0.18);
-        transform: translateY(-4px) scale(1.025);
-      }
-      .category-img-anim {
-        width: 100%;
-        height: 220px;
-        object-fit: cover;
-        transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
-          opacity 0.7s;
-        opacity: 0.93;
-      }
-      .category-section:hover .category-img-anim {
-        transform: scale(1.07);
-        opacity: 1;
-      }
-      .category-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-top: 1rem;
-        color: #bfa24a;
-        letter-spacing: 1px;
-      }
-      .category-title.silver {
-        color: #848484;
-      }
-      .category-title.platinum {
-        color: #b8b8d1;
-      }
-      .category-desc {
-        font-size: 1rem;
-        color: #555;
-        margin-bottom: 1.2rem;
-      }
-      @media (max-width: 767px) {
-        .category-img-anim {
-          height: 160px;
-        }
-        .category-title {
-          font-size: 1.2rem;
-        }
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: Verdana, sans-serif;
-      }
-
-      .slideshow-wrapper {
-        max-width: 900px;
-        margin: 0 auto 2.5rem auto;
-        padding: 2.5rem 1rem 2.2rem 1rem;
-        background: linear-gradient(135deg, #f8e3e8 0%, #fdf6f0 100%);
-        border-radius: 2.2rem;
-        box-shadow: 0 8px 32px 0 rgba(223, 155, 121, 0.18),
-          0 1.5px 8px 0 rgba(183, 119, 92, 0.14);
-        position: relative;
-      }
-      .rose-slideshow {
-        position: relative;
-        width: 100%;
-        height: 320px;
-        overflow: hidden;
-        border-radius: 1.25rem;
-        background: #fff8f4;
-        box-shadow: 0 6px 32px 0 rgba(223, 155, 121, 0.11);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .rose-slide {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        transform: translateX(40px) scale(0.98);
-        transition: opacity 0.8s cubic-bezier(0.7, 0.2, 0.18, 1),
-          transform 0.8s cubic-bezier(0.7, 0.2, 0.18, 1);
-        z-index: 1;
-        pointer-events: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-end;
-      }
-      .rose-slide.active {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-        z-index: 2;
-        pointer-events: auto;
-      }
-      .rose-slide img {
-        width: 100%;
-        max-width: 100%;
-        height: 220px;
-        object-fit: cover;
-        border-radius: 1.1rem;
-        box-shadow: 0 4px 24px 0 rgba(223, 155, 121, 0.18),
-          0 1.5px 8px 0 rgba(183, 119, 92, 0.13);
-        border: 2.5px solid #f9dad2;
-        transition: box-shadow 0.4s;
-      }
-      .rose-slide .rose-caption {
-        background: rgba(255, 246, 240, 0.89);
-        color: #b0765a;
-        font-size: 1.22rem;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        padding: 0.8rem 1.7rem 0.7rem 1.7rem;
-        border-radius: 2rem;
-        margin-top: 1.2rem;
-        margin-bottom: 1.2rem;
-        box-shadow: 0 2px 12px 0 rgba(223, 155, 121, 0.09);
-        text-align: center;
-        min-width: 60%;
-        max-width: 90%;
-        display: inline-block;
-      }
-      .rose-dots {
-        margin-top: 0.9rem;
-        text-align: center;
-      }
-      .rose-dot {
-        height: 13px;
-        width: 13px;
-        margin: 0 7px;
-        background: linear-gradient(135deg, #f7c6b7 0%, #eec2b0 100%);
-        border-radius: 50%;
-        display: inline-block;
-        box-shadow: 0 0.5px 2.5px rgba(183, 119, 92, 0.17);
-        opacity: 0.65;
-        border: 2px solid #f9dad2;
-        transition: opacity 0.4s, box-shadow 0.4s, border-color 0.4s;
-        cursor: pointer;
-      }
-      .rose-dot.active {
-        opacity: 1;
-        box-shadow: 0 0 0 3px #f6e3dd;
-        border-color: #c9937d;
-        background: linear-gradient(135deg, #f8d7da 0%, #eec2b0 100%);
-      }
-      @media (max-width: 767px) {
-        .slideshow-wrapper {
-          padding: 1.2rem 0.2rem 1.1rem 0.2rem;
-        }
-        .rose-slideshow {
-          height: 180px;
-        }
-        .rose-slide img {
-          height: 120px;
-        }
-        .rose-slide .rose-caption {
-          font-size: 1rem;
-          min-width: 80%;
-          padding: 0.6rem 0.8rem;
-        }
-      }
-      @media (max-width: 500px) {
-        .slideshow-wrapper {
-          border-radius: 1.1rem;
-        }
-        .rose-slideshow {
-          border-radius: 0.7rem;
-        }
-        .rose-slide img {
-          border-radius: 0.7rem;
-        }
-      }
-    </style>
-
     <!-- Firebase modules (module scripts loaded as modules) -->
     <script type="module" src="firebase.js" defer></script>
     <script type="module" src="firebaseHelpers.js" defer></script>
+    <!-- apiHelper.js -->
+    <script src="apiHelper.js" defer></script>
     <!-- app script (non-module) -->
     <script defer src="app.js"></script>
     <!-- auth helper for backend API calls -->
@@ -568,38 +28,31 @@
     <script defer src="chat.js"></script>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
           <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
-              <a class="nav-link active" href="index.html">Home</a>
+              <a class="nav-link active" href="index.html" aria-current="page">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -622,51 +75,42 @@
       <div class="container">
         <div class="row align-items-center">
           <div class="col-md-7">
-            <h1 class="display-5">Fine Jewellery, Crafted with Love</h1>
+            <h1 class="display-5">Fine Jewellery, <em>Crafted with Love</em></h1>
             <p class="lead">
               Discover gold, silver, and diamond pieces designed for every
               occasion.
             </p>
-            <a href="#catalog" class="btn btn-primary btn-lg"
-              >Browse Collections</a
-            >
+            <a href="#catalog" class="btn btn-primary btn-lg">Browse Collections</a>
           </div>
           <div class="col-md-5 d-none d-md-block text-center">
-            <img src="image.png" alt="Jewelry" class="img-fluid logo-img" />
+            <img src="image.png" alt="Jewelry" class="img-fluid logo-img" loading="lazy" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ====== Rose Gold Slideshow Section ====== -->
+    <!-- ====== Slideshow Section ====== -->
     <div class="slideshow-wrapper">
-      <div class="rose-slideshow" id="roseSlideshow">
+      <div class="rose-slideshow" id="roseSlideshow" tabindex="0" aria-label="Jewellery slideshow">
         <div class="rose-slide active">
-          <img
-            src="http://127.0.0.1:5001/images/gold.avif"
-            alt="Gold jewelry"
-          />
-          <div class="rose-caption">100% Pure Gold Jewellery</div>
+          <img src="images/gold.avif" alt="Gold jewelry" loading="lazy" />
+          <div class="rose-caption">Pure Gold Jewellery</div>
         </div>
         <div class="rose-slide">
-          <img
-            src="http://127.0.0.1:5001/images/silver.avif"
-            alt="Silver Jewellery"
-          />
-          <div class="rose-caption">100% Pure Silver Jewelry</div>
+          <img src="images/silver.avif" alt="Silver Jewellery" loading="lazy" />
+          <div class="rose-caption">Pure Silver Jewellery</div>
         </div>
         <div class="rose-slide">
-          <img
-            src="http://127.0.0.1:5001/images/platinum.avif"
-            alt="Platinum Jewellery"
-          />
-          <div class="rose-caption">100% Pure Platinum jewelry</div>
+          <img src="images/platinum.avif" alt="Platinum Jewellery" loading="lazy" />
+          <div class="rose-caption">Pure Platinum Jewellery</div>
         </div>
+        <button class="slide-arrow prev" aria-label="Previous slide">&#8249;</button>
+        <button class="slide-arrow next" aria-label="Next slide">&#8250;</button>
       </div>
-      <div class="rose-dots mt-2">
-        <span class="rose-dot active" data-slide="0"></span>
-        <span class="rose-dot" data-slide="1"></span>
-        <span class="rose-dot" data-slide="2"></span>
+      <div class="rose-dots" role="tablist" aria-label="Slide navigation">
+        <button class="rose-dot active" data-slide="0" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+        <button class="rose-dot" data-slide="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+        <button class="rose-dot" data-slide="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
       </div>
     </div>
 
@@ -675,9 +119,10 @@
         <div class="col-12 col-md-4">
           <div class="category-section h-100" onclick="loadProducts('gold')">
             <img
-              src="http://127.0.0.1:5001/images/gold.avif"
+              src="images/gold.avif"
               alt="Gold Jewellery"
               class="category-img-anim"
+              loading="lazy"
             />
             <div class="px-3 pb-3 pt-2">
               <div class="category-title">Gold Collection</div>
@@ -691,9 +136,10 @@
         <div class="col-12 col-md-4">
           <div class="category-section h-100" onclick="loadProducts('silver')">
             <img
-              src="http://127.0.0.1:5001/images/silver.avif"
+              src="images/silver.avif"
               alt="Silver Jewellery"
               class="category-img-anim"
+              loading="lazy"
             />
             <div class="px-3 pb-3 pt-2">
               <div class="category-title silver">Silver Collection</div>
@@ -710,9 +156,10 @@
             onclick="loadProducts('platinum')"
           >
             <img
-              src="http://127.0.0.1:5001/images/platinum.avif"
+              src="images/platinum.avif"
               alt="Platinum Jewellery"
               class="category-img-anim"
+              loading="lazy"
             />
             <div class="px-3 pb-3 pt-2">
               <div class="category-title platinum">Platinum Collection</div>
@@ -726,77 +173,81 @@
     </div>
 
     <script>
-      // ====== Smooth Rose-Gold Slideshow ======
-      const roseSlides = document.querySelectorAll(".rose-slide");
-      const roseDots = document.querySelectorAll(".rose-dot");
-      let roseIndex = 0,
-        roseTimeout,
-        roseAnimating = false;
+      // ====== Premium Slideshow with Auto-play, Arrows & Pause-on-Hover ======
+      (function() {
+        const slides = document.querySelectorAll('.rose-slide');
+        const dots = document.querySelectorAll('.rose-dot');
+        const prevBtn = document.querySelector('.slide-arrow.prev');
+        const nextBtn = document.querySelector('.slide-arrow.next');
+        const slideshowEl = document.getElementById('roseSlideshow');
+        let currentIndex = 0;
+        let autoPlayTimer = null;
+        let isHovering = false;
+        const INTERVAL = 4000;
 
-      function showRoseSlide(idx, direction = 1) {
-        if (roseAnimating || idx === roseIndex) return;
-        roseAnimating = true;
-        roseSlides[roseIndex].classList.remove("active");
-        roseDots[roseIndex].classList.remove("active");
-        roseIndex = idx;
-        roseSlides[roseIndex].classList.add("active");
-        roseDots[roseIndex].classList.add("active");
-        setTimeout(() => {
-          roseAnimating = false;
-        }, 420); // Prevent rapid flicker
-      }
+        function goToSlide(idx) {
+          if (idx === currentIndex) return;
+          slides[currentIndex].classList.remove('active');
+          dots[currentIndex].classList.remove('active');
+          dots[currentIndex].setAttribute('aria-selected', 'false');
+          currentIndex = (idx + slides.length) % slides.length;
+          slides[currentIndex].classList.add('active');
+          dots[currentIndex].classList.add('active');
+          dots[currentIndex].setAttribute('aria-selected', 'true');
+        }
 
-      function nextRoseSlide() {
-        let next = (roseIndex + 1) % roseSlides.length;
-        showRoseSlide(next);
-      }
-      function startRoseSlideshow() {
-        clearTimeout(roseTimeout);
-        roseTimeout = setTimeout(() => {
-          nextRoseSlide();
-          startRoseSlideshow();
-        }, 3500);
-      }
-      roseDots.forEach((dot) =>
-        dot.addEventListener("click", () => {
-          let idx = parseInt(dot.getAttribute("data-slide"));
-          showRoseSlide(idx);
-          startRoseSlideshow();
-        })
-      );
-      let touchStartX = null;
-      const roseSlideshowEl = document.getElementById("roseSlideshow");
-      if (roseSlideshowEl) {
-        roseSlideshowEl.addEventListener("touchstart", (e) => {
-          if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
-        });
-        roseSlideshowEl.addEventListener("touchend", (e) => {
-          if (touchStartX === null) return;
-          let dx = e.changedTouches[0].clientX - touchStartX;
-          if (Math.abs(dx) > 40) {
-            let next =
-              dx > 0
-                ? (roseIndex + roseSlides.length - 1) % roseSlides.length
-                : (roseIndex + 1) % roseSlides.length;
-            showRoseSlide(next);
-            startRoseSlideshow();
-          }
-          touchStartX = null;
-        });
-        roseSlideshowEl.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowLeft") {
-            showRoseSlide(
-              (roseIndex + roseSlides.length - 1) % roseSlides.length
-            );
-            startRoseSlideshow();
-          } else if (e.key === "ArrowRight") {
-            showRoseSlide((roseIndex + 1) % roseSlides.length);
-            startRoseSlideshow();
-          }
-        });
-        roseSlideshowEl.setAttribute("tabindex", "0");
-      }
-      startRoseSlideshow();
+        function nextSlide() { goToSlide(currentIndex + 1); }
+        function prevSlide() { goToSlide(currentIndex - 1); }
+
+        function startAutoPlay() {
+          stopAutoPlay();
+          autoPlayTimer = setInterval(() => { if (!isHovering) nextSlide(); }, INTERVAL);
+        }
+
+        function stopAutoPlay() {
+          if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+        }
+
+        // Arrow buttons
+        if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); startAutoPlay(); });
+        if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); startAutoPlay(); });
+
+        // Dot navigation
+        dots.forEach(dot => dot.addEventListener('click', () => {
+          goToSlide(parseInt(dot.getAttribute('data-slide')));
+          startAutoPlay();
+        }));
+
+        // Pause on hover
+        if (slideshowEl) {
+          slideshowEl.addEventListener('mouseenter', () => { isHovering = true; });
+          slideshowEl.addEventListener('mouseleave', () => { isHovering = false; });
+        }
+
+        // Touch support
+        let touchStartX = null;
+        if (slideshowEl) {
+          slideshowEl.addEventListener('touchstart', e => {
+            if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
+          }, { passive: true });
+          slideshowEl.addEventListener('touchend', e => {
+            if (touchStartX === null) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 40) { dx > 0 ? prevSlide() : nextSlide(); startAutoPlay(); }
+            touchStartX = null;
+          });
+        }
+
+        // Keyboard
+        if (slideshowEl) {
+          slideshowEl.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft') { prevSlide(); startAutoPlay(); }
+            else if (e.key === 'ArrowRight') { nextSlide(); startAutoPlay(); }
+          });
+        }
+
+        startAutoPlay();
+      })();
     </script>
 
     <div class="container py-5" id="catalog">
@@ -866,11 +317,16 @@
     </div>
 
     <script>
-      // Use the central updateCartCountUI from app.js (prefers Firestore, falls back to backend)
-      document.addEventListener("DOMContentLoaded", () => {
+      function initIndexPage() {
         if (typeof updateCartCountUI === "function") updateCartCountUI();
+      }
+      document.addEventListener("DOMContentLoaded", () => {
         if (typeof loadProducts === "function") loadProducts();
-        if (typeof setupNavbar === "function") setupNavbar();
+        if (window.authStateSettled) {
+          initIndexPage();
+        } else {
+          document.addEventListener("authStateSettled", initIndexPage, { once: true });
+        }
       });
     </script>
 
@@ -910,6 +366,14 @@
 
     <!-- Chatbot script (toggle + panel) -->
     <script defer src="chat.js"></script>
+
+    <script>
+      // Navbar scroll effect
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
+    </script>
 
     <!-- Scripts (bootstrap bundle last) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

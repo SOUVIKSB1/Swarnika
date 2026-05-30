@@ -11,33 +11,43 @@ let detectedPort = null;
  * @returns {Promise<Response>}
  */
 async function fetchWithFallback(endpoint, options = {}) {
-  const host = window.location.hostname;
+  let host = window.location.hostname;
+  let protocol = location.protocol;
+
+  // Handle local file access (file://)
+  if (protocol === "file:" || !host) {
+    host = "localhost";
+    protocol = "http:";
+  }
 
   // If not local host (localhost or 127.*), skip probing ports and use configured API
   if (host !== "localhost" && !host.startsWith("127.")) {
-    const url = (window.API || `${location.protocol}//${location.hostname}:5001/api`) + endpoint;
+    const apiBase = window.API || "/api";
+    const url = apiBase.endsWith('/') ? apiBase.slice(0, -1) + endpoint : apiBase + endpoint;
     return fetch(url, options);
   }
   
   // Try detected port first
   if (detectedPort) {
-    const url = `${location.protocol}//${host}:${detectedPort}/api${endpoint}`;
+    const url = `${protocol}//${host}:${detectedPort}/api${endpoint}`;
     try {
       console.log(`🔗 Trying detected port ${detectedPort}: ${url}`);
       const res = await fetch(url, { ...options, timeout: 3000 });
       if (res.ok || res.status === 401 || res.status === 404 || res.status === 400) {
+        window.detectedPort = detectedPort;
         console.log(`✅ Using port ${detectedPort}`);
         return res;
       }
     } catch (e) {
       console.warn(`⚠️  Port ${detectedPort} failed, trying others...`);
       detectedPort = null;
+      window.detectedPort = null;
     }
   }
   
   // Try each port
   for (const port of API_PORTS) {
-    const url = `${location.protocol}//${host}:${port}/api${endpoint}`;
+    const url = `${protocol}//${host}:${port}/api${endpoint}`;
     try {
       console.log(`🔗 Trying port ${port}: ${url}`);
       const res = await fetch(url, options);
@@ -45,6 +55,7 @@ async function fetchWithFallback(endpoint, options = {}) {
       // Consider 404, 401, 400 as valid responses (endpoint exists but auth/validation failed)
       if (res.ok || res.status === 401 || res.status === 404 || res.status === 400) {
         detectedPort = port;
+        window.detectedPort = port;
         console.log(`✅ Backend detected on port ${port}`);
         return res;
       }
@@ -56,7 +67,7 @@ async function fetchWithFallback(endpoint, options = {}) {
   
   // Fallback to default API
   console.warn('⚠️  All ports failed, using default API');
-  const url = (window.API || `${location.protocol}//${location.hostname}:5001/api`) + endpoint;
+  const url = (window.API && !window.API.startsWith('/') ? window.API : `${protocol}//${host}:5001/api`) + endpoint;
   return fetch(url, options);
 }
 

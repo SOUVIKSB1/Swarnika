@@ -10,84 +10,38 @@
     />
     <link href="styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="chat.css" />
+    <script src="apiHelper.js" defer></script>
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
     <script defer src="chat.js"></script>
-    <style>
-      body {
-        background-color: #fffaf6;
-        font-family: "Poppins", sans-serif;
-      }
-      .navbar {
-        background-color: #fffaf6 !important;
-        border-bottom: 2px solid #f1e0d0;
-      }
-      .orders-container {
-        max-width: 900px;
-        margin: 3rem auto;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-      }
-      .order-card {
-        border: 1px solid #f1e0d0;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-      }
-      .order-card h5 a {
-        text-decoration: none;
-        color: var(--brand, #b8860b);
-      }
-      .order-card h5 a:hover {
-        text-decoration: underline;
-      }
-      footer {
-        text-align: center;
-        padding: 1rem;
-        background: #f1e0d0;
-        margin-top: 3rem;
-      }
-    </style>
+
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
-          <img
-            src="image.png"
-            alt="Swarnika Logo"
-            class="brand-logo"
-            style="width: 40px; height: 40px"
-          />
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html">Orders</a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -120,17 +74,28 @@
     <script>
       // Dynamically determine API base URL (same as config.js)
       const API = (function () {
-        const host = window.location.hostname;
+        let host = window.location.hostname;
+        let protocol = location.protocol;
+        if (protocol === "file:" || !host) {
+          host = "localhost";
+          protocol = "http:";
+        }
         if (host === "localhost" || host.startsWith("127.")) {
-            return `${location.protocol}//${host}:5001/api`;
+            return `${protocol}//${host}:5001/api`;
           }
           return "/api";
       })();
 
-      document.addEventListener("DOMContentLoaded", () => {
-        setupNavbar();
+      function initOrdersPage() {
         updateCartCount();
         loadOrders();
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.authStateSettled) {
+          initOrdersPage();
+        } else {
+          document.addEventListener("authStateSettled", initOrdersPage, { once: true });
+        }
       });
 
       async function loadOrders() {
@@ -153,7 +118,8 @@
 
           let serverOrders = [];
           try {
-            const res = await fetch(`${API}/orders`, { 
+            const fetchFn = window.fetchWithFallback || fetch;
+            const res = await fetchFn(`/orders`, { 
               credentials: "include",
               headers
             });
@@ -169,30 +135,56 @@
             console.warn('Backend orders fetch failed, will include demo orders if any', e);
           }
 
+          const params = new URLSearchParams(location.search);
+          const showHistory = params.get("history") === "true";
+
+          // Update page heading and title dynamically
+          const titleEl = document.querySelector("h2.text-center");
+          if (titleEl) {
+            titleEl.textContent = showHistory ? "📜 Order History" : "📦 My Active Orders";
+          }
+          document.title = showHistory ? "Order History | Swarnika Jewels" : "My Orders | Swarnika Jewels";
+
           // Load demo orders from localStorage and merge (demo orders first)
           const demoOrders = JSON.parse(localStorage.getItem('demoOrders') || '[]');
           const allOrders = [...(demoOrders || []), ...(serverOrders || [])];
 
+          // Filter based on active vs completed/cancelled
+          const filteredOrders = allOrders.filter(o => {
+            const status = (o.status || "Processing").toLowerCase();
+            const isFinished = status === 'completed' || status === 'cancelled' || status === 'delivered' || status === 'refunded';
+            return showHistory ? isFinished : !isFinished;
+          });
+
           // If we only have demo orders (backend not available / not authenticated), show a Demo Mode banner
           const showDemoOnly = (serverOrders.length === 0) && (Array.isArray(demoOrders) && demoOrders.length > 0);
 
-          if (!Array.isArray(allOrders) || allOrders.length === 0) {
-            area.innerHTML =
-              '<div class="text-center text-muted py-5">🧾 You have no orders yet.</div>';
+          if (filteredOrders.length === 0) {
+            area.innerHTML = (showDemoOnly ? `<div class="alert alert-warning text-center">⚠️ Demo Mode — showing locally saved demo orders only. Login to view real orders.</div>` : '') + 
+              (showHistory 
+                ? '<div class="text-center text-muted py-5">🧾 Your order history is empty.</div>'
+                : '<div class="text-center text-muted py-5">🧾 You have no active orders.</div>');
             return;
           }
 
-          area.innerHTML = (showDemoOnly ? `<div class="alert alert-warning text-center">⚠️ Demo Mode — showing locally saved demo orders only. Login to view real orders.</div>` : '') + allOrders
+          area.innerHTML = (showDemoOnly ? `<div class="alert alert-warning text-center">⚠️ Demo Mode — showing locally saved demo orders only. Login to view real orders.</div>` : '') + filteredOrders
             .map(
-              (o) => `
+              (o) => {
+                let badgeClass = 'bg-info text-dark';
+                if (o.status === 'Cancelled' || o.status === 'demo-cancelled') {
+                  badgeClass = 'bg-danger text-white';
+                } else if (o.status === 'Completed' || o.status === 'demo-completed') {
+                  badgeClass = 'bg-success text-white';
+                } else if (o.status === 'Demo') {
+                  badgeClass = 'bg-warning text-dark';
+                }
+                return `
           <div class="order-card p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              
-                <h5 class="mb-0">
-                <a href="order-details.html?id=${o.id}">Order #${o.id}</a>
+              <h5 class="mb-0">
+                <a href="order-details.html?id=${o.id || o._id}">Order #${o.id || o._id}</a>
               </h5>
-              
-              <span class="badge ${o.status === 'Demo' ? 'bg-warning text-dark' : 'bg-info text-dark'}">${
+              <span class="badge ${badgeClass}">${
                 o.status || "Processing"
               }</span>
             </div>
@@ -203,17 +195,18 @@
               o.shipping_address || "N/A"
             }</p>
             <small class="text-muted d-block mb-3">📅 ${new Date(
-              o.created_at
+              o.created_at || o.createdAt
             ).toLocaleString()}</small>
             
             <a href="order-details.html?id=${
-              o.id
+              o.id || o._id
             }" class="btn btn-outline-primary btn-sm">View Details</a>
-            <button class="btn btn-outline-danger btn-sm cancel-btn" data-id="${
-              o.id
-            }" data-demo="${o.status === 'Demo' ? '1' : '0'}">Cancel Order</button>
+            ${(!showHistory && o.status !== 'Cancelled') ? `<button class="btn btn-outline-danger btn-sm cancel-btn" data-id="${
+              o.id || o._id
+            }" data-demo="${o.status === 'Demo' ? '1' : '0'}">Cancel Order</button>` : ''}
           </div>
-        `
+        `;
+              }
             )
             .join("");
 
@@ -238,7 +231,8 @@
                   loadOrders();
                   return;
                 }
-                const res = await fetch(`${API}/orders/${orderId}`, {
+                const fetchFn = window.fetchWithFallback || fetch;
+                const res = await fetchFn(`/orders/${orderId}`, {
                   method: "DELETE",
                   credentials: "include",
                 });
@@ -261,61 +255,17 @@
         }
       }
 
-      // --- Standard Navbar Functions ---
-
-      async function getCartCount() {
-        try {
-          const res = await fetch(`${API}/cart`, { credentials: "include" });
-          if (!res.ok) return 0;
-          const data = await res.json();
-          return data.items ? data.items.length : 0;
-        } catch (err) {
-          return 0;
-        }
-      }
-
       async function updateCartCount() {
-        const count = await getCartCount();
-        document.querySelectorAll(".cart-count").forEach((el) => {
-          el.textContent = count > 0 ? `(${count})` : "";
-        });
-      }
-
-      async function setupNavbar() {
-        const navUserBtn = document.getElementById("navUserBtn");
-        const logoutLink = document.getElementById("logoutLink");
-        const profileLink = document.getElementById("profileLink");
-
-        try {
-          const res = await fetch(`${API}/auth/me`, { credentials: "include" });
-          if (!res.ok) throw new Error("Not logged in");
-          const user = await res.json();
-          navUserBtn.textContent =
-            user.name || (user.email ? user.email.split("@")[0] : "User");
-          profileLink.href = "profile.html";
-        } catch {
-          navUserBtn.textContent = "Login";
-          navUserBtn.classList.remove("dropdown-toggle");
-          navUserBtn.removeAttribute("data-bs-toggle");
-          navUserBtn.href = "login.html";
-          document.querySelector(".dropdown-menu").style.display = "none";
-        }
-
-        if (logoutLink) {
-          logoutLink.addEventListener("click", async (e) => {
-            e.preventDefault();
-            try {
-              await fetch(`${API}/auth/logout`, {
-                method: "POST",
-                credentials: "include",
-              });
-              window.location.reload();
-            } catch (err) {
-              console.error("Logout error:", err);
-            }
-          });
+        if (typeof window.updateGlobalCartCount === "function") {
+          await window.updateGlobalCartCount();
         }
       }
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
     <script defer src="chat.js"></script>
   </body>

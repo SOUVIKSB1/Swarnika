@@ -12,74 +12,34 @@
     <link rel="stylesheet" href="chat.css" />
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
-    <style>
-      .product-container {
-        max-width: 1000px;
-        margin: 3rem auto;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-      }
-      .product-img {
-        border-radius: 10px;
-        border: 1px solid #f1e0d0;
-      }
-      .btn-primary {
-        background-color: #b8860b;
-        border-color: #b8860b;
-      }
-      .btn-primary:hover {
-        background-color: #e6c96b;
-        border-color: #e6c96b;
-        color: #1a1a1a;
-      }
-      footer {
-        background-color: #f1e0d0;
-        text-align: center;
-        padding: 1rem;
-        margin-top: 3rem;
-      }
-    </style>
+
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
-          <img
-            src="image.png"
-            alt="Swarnika Logo"
-            class="brand-logo"
-            style="width: 40px; height: 40px"
-          />
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -111,19 +71,30 @@
     <script>
       // Dynamic API base: use localhost during local dev, otherwise assume backend will be served under the same origin at /api
       const API = (function () {
-        const h = location.hostname;
+        let h = location.hostname;
+        let proto = location.protocol;
+        if (proto === "file:" || !h) {
+          h = "localhost";
+          proto = "http:";
+        }
         if (h === "localhost" || h.startsWith("127."))
-          return `${location.protocol}//${h}:5001/api`;
+          return `${proto}//${h}:5001/api`;
         return "/api";
       })();
       const PLACEHOLDER_DATAURI = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="16">No%20image</text></svg>';
       const params = new URLSearchParams(location.search);
       const id = params.get("id");
 
-      document.addEventListener("DOMContentLoaded", () => {
-        setupNavbar(); // ✅ Was missing, now added
+      function initProductPage() {
         loadProduct();
-        updateCartCount(); // ✅ Was missing, now added
+        updateCartCount();
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.authStateSettled) {
+          initProductPage();
+        } else {
+          document.addEventListener("authStateSettled", initProductPage, { once: true });
+        }
       });
 
       async function loadProduct() {
@@ -135,37 +106,34 @@
         }
         area.innerHTML = '<div class="text-center py-5"><div class="loader" aria-hidden="true"></div><div class="mt-2 text-muted">Loading product...</div></div>';
         try {
-          // Try Firestore first (client-side helpers), then fall back to backend
+          // Fetch directly from backend (bypassing Firestore)
           let p = null;
-          if (
-            window.firebaseHelpers &&
-            typeof window.firebaseHelpers.getProduct === "function"
-          ) {
-            p = await window.firebaseHelpers.getProduct(id);
-          }
-          if (!p) {
-            const fetchFn = window.fetchWithFallback || fetch;
-            const res = await fetchFn(`/products/${id}`, {
-              credentials: "include",
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const pdata = await res.json();
-            p = { id: pdata._id || pdata.id, ...pdata };
-          }
+          const fetchFn = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
+          const res = await fetchFn(`/products/${id}`, {
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const pdata = await res.json();
+          p = { id: pdata._id || pdata.id, ...pdata };
           if (!p || !p.name) throw new Error("Product not found.");
           // Construct image URL: if relative path, use API base + path; if absolute, use as-is
           let imgSrc = p.image || PLACEHOLDER_DATAURI;
-          if (imgSrc.startsWith("/images/")) {
-            // Relative image path: prefer contacting the backend image host on the same
-            // machine using the current page hostname. This avoids hardcoding
-            // "localhost" which can break when the page is opened via 127.0.0.1.
+          if (imgSrc.startsWith("/uploads/") || imgSrc.startsWith("uploads/")) {
+            let relativePath = imgSrc;
+            if (!relativePath.startsWith("/")) {
+              relativePath = "/" + relativePath;
+            }
             const h = location.hostname;
             const proto = location.protocol;
-            // Construct backend base using the page hostname but keep the backend port (5001).
-            // Examples:
-            //  - page on localhost  -> http://localhost:5001/images/...
-            //  - page on 127.0.0.1 -> http://127.0.0.1:5001/images/...
-            imgSrc = `${proto}//${h}:5001${imgSrc}`;
+            if (h === "localhost" || h.startsWith("127.") || proto === "file:") {
+              const port = window.detectedPort || 5001;
+              imgSrc = `${proto}//${h}:${port}${relativePath}`;
+            } else {
+              imgSrc = relativePath;
+            }
+          } else if (imgSrc.startsWith("/images/") || imgSrc.startsWith("images/")) {
+            let rel = imgSrc.startsWith("/") ? imgSrc.substring(1) : imgSrc;
+            imgSrc = rel;
           }
           area.innerHTML = `
           <div class="row align-items-start product-fade-in">
@@ -213,50 +181,20 @@
             localStorage.setItem("guestId", uid);
           }
 
-          // Prefer Firestore cart helper when available
-          if (
-            window.firebaseHelpers &&
-            typeof window.firebaseHelpers.addToCart === "function"
-          ) {
-            try {
-              await window.firebaseHelpers.addToCart(uid, id, qty);
-              msg.textContent = "✅ Product added to cart!";
-              msg.className = "text-success text-center mt-3";
-              updateCartCount();
-              // Also sync to backend so server-side cart matches Firestore
-              try {
-                const body = { productId: id, quantity: qty };
-                if (uid && uid.startsWith('guest_')) body.guestId = uid;
-                const cartFetch = window.fetchWithFallback || fetch;
-                await cartFetch(`/cart/add`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", "x-guest-id": uid && uid.startsWith('guest_') ? uid : undefined },
-                  credentials: "include",
-                  body: JSON.stringify(body),
-                });
-                console.log('🔁 Synced Firestore cart to backend');
-              } catch (syncErr) {
-                console.warn('⚠️ Backend sync after Firestore add failed:', syncErr);
-              }
-              return;
-            } catch (e) {
-              console.warn(
-                "Firestore addToCart failed, falling back to backend",
-                e
-              );
-            }
+          // Use backend cart API endpoint expected by server
+          const body = { productId: id, quantity: qty };
+          if (uid && uid.startsWith('guest_')) {
+            body.guestId = uid;
+          } else {
+            const storedGuest = localStorage.getItem('guestId');
+            if (storedGuest) body.guestId = storedGuest;
           }
-
-          // Fallback: Use backend cart API endpoint expected by server
-          // include guestId in fallback backend POST if present
-          const fallbackBody = { productId: id, quantity: qty };
-          const storedGuest = localStorage.getItem('guestId');
-          if (storedGuest) fallbackBody.guestId = storedGuest;
-          const res = await fetch(`${API}/cart/add`, {
+          const fetchFn = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
+          const res = await fetchFn(`/cart/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify(fallbackBody),
+            body: JSON.stringify(body),
           });
           const data = await res.json();
 
@@ -282,66 +220,19 @@
         }
       }
 
-      // ✅ ADDED: Missing function
       async function updateCartCount() {
-        try {
-          // ✅ FIXED: API route and logic
-          const cartFetch = window.fetchWithFallback || fetch;
-          const res = await cartFetch(`/cart`, { credentials: "include" });
-          if (!res.ok) throw new Error("Could not fetch cart count");
-          const data = await res.json();
-          const count = data.items ? data.items.length : 0;
-          document.querySelectorAll(".cart-count").forEach((el) => {
-            el.textContent = count > 0 ? `(${count})` : "";
-          });
-        } catch (err) {
-          console.warn("⚠️ Cart count unavailable:", err);
+        if (typeof window.updateGlobalCartCount === "function") {
+          await window.updateGlobalCartCount();
         }
       }
 
-      // ✅ ADDED: Missing function
 
-      // called on DOMContentLoaded
-      async function setupNavbar() {
-        const navUserBtn = document.getElementById("navUserBtn");
-        const logoutLink = document.getElementById("logoutLink");
-        const profileLink = document.getElementById("profileLink");
-
-        try {
-          const authFetch = window.fetchWithFallback || fetch;
-          const res = await authFetch(`/auth/me`, { credentials: "include" });
-          if (!res.ok) throw new Error("Not logged in");
-          const user = await res.json();
-          navUserBtn.textContent =
-            user.name || (user.email ? user.email.split("@")[0] : "User");
-          profileLink.href = "profile.html";
-          navUserBtn.classList.add("dropdown-toggle");
-          navUserBtn.setAttribute("data-bs-toggle", "dropdown");
-        } catch {
-          navUserBtn.textContent = "Login";
-          navUserBtn.classList.remove("dropdown-toggle");
-          navUserBtn.removeAttribute("data-bs-toggle");
-          navUserBtn.href = "login.html";
-          document.querySelector(".dropdown-menu").style.display = "none";
-        }
-
-        if (logoutLink) {
-          logoutLink.addEventListener("click", async (e) => {
-            e.preventDefault();
-            try {
-              const r = await fetch(`${API}/auth/logout`, {
-                method: "POST",
-                credentials: "include",
-              });
-              if (!r.ok) throw new Error("Logout failed");
-              window.location.href = "index.html";
-            } catch (err) {
-              console.error("Logout error:", err);
-              alert("Error logging out.");
-            }
-          });
-        }
-      }
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
     <!-- Chatbot script -->
     <script defer src="chat.js"></script>

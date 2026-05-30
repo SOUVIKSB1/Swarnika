@@ -12,78 +12,51 @@
     <script src="apiHelper.js" defer></script>
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
-    <style>
-      body {
-        background: linear-gradient(135deg, #fffdf8, #f7e7cf);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-      }
-      nav.navbar {
-        width: 100%;
-        background: #fffaf3;
-      }
-      .login-container {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-        margin-top: 4rem;
-        max-width: 400px;
-        width: 100%;
-      }
-      .login-container h3 {
-        color: #b6862e;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        text-align: center;
-      }
-      .btn-primary {
-        background-color: #b6862e;
-        border-color: #b6862e;
-      }
-      .btn-primary:hover {
-        background-color: #9e7425;
-        border-color: #9e7425;
-      }
-    </style>
   </head>
-  <body class="p-3">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <body>
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
-          <img
-            src="image.png"
-            alt="Swarnika Logo"
-            class="brand-logo"
-            style="height: 40px"
-          />
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="register.html">Register</a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="admin.html">Admin Panel</a>
+            </li>
+            <li class="nav-item d-none" id="userNameDisplay">
+              <span class="nav-link text-primary fw-bold"></span>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" id="loginBtn" href="login.html">Login</a>
+            </li>
+            <li class="nav-item d-none" id="logoutContainer">
+              <a class="nav-link" href="#" id="logoutBtn">Logout</a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
+
 
     <div class="login-container">
       <h3>Welcome Back</h3>
@@ -123,6 +96,7 @@
         onAuthStateChanged,
       } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
       import { API } from "./config.js";
+      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
       const emailInput = document.getElementById("email");
       const passInput = document.getElementById("pass");
       const loginBtn = document.getElementById("btn");
@@ -146,23 +120,22 @@
         try {
           // Try backend login first (handles both regular users and admin)
           console.log("🔐 Attempting backend login...");
+          const guestId = localStorage.getItem('guestId');
           const loginRes = await fetchWithFallback('/auth/login', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, guestId }),
           });
 
           if (loginRes.ok) {
             const loginData = await loginRes.json();
             console.log("✅ Backend login successful", loginData.user);
             
-            // Store token for fallback (DEV only)
-            if (location.hostname === 'localhost' || location.hostname.startsWith('127.')) {
-              if (loginData.token) {
-                localStorage.setItem("authToken", loginData.token);
-                console.log("💾 Token stored in localStorage (dev only)");
-              }
+            // Store token for fallback
+            if (loginData.token) {
+              localStorage.setItem("authToken", loginData.token);
+              console.log("💾 Token stored in localStorage");
             }
 
             // Check if user is admin
@@ -202,10 +175,10 @@
           const idToken = await user.getIdToken();
           console.log("🎫 Got Firebase ID token");
 
-            // Step 3: Sync with backend to create session cookie
-            console.log("🔄 Syncing with backend...");
-            const guestId = localStorage.getItem('guestId');
-            const syncRes = await fetch(`${API}/auth/firebase`, {
+          // Step 3: Sync with backend to create session cookie
+          console.log("🔄 Syncing with backend...");
+          const guestId = localStorage.getItem('guestId');
+          const syncRes = await fetchWithFallback('/auth/firebase', {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
@@ -233,28 +206,14 @@
             console.log("📦 Sync response:", syncData);
             console.log("🍪 Cookies after sync:", document.cookie);
             
-            // Store token for fallback (DEV only)
-            if (location.hostname === 'localhost' || location.hostname.startsWith('127.')) {
-              if (syncData.token) {
-                localStorage.setItem("authToken", syncData.token);
-                console.log("💾 Token stored in localStorage as fallback (dev only)");
-              }
-              localStorage.setItem("firebaseIdToken", idToken);
-              console.log("💾 Firebase ID token stored (dev only)");
+            // Store tokens in localStorage for fallback
+            if (syncData.token) {
+              localStorage.setItem("authToken", syncData.token);
+              console.log("💾 Token stored in localStorage as fallback");
             }
-            
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            // FALLBACK: Store token in localStorage if cookies don't work (DEV only)
-            if (location.hostname === 'localhost' || location.hostname.startsWith('127.')) {
-              if (syncData.token) {
-                localStorage.setItem("authToken", syncData.token);
-                console.log("💾 Token stored in localStorage as fallback (dev only)");
-              }
-              // Also store Firebase ID token for future Bearer auth if needed
-              localStorage.setItem("firebaseIdToken", idToken);
-              console.log("💾 Firebase ID token stored in localStorage (dev only)");
-            }
+            // Also store Firebase ID token for future Bearer auth if needed
+            localStorage.setItem("firebaseIdToken", idToken);
+            console.log("💾 Firebase ID token stored in localStorage");
 
             // Wait a moment for cookie to be set
             await new Promise((resolve) => setTimeout(resolve, 500));
@@ -305,9 +264,8 @@
       // Check if already logged in
       onAuthStateChanged(auth, async (user) => {
         if (user) {
-          // Verify backend session exists
           try {
-            const checkRes = await fetch(`${API}/auth/me`, {
+            const checkRes = await fetchWithFallback('/auth/me', {
               credentials: "include",
             });
             if (checkRes.ok) {
@@ -334,6 +292,7 @@
         signInWithPopup,
       } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
       import { API } from "./config.js";
+      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
       const googleBtn = document.getElementById("googleBtn");
       if (googleBtn) {
         googleBtn.addEventListener("click", async (e) => {
@@ -425,6 +384,12 @@
           }
         });
       }
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>

@@ -2,9 +2,14 @@
 // Backend API base — dynamic: use localhost during local dev, otherwise expect backend
 // to be served from the same origin under /api (update if you host backend elsewhere)
 const API = (function () {
-  const host = window.location.hostname;
+  let host = window.location.hostname;
+  let protocol = location.protocol;
+  if (protocol === "file:" || !host) {
+    host = "localhost";
+    protocol = "http:";
+  }
   if (host === "localhost" || host.startsWith("127."))
-    return `${location.protocol}//${host}:5001/api`;
+    return `${protocol}//${host}:5001/api`;
   return "/api";
 })();
 
@@ -31,16 +36,39 @@ async function getMe() {
 }
 
 function normalizeImageUrl(src) {
-  if (!src) return src;
+  if (!src) return "image.png";
   try {
-    // If the image URL points to a local backend host (localhost or 127.0.0.1 with any port),
-    // convert it to a relative path so images work when the app is opened via either
-    // `localhost` or `127.0.0.1` (and regardless of backend port like 5001/5002).
-    // Examples:
-    //  - http://localhost:5001/images/foo.avif  -> /images/foo.avif
-    //  - http://127.0.0.1:5002/images/foo.avif -> /images/foo.avif
+    let path = src;
     const m = src.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)$/i);
-    if (m && m[3]) return m[3];
+    if (m && m[3]) {
+      path = m[3];
+    }
+    
+    // Dynamic uploads route to backend
+    if (path.startsWith('/uploads/') || path.startsWith('uploads/')) {
+      let relativePath = path;
+      if (!relativePath.startsWith('/')) {
+        relativePath = '/' + relativePath;
+      }
+      let host = window.location.hostname;
+      let protocol = window.location.protocol;
+      if (protocol === "file:" || !host) {
+        host = "localhost";
+        protocol = "http:";
+      }
+      if (host !== "localhost" && !host.startsWith("127.")) {
+        return relativePath; // relative for production rewrites
+      }
+      const port = window.detectedPort || 5001;
+      return `${protocol}//${host}:${port}${relativePath}`;
+    }
+    
+    // Static frontend assets served locally
+    if (path.startsWith('/images/') || path.startsWith('images/')) {
+      let rel = path.startsWith('/') ? path.substring(1) : path;
+      return rel; // Return relative path so it resolves relative to the current HTML file
+    }
+    
     return src;
   } catch (e) {
     return src;
@@ -66,44 +94,7 @@ async function getCartCount() {
   }
 }
 
-async function setupNavbar() {
-  try {
-    const [user, count] = await Promise.all([getMe(), getCartCount()]);
-    const navUser = document.getElementById("navUser");
-    const navAuth = document.getElementById("navAuth");
-    const cartBtn = document.getElementById("cartBtn");
-    if (cartBtn)
-      cartBtn.querySelector(".cart-count").textContent =
-        count > 0 ? `(${count})` : "";
-    if (user) {
-      if (navUser)
-        navUser.innerHTML = `<span class=\"me-2\">Hi, ${user.name}</span><button id=\"logoutBtn\" class=\"btn btn-sm btn-outline-secondary\">Logout</button>`;
-      if (navAuth) navAuth.remove();
-      const logoutBtn = document.getElementById("logoutBtn");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", async () => {
-          await apiFetch(`/auth/logout`, {
-            method: "POST",
-            credentials: "include",
-          });
-          location.href = "index.html";
-        });
-      }
-    }
-  } catch (e) {
-    /* noop */
-  }
-}
-
-// Utility to redirect to homepage after login/register
-async function redirectIfLoggedIn() {
-  try {
-    const user = await getMe();
-    if (user) location.href = "index.html";
-  } catch (e) {
-    /* noop */
-  }
-}
+// Utility function left blank (removed legacy handlers)
 
 // Simple toast helper using Bootstrap Toast
 function showToast(message, variant = "primary") {
@@ -145,7 +136,7 @@ function renderProductCard(p) {
     <div class="card h-100">
       <img src="${
         normalizeImageUrl(p.image) || "image.png"
-      }" class="card-img-top" alt="${p.name || "Product"}">
+      }" class="card-img-top" alt="${p.name || "Product"}" loading="lazy">
       <div class="card-body d-flex flex-column">
         <h5 class="card-title">${p.name || "Unnamed"}</h5>
         <p class="card-text price">${p.price ? "₹" + p.price : ""}</p>
@@ -162,19 +153,21 @@ function renderProductCard(p) {
   return wrapper;
 }
 
+let cachedProducts = null;
+let currentMetalFilter = null;
+
 async function loadProducts(filterMetal = null) {
   const container = document.getElementById("productsRow");
   if (!container) return;
-  container.innerHTML = '<div class="text-center py-5"><div class="loader" aria-hidden="true"></div><div class="mt-2 text-muted">Loading products…</div></div>';
-  try {
-    const helpers = window.firebaseHelpers;
-    let products =
-      helpers && typeof helpers.fetchProducts === "function"
-        ? await helpers.fetchProducts()
-        : [];
 
-    // If Firestore is not available or returned no products, fall back to backend API
-    if ((!products || products.length === 0) && typeof fetch === "function") {
+  // Track the active metal filter
+  currentMetalFilter = filterMetal;
+
+  // Show loading indicator only on first fetch
+  if (!cachedProducts) {
+    container.innerHTML = '<div class="text-center py-5"><div class="loader" aria-hidden="true"></div><div class="mt-2 text-muted">Loading products…</div></div>';
+    try {
+      let products = [];
       try {
         const res = await apiFetch(`/products`);
         if (res && res.ok) {
@@ -182,155 +175,134 @@ async function loadProducts(filterMetal = null) {
           // ensure each product has an id field (Mongo returns _id)
           products = Array.isArray(data)
             ? data.map((p) => ({ id: p._id || p.id, ...p }))
-            : products;
+            : [];
         }
       } catch (e) {
         console.warn("Backend products fetch failed", e);
       }
-    }
-    
-    // Filter by metal type if specified (gold, silver, platinum)
-    if (filterMetal) {
-      const filterLower = filterMetal.toLowerCase().trim();
-      products = products.filter((p) => {
-        const productMetal = (p.metal || '').toLowerCase().trim();
-        return productMetal === filterLower;
-      });
-      console.log(`🔍 Filtered by metal: ${filterMetal}, found ${products.length} products`);
-    }
-    
-    container.innerHTML = ""; // clear loader
-    // add subtle fade-in animation class when appending product cards
-    if (!products || products.length === 0) {
-      const message = filterMetal ? `No ${filterMetal} products found.` : 'No products found.';
-      container.innerHTML = `<div class="text-center">${message}</div>`;
+      cachedProducts = products || [];
+    } catch (err) {
+      console.error("loadProducts fetch error", err);
+      container.innerHTML = '<div class="text-center text-danger">Failed to load products.</div>';
       return;
     }
-      products.forEach((p) => {
-      const el = renderProductCard(p);
-      el.classList.add('product-fade-in');
-      container.appendChild(el);
-    });    // Attach click handlers for add-to-cart and quick view (quick view uses modal already in index.html)
-    container.querySelectorAll(".add-cart-btn").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const id = btn.getAttribute("data-id");
-        btn.disabled = true;
-        try {
-          const res = await addToCartById(id, 1);
-          // res.items is the updated items array; update cart count UI
-          const count = Array.isArray(res.items)
-            ? res.items.reduce((s, i) => s + (i.quantity || 0), 0)
-            : 0;
-          document
-            .querySelectorAll(".cart-count")
-            .forEach((el) => (el.textContent = count > 0 ? `(${count})` : ""));
-          // simple feedback + toast
-          showToast("Added to cart", "success");
-          btn.classList.remove("btn-success");
-          btn.classList.add("btn-outline-success");
-          btn.textContent = "Added";
-        } catch (err) {
-          console.error("Add to cart failed", err);
-          showToast("Could not add to cart", "danger");
-        } finally {
-          btn.disabled = false;
-          setTimeout(() => {
-            btn.classList.remove("btn-outline-success");
-            btn.classList.add("btn-success");
-            btn.textContent = "Add to Cart";
-          }, 1200);
-        }
-      });
-    });
-
-    // Quick view: populate modal fields and show
-    container.querySelectorAll(".qv-btn").forEach((b) => {
-      b.addEventListener("click", async (e) => {
-        const id = b.getAttribute("data-id");
-        try {
-          // Try Firestore first, then fallback to backend product API
-          let prod = null;
-          if (
-            window.firebaseHelpers &&
-            typeof window.firebaseHelpers.getProduct === "function"
-          ) {
-            prod = await window.firebaseHelpers.getProduct(id);
-          }
-          if (!prod) {
-            try {
-              const res = await apiFetch(`/products/${id}`);
-              if (res && res.ok) {
-                const pdata = await res.json();
-                prod = { id: pdata._id || pdata.id, ...pdata };
-              }
-            } catch (e) {
-              // ignore
-            }
-          }
-          if (!prod) return alert("Product not found");
-          const qvTitle = document.getElementById("qvTitle");
-          const qvImg = document.getElementById("qvImg");
-          const qvPrice = document.getElementById("qvPrice");
-          const qvDesc = document.getElementById("qvDesc");
-          const qvMeta = document.getElementById("qvMeta");
-          if (qvTitle) qvTitle.textContent = prod.name || "Product";
-          if (qvImg) qvImg.src = prod.image || "image.png";
-          if (qvPrice) qvPrice.textContent = prod.price ? "₹" + prod.price : "";
-          if (qvDesc) qvDesc.textContent = prod.description || "";
-          if (qvMeta) qvMeta.textContent = prod.category || "";
-          // show modal
-          const modalEl = document.getElementById("quickViewModal");
-          if (modalEl) {
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-            // store current product id on the modal's Add button for later
-            const qvAdd = document.getElementById("qvAddBtn");
-            if (qvAdd) qvAdd.setAttribute("data-id", id);
-            // wire the Quick View 'Open product page' button to the product page
-            const qvView = document.getElementById("qvViewBtn");
-            if (qvView) {
-              qvView.setAttribute(
-                "href",
-                `product.html?id=${encodeURIComponent(id)}`
-              );
-              qvView.setAttribute("role", "link");
-            }
-          }
-        } catch (err) {
-          console.error("Quick view failed", err);
-        }
-      });
-    });
-
-    // Wire quick-view Add to Cart button once (uses dataset id set when opening modal)
-    const qvAddBtn = document.getElementById("qvAddBtn");
-    if (qvAddBtn) {
-      qvAddBtn.addEventListener("click", async (ev) => {
-        const pid = qvAddBtn.getAttribute("data-id");
-        if (!pid) return showToast("No product selected", "warning");
-        qvAddBtn.disabled = true;
-        try {
-          const res = await addToCartById(pid, 1);
-          const count = Array.isArray(res.items)
-            ? res.items.reduce((s, i) => s + (i.quantity || 0), 0)
-            : 0;
-          document
-            .querySelectorAll(".cart-count")
-            .forEach((el) => (el.textContent = count > 0 ? `(${count})` : ""));
-          showToast("Added to cart", "success");
-        } catch (err) {
-          console.error("QV add failed", err);
-          showToast("Could not add to cart", "danger");
-        } finally {
-          qvAddBtn.disabled = false;
-        }
-      });
-    }
-  } catch (err) {
-    console.error("loadProducts error", err);
-    container.innerHTML =
-      '<div class="text-center text-danger">Failed to load products.</div>';
   }
+
+  renderFilteredProducts();
+}
+
+function renderFilteredProducts() {
+  const container = document.getElementById("productsRow");
+  if (!container || !cachedProducts) return;
+
+  const searchInput = document.getElementById("search");
+  const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+  let products = [...cachedProducts];
+
+  // 1. Filter by metal type if specified
+  if (currentMetalFilter) {
+    const filterLower = currentMetalFilter.toLowerCase().trim();
+    products = products.filter((p) => {
+      const productMetal = (p.metal || '').toLowerCase().trim();
+      return productMetal === filterLower;
+    });
+  }
+
+  // 2. Filter by search query if specified
+  if (searchQuery) {
+    products = products.filter((p) => {
+      const name = (p.name || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const metal = (p.metal || '').toLowerCase();
+      return name.includes(searchQuery) || desc.includes(searchQuery) || cat.includes(searchQuery) || metal.includes(searchQuery);
+    });
+  }
+
+  container.innerHTML = ""; // clear container
+
+  if (products.length === 0) {
+    const message = currentMetalFilter 
+      ? `No ${currentMetalFilter} products match your search.` 
+      : 'No products match your search.';
+    container.innerHTML = `<div class="text-center text-muted py-5">${message}</div>`;
+    return;
+  }
+
+  products.forEach((p, i) => {
+    const el = renderProductCard(p);
+    el.classList.add('product-fade-in');
+    el.style.animationDelay = `${i * 0.05}s`;
+    container.appendChild(el);
+  });
+
+  // Attach click handlers for add-to-cart and quick view
+  container.querySelectorAll(".add-cart-btn").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      const id = btn.getAttribute("data-id");
+      btn.disabled = true;
+      try {
+        const res = await addToCartById(id, 1);
+        const count = Array.isArray(res.items)
+          ? res.items.reduce((s, i) => s + (i.quantity || 0), 0)
+          : 0;
+        document
+          .querySelectorAll(".cart-count")
+          .forEach((el) => (el.textContent = count > 0 ? `(${count})` : ""));
+        showToast("Added to cart", "success");
+        btn.classList.remove("btn-success");
+        btn.classList.add("btn-outline-success");
+        btn.textContent = "Added";
+      } catch (err) {
+        console.error("Add to cart failed", err);
+        showToast("Could not add to cart", "danger");
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => {
+          btn.classList.remove("btn-outline-success");
+          btn.classList.add("btn-success");
+          btn.textContent = "Add to Cart";
+        }, 1200);
+      }
+    });
+  });
+
+  // Quick view
+  container.querySelectorAll(".qv-btn").forEach((b) => {
+    b.addEventListener("click", async (e) => {
+      const id = b.getAttribute("data-id");
+      try {
+        const prod = cachedProducts.find(p => p.id === id);
+        if (!prod) return alert("Product not found");
+        const qvTitle = document.getElementById("qvTitle");
+        const qvImg = document.getElementById("qvImg");
+        const qvPrice = document.getElementById("qvPrice");
+        const qvDesc = document.getElementById("qvDesc");
+        const qvMeta = document.getElementById("qvMeta");
+        if (qvTitle) qvTitle.textContent = prod.name || "Product";
+        if (qvImg) qvImg.src = prod.image || "image.png";
+        if (qvPrice) qvPrice.textContent = prod.price ? "₹" + prod.price : "";
+        if (qvDesc) qvDesc.textContent = prod.description || "";
+        if (qvMeta) qvMeta.textContent = prod.category || "";
+        
+        const modalEl = document.getElementById("quickViewModal");
+        if (modalEl) {
+          const modal = new bootstrap.Modal(modalEl);
+          modal.show();
+          const qvAdd = document.getElementById("qvAddBtn");
+          if (qvAdd) qvAdd.setAttribute("data-id", id);
+          const qvView = document.getElementById("qvViewBtn");
+          if (qvView) {
+            qvView.setAttribute("href", `product.html?id=${encodeURIComponent(id)}`);
+            qvView.setAttribute("role", "link");
+          }
+        }
+      } catch (err) {
+        console.error("Quick view failed", err);
+      }
+    });
+  });
 }
 
 // Update cart count UI - now using backend API only for consistency
@@ -422,5 +394,59 @@ async function addToCartById(productId, quantity = 1) {
 
 // Auto-load products on DOM ready if products container exists
 document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("productsRow")) loadProducts();
+  if (document.getElementById("productsRow")) {
+    loadProducts();
+    const searchInput = document.getElementById("search");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        renderFilteredProducts();
+      });
+    }
+  }
+
+  // Quick View Add to Cart button wiring (globally once on DOM ready)
+  const qvAddBtn = document.getElementById("qvAddBtn");
+  if (qvAddBtn) {
+    qvAddBtn.addEventListener("click", async () => {
+      const pid = qvAddBtn.getAttribute("data-id");
+      if (!pid) return showToast("No product selected", "warning");
+      qvAddBtn.disabled = true;
+      try {
+        const res = await addToCartById(pid, 1);
+        const count = Array.isArray(res.items)
+          ? res.items.reduce((s, i) => s + (i.quantity || 0), 0)
+          : 0;
+        document
+          .querySelectorAll(".cart-count")
+          .forEach((el) => (el.textContent = count > 0 ? `(${count})` : ""));
+        showToast("Added to cart", "success");
+        
+        // Close the modal upon successful addition
+        const modalEl = document.getElementById("quickViewModal");
+        if (modalEl) {
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) {
+            modal.hide();
+          } else {
+            // Fallback: hide using bootstrap class or query
+            const bsModal = new bootstrap.Modal(modalEl);
+            bsModal.hide();
+          }
+        }
+      } catch (err) {
+        console.error("QV add failed", err);
+        showToast("Could not add to cart", "danger");
+      } finally {
+        qvAddBtn.disabled = false;
+      }
+    });
+  }
+
+  // Fix static images served on default ports or paths
+  document.querySelectorAll("img").forEach((img) => {
+    const src = img.getAttribute("src");
+    if (src && (src.includes("127.0.0.1:5001") || src.includes("localhost:5001") || src.startsWith("/images/") || src.startsWith("images/") || src.startsWith("/uploads/") || src.startsWith("uploads/"))) {
+      img.src = normalizeImageUrl(src);
+    }
+  });
 });

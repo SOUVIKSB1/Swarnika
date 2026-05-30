@@ -16,43 +16,31 @@
     <script defer src="chat.js"></script>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
-          <img
-            src="image.png"
-            alt="Swarnika Logo"
-            class="brand-logo"
-            style="width: 40px; height: 40px"
-          />
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
+              <a class="nav-link active" href="cart.html">Cart <span class="cart-count"></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -105,7 +93,11 @@
       let _loading = false;
 
       document.addEventListener("DOMContentLoaded", () => {
-        loadCart();
+        if (window.authStateSettled) {
+          loadCart();
+        } else {
+          document.addEventListener("authStateSettled", () => loadCart(), { once: true });
+        }
       });
 
       // showLoader: when false, skip showing the full-page loader to avoid flicker
@@ -208,70 +200,32 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to load cart");
 
-          // Handle both populated and unpopulated responses
-          const items = data.items || [];
-          if (!items || items.length === 0) {
-            // If no items, show empty state only when loader was visible, otherwise clear areas gracefully
-            if (showLoader) {
-              cartArea.innerHTML =
-                '<div class="alert alert-secondary text-center">Your cart is empty.</div>';
-            } else {
-              cartArea.innerHTML = '<div class="alert alert-secondary text-center">Your cart is empty.</div>';
-            }
-            checkoutArea.style.display = "none";
-            return;
-          }
-
-              cartItems = items.map(item => ({
-            _id: item._id,
-            name: item.product?.name || item.name || 'Unknown Product',
-              image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
-            price_at_add: item.price_at_add || item.product?.price || 0,
-            quantity: item.quantity || 1
-          }));
-
-          // If there are fewer than 5 items, inject demo items so we can demo cart & checkout
-          if (cartItems.length < 5) {
-            const needed = 5 - cartItems.length;
-            for (let i = 0; i < needed; i++) {
-              const demoIndex = cartItems.length + 1;
-              cartItems.push({
-                _id: `demo-${demoIndex}`,
-                name: `Demo Product ${demoIndex}`,
-                image: PLACEHOLDER_DATAURI,
-                price_at_add: 499 + demoIndex * 150,
-                quantity: 1,
+            const items = data.items || [];
+            if (!items || items.length === 0) {
+              cartArea.innerHTML = '<div class="alert alert-secondary text-center">Your shopping cart is empty.</div>';
+              checkoutArea.style.display = "none";
+              document.querySelectorAll(".cart-count").forEach((el) => {
+                el.textContent = "";
               });
+              return;
             }
-            demoInjected = true;
-            console.log('🧪 Demo items injected into cart for demo mode.');
-          }
 
-          renderCart();
-          renderCheckout();
-          updateCartCountUIFromCartItems(); // Update navbar count from local cartItems (reflect demo)
+            cartItems = items.map(item => ({
+              _id: item._id,
+              productId: item.product?._id || item.product || '',
+              name: item.product?.name || item.name || 'Unknown Product',
+              image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
+              price_at_add: item.price_at_add || item.product?.price || 0,
+              quantity: item.quantity || 1
+            }));
+
+            renderCart();
+            renderCheckout();
+            updateCartCountUIFromCartItems();
         } catch (err) {
           console.error("❌ Cart load error:", err);
-          // If fetch failed (network/CORS/backend offline), fall back to demo items so the demo still works
-          const fallbackMessage = `Error loading cart: ${err.message}. Showing demo items instead.`;
-
-          // Inject demo items unconditionally for fallback (5 items)
-          cartItems = [];
-          for (let i = 1; i <= 5; i++) {
-            cartItems.push({
-              _id: `demo-${i}`,
-              name: `Demo Product ${i}`,
-              image: PLACEHOLDER_DATAURI,
-              price_at_add: 499 + i * 150,
-              quantity: 1,
-            });
-          }
-          demoInjected = true;
-          renderCart();
-          renderCheckout();
-          updateCartCountUIFromCartItems();
-
-          cartArea.insertAdjacentHTML('afterbegin', `<div class="alert alert-warning">${fallbackMessage}</div>`);
+          cartArea.innerHTML = `<div class="alert alert-danger text-center">Error loading cart: ${err.message}</div>`;
+          checkoutArea.style.display = "none";
         } finally {
           _loading = false;
         }
@@ -425,7 +379,7 @@
         const isDemoRow = typeof item._id === 'string' && item._id.startsWith('demo-');
         return `
               <tr data-id="${item._id}" class="${isDemoRow ? 'demo-row' : ''}">
-                <td>${isDemoRow ? `<span class="demo-name">${item.name}</span> <span class="demo-badge">Demo</span>` : `<a href="product.html?id=${item._id}">${item.name}</a>`}</td>
+                <td>${isDemoRow ? `<span class="demo-name">${item.name}</span> <span class="demo-badge">Demo</span>` : `<a href="product.html?id=${item.productId}">${item.name}</a>`}</td>
                 <td>₹${displayPrice.toLocaleString()}${isSurcharge ? ` <span class="badge bg-warning text-dark small">+20%</span>` : ""}</td>
                 <td style="width: 120px;">
                   <input type="number" class="form-control form-control-sm qty-input" value="${item.quantity}" min="1">
@@ -497,8 +451,9 @@
                 const serverItems = (data.cart && data.cart.items) || data.items || [];
                 cartItems = serverItems.map(item => ({
                   _id: item._id,
-                    name: item.product?.name || item.name || 'Unknown Product',
-                    image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
+                  productId: item.product?._id || item.product || '',
+                  name: item.product?.name || item.name || 'Unknown Product',
+                  image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
                   price_at_add: item.price_at_add || item.product?.price || 0,
                   quantity: item.quantity || 1
                 }));
@@ -577,8 +532,9 @@
                 const serverItems = (data.cart && data.cart.items) || data.items || [];
                 cartItems = serverItems.map(item => ({
                   _id: item._id,
-                    name: item.product?.name || item.name || 'Unknown Product',
-                    image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
+                  productId: item.product?._id || item.product || '',
+                  name: item.product?.name || item.name || 'Unknown Product',
+                  image: item.product?.image || item.image || PLACEHOLDER_DATAURI,
                   price_at_add: item.price_at_add || item.product?.price || 0,
                   quantity: item.quantity || 1
                 }));
@@ -771,6 +727,12 @@
           _cartCountTimer = null;
         }, 300);
       }
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
   </body>
 </html>

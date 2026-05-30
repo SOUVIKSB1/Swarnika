@@ -9,43 +9,37 @@
       rel="stylesheet"
     />
     <link href="styles.css" rel="stylesheet" />
+    <script src="apiHelper.js" defer></script>
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
     <script defer src="app.js"></script>
   </head>
-  <body class="p-3">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <body>
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
           <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -63,9 +57,9 @@
         </div>
       </div>
     </nav>
-    <div class="container col-md-4">
-      <h3>Register</h3>
-      <div id="msg" class="text-danger"></div>
+    <div class="login-container">
+      <h3 class="text-center mb-4">Create Account</h3>
+      <div id="msg" class="text-center mb-3 fw-semibold text-danger"></div>
       <div class="mb-3">
         <input
           id="name"
@@ -102,8 +96,9 @@
         />
       </div>
       <button id="btn" class="btn btn-primary w-100">Register</button>
-      <p class="mt-3">Already? <a href="login.html">Login</a></p>
+      <p class="mt-3 text-center">Already have an account? <a href="login.html">Login</a></p>
     </div>
+
 
     <script type="module">
       // Firebase Auth Registration with Backend Sync
@@ -118,6 +113,7 @@
         if (host === 'localhost' || host.startsWith('127.')) return `${location.protocol}//${host}:5001/api`;
         return '/api';
       })();
+      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
       const nameInput = document.getElementById("name");
       const emailInput = document.getElementById("email");
       const phoneInput = document.getElementById("phone");
@@ -130,7 +126,7 @@
         if (user) {
           // Check if backend session exists
           try {
-            const checkRes = await fetch(`${API}/auth/me`, { credentials: 'include' });
+            const checkRes = await fetchWithFallback('/auth/me', { credentials: 'include' });
             if (checkRes.ok) {
               window.location.href = "index.html";
             }
@@ -182,11 +178,11 @@
           
           // Step 4: Sync with backend to create session
           console.log('🔄 Syncing with backend...');
-          const syncRes = await fetch(`${API}/auth/firebase`, {
+          const syncRes = await fetchWithFallback('/auth/firebase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ idToken })
+            body: JSON.stringify({ idToken, phone })
           });
           
           if (!syncRes.ok) {
@@ -239,6 +235,12 @@
           registerBtn.disabled = false;
         }
       });
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
   </body>
 </html>

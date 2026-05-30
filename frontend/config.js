@@ -33,11 +33,17 @@ async function detectBackendPort() {
 }
 
 export const API = (function () {
-  const host = window.location.hostname;
+  let host = window.location.hostname;
+  let protocol = location.protocol;
+
+  if (protocol === "file:" || !host) {
+    host = "localhost";
+    protocol = "http:";
+  }
 
   // Local development: use current hostname and backend port 5001
   if (host === "localhost" || host.startsWith("127.")) {
-    const localAPI = `${location.protocol}//${host}:5001/api`;
+    const localAPI = `${protocol}//${host}:5001/api`;
     console.log("🏠 Development mode - Local API:", localAPI);
     return localAPI;
   }
@@ -58,3 +64,4 @@ if (typeof window !== "undefined") {
   window.API = API;
 }
 
+const API_BASE_URL = "https://swarnika.onrender.com";

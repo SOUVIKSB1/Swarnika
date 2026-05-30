@@ -8,7 +8,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link href="admin.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="chat.css" />
     <script type="module" src="firebase.js" defer></script>
     <script src="apiHelper.js" defer></script>
@@ -17,38 +17,31 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
           <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
-          <span style="color: #d4af37">Swarnika Jewels</span>
+          <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link active" href="admin.html">Admin Panel</a>
@@ -67,12 +60,12 @@
       </div>
     </nav>
 
-    <main class="container py-4">
+    <main class="profile-container py-4">
       <div id="adminDebug" class="mb-3">
         <div class="alert alert-info small" id="adminDebugContent">Checking admin status…</div>
       </div>
       <div class="card shadow-lg p-4 mb-5 bg-white rounded border-0">
-        <h3 class="text-center mb-4 text-gold">Product Management</h3>
+        <h3 class="text-center mb-4 text-primary">Product Management</h3>
         <form id="productForm" class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Name</label>
@@ -115,7 +108,7 @@
             <input id="img" class="form-control" placeholder="https://..." />
           </div>
           <div class="col-12 d-flex justify-content-center mt-3">
-            <button type="button" id="createBtn" class="btn btn-gold px-4">
+            <button type="button" id="createBtn" class="btn btn-primary px-4">
               Create Product
             </button>
           </div>
@@ -123,7 +116,7 @@
       </div>
 
       <div class="card shadow-sm p-3">
-        <h5 class="text-gold mb-3">Manage Existing Products</h5>
+        <h5 class="text-primary mb-3">Manage Existing Products</h5>
         <table class="table table-hover align-middle text-center">
           <thead class="table-light">
             <tr>
@@ -140,7 +133,7 @@
       </div>
 
       <div class="card shadow-sm p-3 mt-4">
-        <h5 class="text-gold mb-3">Manage Demo Orders (local)</h5>
+        <h5 class="text-primary mb-3">Manage Demo Orders (local)</h5>
         <p class="small text-muted">These orders are stored in this browser's <code>localStorage.demoOrders</code>. Admin actions affect only this local data unless you import the order to the backend.</p>
         <div id="demoOrdersArea">
           <div class="text-muted">Loading demo orders...</div>
@@ -157,6 +150,7 @@
           }
           return "/api";
       })();
+      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
 
       async function loadProducts() {
         // Build auth headers for admin access
@@ -185,8 +179,8 @@
         <td>₹${p.price}</td>
         <td>${p.stock}</td>
         <td>
-          <button class="btn btn-sm btn-outline-warning me-1" onclick="editProduct(${p.id})">Edit</button>
-          <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.id})">Delete</button>
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="editProduct('${p.id}')">Edit</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p.id}')">Delete</button>
         </td>`;
           tbody.appendChild(row);
         });
@@ -444,6 +438,12 @@
           alert('Failed to delete demo order');
         }
       }
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>

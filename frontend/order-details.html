@@ -9,66 +9,37 @@
       rel="stylesheet"
     />
     <link href="styles.css" rel="stylesheet" />
+    <script src="apiHelper.js" defer></script>
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
-    <style>
-      body {
-        background-color: #fffaf6;
-      }
-      .order-container {
-        max-width: 900px;
-        margin: 3rem auto;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
-      }
-      footer {
-        text-align: center;
-        padding: 1rem;
-        background: #f1e0d0;
-        margin-top: 3rem;
-      }
-    </style>
+
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
-        <a
-          class="navbar-brand fw-bold d-flex align-items-center gap-2"
-          href="index.html"
-        >
-          <img
-            src="image.png"
-            alt="Swarnika Logo"
-            class="brand-logo"
-            style="width: 40px; height: 40px"
-          />
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
+          <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="cart.html"
-                >Cart <span class="cart-count"></span
-              ></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html">Orders</a>
+              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="profile.html">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -87,7 +58,7 @@
       </div>
     </nav>
 
-    <div class="order-container">
+    <div class="orders-container">
       <div id="orderArea">
         <div class="text-muted py-5 text-center">
           ⏳ Loading order details...
@@ -102,9 +73,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const API = (function() {
-        const host = window.location.hostname;
+        let host = window.location.hostname;
+        let protocol = location.protocol;
+        if (protocol === "file:" || !host) {
+          host = "localhost";
+          protocol = "http:";
+        }
         if (host === 'localhost' || host.startsWith('127.')) {
-          return `${location.protocol}//${host}:5001/api`;
+          return `${protocol}//${host}:5001/api`;
         }
         return '/api';
       })();
@@ -120,10 +96,16 @@
       const params = new URLSearchParams(location.search);
       const orderId = params.get("id");
 
-      document.addEventListener("DOMContentLoaded", () => {
-        setupNavbar();
+      function initOrderDetailsPage() {
         updateCartCount();
         loadOrderDetails();
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.authStateSettled) {
+          initOrderDetailsPage();
+        } else {
+          document.addEventListener("authStateSettled", initOrderDetailsPage, { once: true });
+        }
       });
 
       async function loadOrderDetails() {
@@ -165,9 +147,21 @@
             return;
           }
 
+          // Build auth headers
+          const headers = {};
+          const authToken = localStorage.getItem("authToken");
+          const firebaseToken = localStorage.getItem("firebaseIdToken");
+          if (authToken) {
+            headers["x-auth-token"] = authToken;
+          } else if (firebaseToken) {
+            headers["Authorization"] = `Bearer ${firebaseToken}`;
+          }
+
           // Otherwise, fetch from backend
-          const res = await fetch(`${API}/orders/${orderId}`, {
+          const fetchFn = window.fetchWithFallback || fetch;
+          const res = await fetchFn(`/orders/${orderId}`, {
             credentials: "include",
+            headers
           });
           if (res.status === 401) {
             area.innerHTML =
@@ -183,8 +177,28 @@
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Failed to load order");
 
-          const { order, items } = data;
-          area.innerHTML = renderOrderTemplate(order, items || []);
+          let order = null;
+          let items = [];
+          if (data.order) {
+            order = data.order;
+            items = data.items || [];
+          } else {
+            order = {
+              id: data._id || data.id,
+              status: data.status,
+              payment_mode: data.payment_mode,
+              payment_status: data.payment_status,
+              created_at: data.created_at || data.createdAt,
+              order_total: data.order_total,
+              shipping_address: data.shipping_address
+            };
+            items = (data.items || []).map(it => ({
+              name: it.product?.name || it.name || 'Unknown Product',
+              price: it.price || it.product?.price || 0,
+              quantity: it.quantity
+            }));
+          }
+          area.innerHTML = renderOrderTemplate(order, items);
         } catch (err) {
           console.error("❌ Failed to load order details:", err);
           area.innerHTML = `<div class="alert alert-danger">⚠️ Unable to load order details.<br>${err.message}</div>`;
@@ -261,59 +275,19 @@
 
       // --- Standard Navbar Functions ---
 
-      async function getCartCount() {
-        try {
-          const res = await fetch(`${API}/cart`, { credentials: "include" });
-          if (!res.ok) return 0;
-          const data = await res.json();
-          return data.items ? data.items.length : 0;
-        } catch (err) {
-          return 0;
-        }
-      }
-
       async function updateCartCount() {
-        const count = await getCartCount();
-        document.querySelectorAll(".cart-count").forEach((el) => {
-          el.textContent = count > 0 ? `(${count})` : "";
-        });
-      }
-
-      async function setupNavbar() {
-        const navUserBtn = document.getElementById("navUserBtn");
-        const logoutLink = document.getElementById("logoutLink");
-        const profileLink = document.getElementById("profileLink");
-
-        try {
-          const res = await fetch(`${API}/auth/profile`, {
-            credentials: "include",
-          });
-          if (!res.ok) throw new Error("Not logged in");
-          const user = await res.json();
-          navUserBtn.textContent = user.name || "User";
-          profileLink.href = "profile.html";
-        } catch {
-          navUserBtn.textContent = "Login";
-          navUserBtn.classList.remove("dropdown-toggle");
-          navUserBtn.removeAttribute("data-bs-toggle");
-          navUserBtn.href = "login.html";
-          document.querySelector(".dropdown-menu").style.display = "none";
+        if (typeof window.updateGlobalCartCount === "function") {
+          await window.updateGlobalCartCount();
         }
-
-        logoutLink.addEventListener("click", async (e) => {
-          e.preventDefault();
-          try {
-            await fetch(`${API}/auth/logout`, {
-              method: "POST",
-              credentials: "include",
-            });
-            alert("Logged out successfully!");
-            location.href = "index.html";
-          } catch (err) {
-            alert("Error logging out.");
-          }
-        });
       }
+
+
+    </script>
+    <script>
+      window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      }, { passive: true });
     </script>
   </body>
 </html>
