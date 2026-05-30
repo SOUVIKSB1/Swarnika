@@ -12,15 +12,36 @@ connectDB();
 
 // Initialize Firebase Admin SDK
 try {
-    credential: admin.credential.cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  });
-  console.log("🔥 Firebase Admin SDK initialized successfully");
+  const fs = require("fs");
+  let serviceAccount;
+  const saPath = path.join(__dirname, "swarnika-c2451-firebase-adminsdk-fbsvc-20e8b5ccff.json");
+  if (fs.existsSync(saPath)) {
+    serviceAccount = require(saPath);
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID || (serviceAccount && serviceAccount.project_id);
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || (serviceAccount && serviceAccount.client_email);
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY 
+    ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+    : (serviceAccount && serviceAccount.private_key);
+
+  if (projectId && clientEmail && privateKey) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+    });
+    console.log("🔥 Firebase Admin SDK initialized successfully");
+  } else {
+    console.warn("⚠️ Firebase Admin credentials missing, trying default initialization...");
+    admin.initializeApp();
+  }
 } catch (error) {
   console.error("❌ Failed to initialize Firebase Admin SDK:", error.message);
 }
+
 
 const app = express();
 app.set("trust proxy", 1);
@@ -159,13 +180,6 @@ const startServer = (port) => {
   });
 };
 
-
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  }),
-});
+// Note: Firebase Admin SDK is initialized at the top of the file.
 
 startServer(parseInt(PORT) || 5001);

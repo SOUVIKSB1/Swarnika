@@ -105,6 +105,7 @@
       loginBtn.addEventListener("click", async () => {
         const email = emailInput.value.trim();
         const password = passInput.value.trim();
+        const guestId = localStorage.getItem('guestId');
 
         msg.className = "text-center mb-3 fw-semibold text-danger";
         msg.textContent = "";
@@ -120,7 +121,6 @@
         try {
           // Try backend login first (handles both regular users and admin)
           console.log("🔐 Attempting backend login...");
-          const guestId = localStorage.getItem('guestId');
           const loginRes = await fetchWithFallback('/auth/login', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -177,7 +177,6 @@
 
           // Step 3: Sync with backend to create session cookie
           console.log("🔄 Syncing with backend...");
-          const guestId = localStorage.getItem('guestId');
           const syncRes = await fetchWithFallback('/auth/firebase', {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -217,7 +216,8 @@
 
             // Wait a moment for cookie to be set
             await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log("🍪 Cookies after delay:", document.cookie);          msg.className = "text-center mb-3 fw-semibold text-success";
+            console.log("🍪 Cookies after delay:", document.cookie);
+            msg.className = "text-center mb-3 fw-semibold text-success";
           msg.textContent = `✅ Welcome, ${
             user.displayName || user.email.split("@")[0]
           }! Redirecting...`;

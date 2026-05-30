@@ -20,7 +20,7 @@ dotenv.config();
     console.log('✅ Connected to MongoDB');
 
     // Check if admin already exists
-    const adminExists = await User.findOne({ email: '123@admin.com' });
+    const adminExists = await User.findOne({ email: 'souvik@admin.com' });
     if (adminExists) {
       console.log('⚠️ Admin user already exists:', adminExists.email);
       process.exit(0);
@@ -28,8 +28,8 @@ dotenv.config();
 
     // Create admin user
     const adminUser = await User.create({
-      name: 'Admin',
-      email: '123@admin.com',
+      name: 'Souvik ( Role : Admin',
+      email: 'souvik@admin.com',
       password: '123456',
       role: 'admin',
     });
