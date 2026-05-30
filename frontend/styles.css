@@ -77,6 +77,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -830,12 +833,12 @@ textarea.form-control:focus {
    FOOTER
    ═══════════════════════════════════════════════════════ */
 footer {
-  background: var(--gradient-footer);
-  color: var(--gold-pale);
+  background: var(--gradient-footer) !important;
+  color: var(--gold-pale) !important;
   text-align: center;
-  padding: 2.5rem 1.5rem;
-  margin-top: 4rem;
-  border-top: 3px solid var(--gold);
+  padding: 2rem 1.5rem !important;
+  margin-top: auto !important;
+  border-top: 3px solid var(--gold) !important;
   font-size: 0.9rem;
   letter-spacing: 0.3px;
 }
