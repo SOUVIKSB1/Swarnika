@@ -352,14 +352,30 @@ router.post("/firebase", async (req, res) => {
         name, 
         email, 
         firebaseUid,
+        phone: req.body?.phone || "",
+        address: req.body?.address || "",
         // Password not required for Firebase users
       });
       console.log("🆕 Created user from Firebase login:", email);
-    } else if (!user.firebaseUid) {
-      // Update existing user with Firebase UID
-      user.firebaseUid = firebaseUid;
-      await user.save();
-      console.log("🔄 Updated user with Firebase UID:", email);
+    } else {
+      // Update existing user with Firebase UID and optionally phone/address
+      let updated = false;
+      if (!user.firebaseUid) {
+        user.firebaseUid = firebaseUid;
+        updated = true;
+      }
+      if (req.body?.phone && !user.phone) {
+        user.phone = req.body.phone;
+        updated = true;
+      }
+      if (req.body?.address && !user.address) {
+        user.address = req.body.address;
+        updated = true;
+      }
+      if (updated) {
+        await user.save();
+        console.log("🔄 Updated user details with Firebase sync:", email);
+      }
     }
 
     // Generate JWT token for backend session

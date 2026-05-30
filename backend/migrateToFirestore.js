@@ -23,27 +23,39 @@ const path = require("path");
 dotenv.config();
 
 async function main() {
-  if (
-    !process.env.GOOGLE_APPLICATION_CREDENTIALS &&
-    !process.env.FIREBASE_SERVICE_ACCOUNT
-  ) {
-    console.error(
-      "ERROR: Set GOOGLE_APPLICATION_CREDENTIALS to your Firebase service account JSON path."
-    );
-    process.exit(1);
-  }
-
-  // Initialize Firebase Admin using application default credentials
+  // Initialize Firebase Admin using service account cert directly (like server.js)
   try {
+    const serviceAccount = require("./swarnika-c2451-firebase-adminsdk-fbsvc-93890fc9b6.json");
     admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
+      credential: admin.credential.cert(serviceAccount),
     });
+    console.log("🔥 Firebase Admin SDK initialized successfully");
   } catch (e) {
     console.error("Failed to initialize Firebase Admin:", e);
     process.exit(1);
   }
 
   const db = admin.firestore();
+
+  // Clear existing products in Firestore first to avoid duplicates or old items remaining
+  try {
+    console.log("🧹 Clearing existing products collection in Firestore...");
+    const productsCol = db.collection("products");
+    const snapshot = await productsCol.get();
+    if (!snapshot.empty) {
+      const batch = db.batch();
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+      console.log(`✅ Cleared ${snapshot.size} products from Firestore`);
+    } else {
+      console.log("ℹ️ Firestore products collection was already empty");
+    }
+  } catch (clearErr) {
+    console.error("⚠️ Failed to clear Firestore products collection:", clearErr.message || clearErr);
+  }
+
 
   await connectDB();
 

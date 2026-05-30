@@ -54,13 +54,26 @@ app.use(
     origin: function (origin, callback) {
       // allow requests with no origin (curl, mobile apps, same-origin)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      
+      // Dynamically trust any Vercel domain or subdomains
+      const isVercel = (function() {
+        try {
+          const url = new URL(origin);
+          return url.hostname === 'vercel.app' || url.hostname.endsWith('.vercel.app');
+        } catch (e) {
+          return false;
+        }
+      })();
+
+      if (allowedOrigins.includes(origin) || isVercel) {
+        return callback(null, true);
+      }
       console.error("CORS blocked for origin:", origin);
       return callback(new Error("CORS blocked for origin: " + origin));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-auth-token"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-auth-token", "x-guest-id"],
   })
 );
 

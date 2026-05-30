@@ -84,6 +84,11 @@ router.post('/add', maybeAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid product or quantity' });
     }
 
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ error: 'Invalid product ID format' });
+    }
+
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ error: 'Product not found' });
 
@@ -136,7 +141,10 @@ router.post('/add', maybeAuth, async (req, res) => {
 
     await cart.save();
     console.log('🛒 Cart saved with', cart.items.length, 'items, cartId:', cart._id);
-      const populatedCart = await cart.populate('items.product').populate('user', 'name email phone address');
+    const populatedCart = await cart.populate([
+      { path: 'items.product' },
+      { path: 'user', select: 'name email phone address' }
+    ]);
     res.json({ message: 'Item added to cart successfully', items: populatedCart.items, cart: populatedCart });
   } catch (error) {
     console.error('❌ Error adding item:', error);
@@ -161,7 +169,10 @@ router.put('/items/:itemId', maybeAuth, async (req, res) => {
 
     item.quantity = quantity;
     await cart.save();
-    const populatedCart = await cart.populate('items.product').populate('user', 'name email phone address');
+    const populatedCart = await cart.populate([
+      { path: 'items.product' },
+      { path: 'user', select: 'name email phone address' }
+    ]);
     res.json({ message: 'Item updated', cart: populatedCart });
   } catch (error) {
     console.error('❌ Error updating item:', error);
@@ -178,7 +189,10 @@ router.delete('/items/:itemId', maybeAuth, async (req, res) => {
 
     cart.items = cart.items.filter(item => item._id.toString() !== req.params.itemId);
     await cart.save();
-    const populatedCart = await cart.populate('items.product').populate('user', 'name email phone address');
+    const populatedCart = await cart.populate([
+      { path: 'items.product' },
+      { path: 'user', select: 'name email phone address' }
+    ]);
     res.json({ message: 'Item removed from cart', cart: populatedCart });
   } catch (error) {
     console.error('❌ Error removing item:', error);
