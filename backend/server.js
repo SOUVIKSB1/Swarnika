@@ -4,9 +4,7 @@ const connectDB = require("./db");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require("path");
-import admin from "firebase-admin";
-
-// Firebase initialization here
+const admin = require("firebase-admin");
 
 admin.initializeApp({
   credential: admin.credential.cert({
