@@ -215,10 +215,36 @@ router.get("/me", async (req, res) => {
 });
 
 // ✅ Get User Profile
-router.get("/profile", authMiddleware, async (req, res) => {
+router.get("/profile", async (req, res) => {
   try {
     console.log("📋 GET /auth/profile called");
-    const user = req.user;
+    
+    // Extract token from cookie, x-auth-token, or Bearer header
+    let token = null;
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+    } else if (req.headers["x-auth-token"]) {
+      token = req.headers["x-auth-token"];
+    } else if (req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    } else {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Fetch user
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     res.json({
       id: user._id,
       name: user.name,
@@ -234,13 +260,34 @@ router.get("/profile", authMiddleware, async (req, res) => {
 });
 
 // ✅ Update User Profile
-router.put("/profile", authMiddleware, async (req, res) => {
+router.put("/profile", async (req, res) => {
   try {
     console.log("✏️ PUT /auth/profile called");
     const { name, phone, address } = req.body;
 
+    // Extract token
+    let token = null;
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+    } else if (req.headers["x-auth-token"]) {
+      token = req.headers["x-auth-token"];
+    } else if (req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    } else {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Update user
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      decoded.id,
       { name: name || undefined, phone: phone || "", address: address || "" },
       { new: true, runValidators: true }
     ).select("-password");

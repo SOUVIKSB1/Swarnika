@@ -88,18 +88,6 @@
       </p>
     </div>
 
-    <footer class="text-center py-4 mt-auto">
-      <div class="container">
-        <div style="font-size: 1.35rem; font-weight: 600; letter-spacing: 1.5px" class="mb-2">
-          Swarnika Jewels
-        </div>
-        <div class="mb-1">© 2025 Swarnika Jewels | All Rights Reserved</div>
-        <div style="font-size: 0.8rem;" class="text-muted">
-          Project Developed by - Souvik Sinhababu
-        </div>
-      </div>
-    </footer>
-
     <script type="module">
       // Firebase Auth Login with Backend Sync
       import { auth } from "./firebase.js";
@@ -161,8 +149,6 @@
             }
 
             // Regular user: redirect to index
-            localStorage.removeItem('localAdmin');
-            localStorage.removeItem('localAdminEmail');
             msg.className = "text-center mb-3 fw-semibold text-success";
             msg.textContent = `✅ Welcome, ${loginData.user.name}! Redirecting...`;
             setTimeout(() => { location.href = 'index.html'; }, 900);
@@ -354,9 +340,6 @@
 
             const syncData = await syncRes.json();
             console.log("✅ Backend session created");
-
-            localStorage.removeItem('localAdmin');
-            localStorage.removeItem('localAdminEmail');
 
             // FALLBACK: Store tokens in localStorage for Bearer auth
             if (syncData.token) {

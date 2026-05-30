@@ -66,16 +66,8 @@
       <div id="ordersArea" class="mt-4"></div>
     </div>
 
-    <footer class="text-center py-4 mt-auto">
-      <div class="container">
-        <div style="font-size: 1.35rem; font-weight: 600; letter-spacing: 1.5px" class="mb-2">
-          Swarnika Jewels
-        </div>
-        <div class="mb-1">© 2025 Swarnika Jewels | All Rights Reserved</div>
-        <div style="font-size: 0.8rem;" class="text-muted">
-          Project Developed by - Souvik Sinhababu
-        </div>
-      </div>
+    <footer class="text-center py-3 mt-5 border-top">
+      © 2025 Swarnika Jewels | Crafted with 💛 for elegance
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -94,19 +86,8 @@
           return "/api";
       })();
 
-      // Configure page layout/titles immediately on script load to avoid visual jumps
-      (function() {
-        const params = new URLSearchParams(window.location.search);
-        const showHistory = params.get("history") === "true";
-        document.title = showHistory ? "Order History | Swarnika Jewels" : "My Orders | Swarnika Jewels";
-      })();
-
       function initOrdersPage() {
-        updateCartCount();
-        loadOrders();
-      }
-      document.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(location.search);
         const showHistory = params.get("history") === "true";
         
         // Configure title and headers immediately to avoid layout flicker
@@ -114,7 +95,25 @@
         if (titleEl) {
           titleEl.textContent = showHistory ? "📜 Order History" : "📦 My Active Orders";
         }
+        document.title = showHistory ? "Order History | Swarnika Jewels" : "My Orders | Swarnika Jewels";
 
+        // Handle dynamic navbar active tab highlight underline
+        const ordersLink = document.querySelector('a[href="orders.html"]');
+        const historyLink = document.querySelector('a[href="orders.html?history=true"]');
+        if (ordersLink && historyLink) {
+          if (showHistory) {
+            ordersLink.classList.remove('active');
+            historyLink.classList.add('active');
+          } else {
+            ordersLink.classList.add('active');
+            historyLink.classList.remove('active');
+          }
+        }
+
+        updateCartCount();
+        loadOrders();
+      }
+      document.addEventListener("DOMContentLoaded", () => {
         if (window.authStateSettled) {
           initOrdersPage();
         } else {
