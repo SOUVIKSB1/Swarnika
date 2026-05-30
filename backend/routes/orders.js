@@ -110,7 +110,8 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       });
     }
 
-    await Order.findByIdAndDelete(order._id);
+    order.status = 'Cancelled';
+    await order.save();
     res.json({ message: 'Order cancelled successfully', order_id: order._id });
   } catch (error) {
     console.error('❌ Error cancelling order:', error);

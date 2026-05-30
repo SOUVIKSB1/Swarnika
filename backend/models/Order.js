@@ -12,6 +12,7 @@ const orderSchema = new mongoose.Schema({
   order_total: { type: Number, required: true },
   payment_mode: { type: String, default: 'COD' },
   payment_status: { type: String, default: 'Pending' },
+  status: { type: String, default: 'Processing' },
   shipping_address: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
