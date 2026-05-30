@@ -43,7 +43,7 @@
             <li class="nav-item">
               <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
-            <li class="nav-item d-none">
+            <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
             </li>
             <li class="nav-item d-none" id="userNameDisplay">
@@ -115,6 +115,17 @@
         <div id="msg" class="text-center mt-3"></div>
       </form>
 
+      <!-- Order History Section -->
+      <hr class="my-5" />
+      <div class="orders-history-section">
+        <h3 class="mb-4 text-center text-primary">Order History</h3>
+        <div id="ordersList" class="d-flex flex-column gap-3">
+          <div class="text-center text-muted py-3">⏳ Loading order history...</div>
+        </div>
+        <div class="text-center mt-4 mb-2">
+          <a href="orders.html" class="btn btn-outline-primary px-4">View All Orders</a>
+        </div>
+      </div>
     </div>
 
     <footer class="text-center py-3 text-muted">
@@ -228,6 +239,9 @@
           document.getElementById("email").value = user.email || "";
           document.getElementById("phone").value = user.phone || "";
           document.getElementById("address").value = user.address || "";
+          
+          // Load recent order history
+          loadOrderHistory();
         } catch (err) {
           console.error("❌ Profile load failed:", err.message);
           if (showDebug) {
@@ -242,6 +256,69 @@
         }
       }
 
+      async function loadOrderHistory() {
+        const listContainer = document.getElementById("ordersList");
+        if (!listContainer) return;
+        
+        try {
+          const headers = {};
+          const authToken = localStorage.getItem("authToken");
+          const firebaseToken = localStorage.getItem("firebaseIdToken");
+          
+          if (authToken) {
+            headers["x-auth-token"] = authToken;
+          } else if (firebaseToken) {
+            headers["Authorization"] = `Bearer ${firebaseToken}`;
+          }
+          
+          let serverOrders = [];
+          try {
+            const fetchFn = window.fetchWithFallback || fetch;
+            const res = await fetchFn(`/orders`, {
+              credentials: "include",
+              headers
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data)) {
+                serverOrders = data;
+              }
+            }
+          } catch (e) {
+            console.warn("Failed to load orders for profile", e);
+          }
+          
+          const demoOrders = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+          const allOrders = [...(demoOrders || []), ...(serverOrders || [])];
+          
+          if (allOrders.length === 0) {
+            listContainer.innerHTML = '<div class="text-center text-muted py-3">No orders found.</div>';
+            return;
+          }
+          
+          // Show only top 3 recent orders on profile page
+          const recentOrders = allOrders.slice(0, 3);
+          listContainer.innerHTML = recentOrders.map(o => `
+            <div class="card shadow-sm border-0 bg-light p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold">Order #${o.id || o._id}</span>
+                <span class="badge ${o.status === 'Demo' ? 'bg-warning text-dark' : 'bg-info text-dark'}">${o.status || 'Processing'}</span>
+              </div>
+              <div class="d-flex justify-content-between small text-muted">
+                <span>Date: ${new Date(o.created_at || o.createdAt).toLocaleDateString()}</span>
+                <span class="fw-bold text-dark">₹${o.order_total?.toLocaleString?.() || o.order_total}</span>
+              </div>
+              <div class="text-end mt-2">
+                <a href="order-details.html?id=${o.id || o._id}" class="btn btn-sm btn-link text-primary p-0">Details →</a>
+              </div>
+            </div>
+          `).join('');
+          
+        } catch (err) {
+          console.error("Error loading order history on profile", err);
+          listContainer.innerHTML = '<div class="text-center text-danger py-3">Failed to load order history.</div>';
+        }
+      }
 
       document
         .getElementById("profileForm")

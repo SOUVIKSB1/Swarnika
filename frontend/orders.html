@@ -38,12 +38,12 @@
               <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="orders.html">Orders</a>
+              <a class="nav-link active" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="orders.html?history=true">Order History</a>
             </li>
-            <li class="nav-item d-none">
+            <li class="nav-item">
               <a class="nav-link" href="admin.html">Admin Panel</a>
             </li>
             <li class="nav-item d-none" id="userNameDisplay">
@@ -87,29 +87,6 @@
       })();
 
       function initOrdersPage() {
-        const params = new URLSearchParams(location.search);
-        const showHistory = params.get("history") === "true";
-        
-        // Configure title and headers immediately to avoid layout flicker
-        const titleEl = document.querySelector("h2.text-center");
-        if (titleEl) {
-          titleEl.textContent = showHistory ? "📜 Order History" : "📦 My Active Orders";
-        }
-        document.title = showHistory ? "Order History | Swarnika Jewels" : "My Orders | Swarnika Jewels";
-
-        // Handle dynamic navbar active tab highlight underline
-        const ordersLink = document.querySelector('a[href="orders.html"]');
-        const historyLink = document.querySelector('a[href="orders.html?history=true"]');
-        if (ordersLink && historyLink) {
-          if (showHistory) {
-            ordersLink.classList.remove('active');
-            historyLink.classList.add('active');
-          } else {
-            ordersLink.classList.add('active');
-            historyLink.classList.remove('active');
-          }
-        }
-
         updateCartCount();
         loadOrders();
       }
