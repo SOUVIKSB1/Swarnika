@@ -6,22 +6,16 @@ const cors = require("cors");
 const path = require("path");
 const admin = require("firebase-admin");
 
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  }),
-});
 
 dotenv.config();
 connectDB();
 
 // Initialize Firebase Admin SDK
 try {
-  const serviceAccount = require("./swarnika-c2451-firebase-adminsdk-fbsvc-93890fc9b6.json");
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
   });
   console.log("🔥 Firebase Admin SDK initialized successfully");
 } catch (error) {
