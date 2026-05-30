@@ -40,9 +40,6 @@
             <li class="nav-item">
               <a class="nav-link" href="orders.html">Orders</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html?history=true">Order History</a>
-            </li>
             <li class="nav-item d-none">
               <a class="nav-link" href="admin.html">Admin Panel</a>
             </li>
@@ -117,8 +114,16 @@
 
     </div>
 
-    <footer class="text-center py-3 text-muted">
-      © 2025 Swarnika Jewellery | All Rights Reserved
+    <footer class="text-center py-4 mt-auto">
+      <div class="container">
+        <div style="font-size: 1.35rem; font-weight: 600; letter-spacing: 1.5px" class="mb-2">
+          Swarnika Jewels
+        </div>
+        <div class="mb-1">© 2025 Swarnika Jewels | All Rights Reserved</div>
+        <div style="font-size: 0.8rem;" class="text-muted">
+          Project Developed by - Souvik Sinhababu
+        </div>
+      </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -296,6 +301,5 @@
         if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
       }, { passive: true });
     </script>
-    <script defer src="chat.js"></script>
   </body>
 </html>

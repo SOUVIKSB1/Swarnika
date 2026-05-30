@@ -254,7 +254,8 @@
               finalUser = {
                 email: meData.email,
                 displayName: meData.name || meData.displayName,
-                isBackendUser: true
+                isBackendUser: true,
+                role: meData.role
               };
               console.log('✅ Found backend user session:', meData.email);
             }
@@ -286,13 +287,22 @@
     const logoutBtn = document.getElementById("logoutBtn");
     const userNameDisplay = document.getElementById("userNameDisplay");
 
-    // Check if this is an admin user (check localStorage first, this is set by login.html)
-    const isLocalAdmin = localStorage.getItem('localAdmin') === '1';
+        // Check if this is an admin user (check localStorage first, this is set by login.html)
+    let isLocalAdmin = localStorage.getItem('localAdmin') === '1';
+    if (user && user.role) {
+      if (user.role === 'admin') {
+        isLocalAdmin = true;
+      } else {
+        isLocalAdmin = false;
+        localStorage.removeItem('localAdmin');
+        localStorage.removeItem('localAdminEmail');
+      }
+    }
     const isAdmin = isLocalAdmin;
     const adminAnchor = document.querySelector('a[href="admin.html"]');
     const adminLi = adminAnchor ? adminAnchor.closest('li') : null;
     
-    console.log(`🔍 Admin detection: isLocalAdmin=${isLocalAdmin}, adminLink=${!!adminAnchor}, adminLi=${!!adminLi}`);
+    console.log(`🔍 Admin detection: isAdmin=${isAdmin}, adminLink=${!!adminAnchor}, adminLi=${!!adminLi}`);
 
     // Admin mode: show Admin Panel, hide Cart/Orders/Profile
     if (isAdmin) {
@@ -328,9 +338,24 @@
       // Setup admin logout handler
       if (logoutBtn && !logoutBtn.dataset.adminLogoutHandler) {
         logoutBtn.dataset.adminLogoutHandler = '1';
-        logoutBtn.addEventListener('click', (e) => {
+        logoutBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           console.log('🚪 Admin logout clicked');
+          try {
+            // Call backend logout
+            const fetchFn = window.fetchWithFallback || fetch;
+            const logoutEndpoint = window.fetchWithFallback ? '/auth/logout' : `${API}/auth/logout`;
+            await fetchFn(logoutEndpoint, {
+              method: 'POST',
+              credentials: 'include'
+            });
+            console.log('✅ Admin backend session cleared');
+          } catch (backendErr) {
+            console.warn('Admin backend logout failed:', backendErr);
+          }
+          
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('firebaseIdToken');
           localStorage.removeItem('localAdmin');
           localStorage.removeItem('localAdminEmail');
           window.location.href = 'index.html';
@@ -492,6 +517,9 @@
       const notifLi = document.getElementById("notificationNavItem");
       if (notifLi) notifLi.remove();
     }
+    
+    // Highlight correct tab after navbar UI setup
+    highlightActiveNavbar();
   }
 
   // Sync localStorage guestCart to backend when user is logged in
@@ -561,14 +589,52 @@
     }
   }
 
+  function highlightActiveNavbar() {
+    const path = window.location.pathname;
+    const search = window.location.search;
+    
+    // Remove active from all nav-links
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      link.classList.remove('active');
+    });
+
+    let activeLink = null;
+    if (path.includes('cart.html')) {
+      activeLink = document.querySelector('a[href="cart.html"]');
+    } else if (path.includes('profile.html')) {
+      activeLink = document.querySelector('a[href="profile.html"]');
+    } else if (path.includes('orders.html')) {
+      if (search.includes('history=true')) {
+        activeLink = document.querySelector('a[href="orders.html?history=true"]');
+      } else {
+        activeLink = document.querySelector('a[href="orders.html"]:not([href*="history"])') || document.querySelector('a[href="orders.html"]');
+      }
+    } else if (path.includes('admin.html')) {
+      activeLink = document.querySelector('a[href="admin.html"]');
+    } else if (path.includes('login.html')) {
+      activeLink = document.getElementById('loginBtn');
+    } else if (path.includes('register.html')) {
+      // No active highlight needed
+    } else {
+      // Default to Home
+      activeLink = document.querySelector('a[href="index.html"]');
+    }
+
+    if (activeLink) {
+      activeLink.classList.add('active');
+    }
+  }
+
   // Initialize when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      highlightActiveNavbar();
       initNavbar();
       window.navbarInitialized = true;
       console.log('✅ navbar.js initialized');
     });
   } else {
+    highlightActiveNavbar();
     initNavbar();
     window.navbarInitialized = true;
     console.log('✅ navbar.js initialized');
