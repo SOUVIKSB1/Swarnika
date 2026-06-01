@@ -771,26 +771,29 @@ select.form-select option {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 6px;
-  color: var(--text);
+  color: var(--text) !important;
+  background: transparent !important;
 }
 .table th {
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-muted) !important;
   font-weight: 600;
   padding: 0.85rem 1rem;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  background: transparent !important;
 }
 .table td {
   padding: 1rem;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  background: var(--surface) !important;
+  border-top: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
   vertical-align: middle;
   font-size: 0.9rem;
+  color: var(--text) !important;
 }
-.table tr:hover td { background: var(--surface-2); }
+.table tr:hover td { background: var(--surface-2) !important; }
 
 /* ═══ Checkout ═══ */
 .checkout-section {

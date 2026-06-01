@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -14,6 +14,34 @@
     <script src="apiHelper.js" defer></script>
     <script defer src="navbar.js"></script>
     <script defer src="chat.js"></script>
+    <style>
+      .hover-gold:hover {
+        color: var(--gold-light) !important;
+        text-decoration: underline !important;
+        transition: color 0.2s ease;
+      }
+      .modal-backdrop {
+        background-color: rgba(14, 12, 10, 0.85) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      #onlinePaymentDetails input {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: var(--r-md, 8px);
+      }
+      #onlinePaymentDetails input:focus {
+        border-color: var(--gold-light);
+        box-shadow: 0 0 0 3px rgba(226, 201, 126, 0.15);
+      }
+      .animate-hover-scale {
+        transition: transform 0.3s ease;
+      }
+      .animate-hover-scale:hover {
+        transform: scale(1.08);
+      }
+    </style>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
@@ -72,6 +100,53 @@
       <div id="postPurchase" class="text-center mt-4"></div>
     </main>
 
+    <!-- Checkout Modal (Premium Pop-up Slide) -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: rgba(26, 23, 16, 0.98); border: 1px solid rgba(201, 168, 76, 0.25); border-radius: 20px; box-shadow: var(--shadow-xl); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+          <div class="modal-header" style="border-bottom: 1px solid rgba(201, 168, 76, 0.15);">
+            <h5 class="modal-title fw-bold" id="checkoutModalLabel" style="font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:var(--gold-light);">✨ Secure Checkout</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="background-size: 0.8em;"></button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="checkoutForm">
+              <div class="mb-3">
+                <label class="form-label" for="shipping_address">Shipping Address</label>
+                <textarea id="shipping_address" class="form-control" rows="3" placeholder="Enter your full shipping address" required style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text);"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="payment_mode">Payment Mode</label>
+                <select id="payment_mode" class="form-select" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text);">
+                  <option value="COD" style="background: var(--surface-2); color: var(--text);">Cash on Delivery (COD)</option>
+                  <option value="Online" style="background: var(--surface-2); color: var(--text);">Online Payment (Card / UPI)</option>
+                </select>
+              </div>
+              
+              <!-- Online Payment Details (Slide Down Interface) -->
+              <div id="onlinePaymentDetails" style="display: none; background: rgba(201, 168, 76, 0.05); border: 1px solid rgba(201, 168, 76, 0.2); border-radius: 12px; transition: all 0.3s ease;" class="p-3 mb-3">
+                <div class="mb-3">
+                  <label class="form-label" for="card_number">Card Number</label>
+                  <input type="text" class="form-control" placeholder="4111 2222 3333 4444" maxlength="19" id="card_number">
+                </div>
+                <div class="row">
+                  <div class="col-6 mb-2">
+                    <label class="form-label" for="card_expiry">Expiry Date</label>
+                    <input type="text" class="form-control" placeholder="MM/YY" maxlength="5" id="card_expiry">
+                  </div>
+                  <div class="col-6 mb-2">
+                    <label class="form-label" for="card_cvv">CVV</label>
+                    <input type="password" class="form-control" placeholder="•••" maxlength="3" id="card_cvv">
+                  </div>
+                </div>
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100 btn-lg mt-2" style="font-size: 1.05rem;">Place Secure Order</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer>
       <div style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;letter-spacing:1.5px;background:linear-gradient(135deg,#c9a84c,#e2c97e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.3rem">Swarnika Jewels</div>
       <div style="color:rgba(255,255,255,0.4);font-size:0.82rem">&copy; All rights reserved &middot; Developed by Souvik Sinhababu</div>
@@ -91,10 +166,58 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         loadCart();
+        
+        // Attach payment mode toggler
+        const paymentModeSelect = document.getElementById('payment_mode');
+        if (paymentModeSelect) {
+          paymentModeSelect.addEventListener('change', (e) => {
+            const details = document.getElementById('onlinePaymentDetails');
+            const cardNum = document.getElementById('card_number');
+            const cardExp = document.getElementById('card_expiry');
+            const cardCvv = document.getElementById('card_cvv');
+            if (e.target.value === 'Online') {
+              details.style.display = 'block';
+              cardNum.required = true;
+              cardExp.required = true;
+              cardCvv.required = true;
+            } else {
+              details.style.display = 'none';
+              cardNum.required = false;
+              cardExp.required = false;
+              cardCvv.required = false;
+              cardNum.value = '';
+              cardExp.value = '';
+              cardCvv.value = '';
+            }
+          });
+        }
+
+        // Attach placeOrder listener
+        const checkoutForm = document.getElementById("checkoutForm");
+        if (checkoutForm) {
+          checkoutForm.addEventListener("submit", placeOrder);
+        }
       });
 
       // showLoader: when false, skip showing the full-page loader to avoid flicker
       let _lastLoadTs = 0;
+      
+      function normalizeImageUrl(src) {
+        if (!src) return "image.png";
+        if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) {
+          return src;
+        }
+        let host = window.location.hostname;
+        let protocol = location.protocol;
+        if (protocol === "file:" || !host) {
+          host = "localhost";
+          protocol = "http:";
+        }
+        const port = window.detectedPort || 5001;
+        const apiHost = (host === "localhost" || host.startsWith("127.")) ? `${protocol}//${host}:${port}` : "";
+        return `${apiHost}${src.startsWith("/") ? "" : "/"}${src}`;
+      }
+
       async function loadCart(showLoader = true, force = false) {
         // Prevent concurrent loads which cause repeated DOM updates/flicker
         const now = Date.now();
@@ -304,7 +427,6 @@
       }
 
       function renderCheckout() {
-        // Compute subtotal using the same hardcoded surcharge for items 3 and 4
         let subtotal = 0;
         let surchargeApplied = false;
         cartItems.forEach((item, idx) => {
@@ -316,33 +438,27 @@
         });
 
         checkoutArea.innerHTML = `
-        <h4 class="text-center mb-3">Order Summary</h4>
-        <div class="d-flex justify-content-between">
-          <h5>Subtotal</h5>
-          <h5 id="subtotal">₹${subtotal.toLocaleString()}</h5>
+        <div class="card p-4 mt-4" style="background: var(--grad-card); border: 1px solid var(--border); border-radius: var(--r-lg);">
+          <h4 class="text-center mb-3 fw-bold" style="font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size: 1.5rem;">Order Summary</h4>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-muted">Subtotal</h5>
+            <h4 class="mb-0 fw-bold text-white" id="subtotal">₹${subtotal.toLocaleString()}</h4>
+          </div>
+          ${surchargeApplied ? `<p class="small text-muted mt-2">Note: A special surcharge of <strong>+20%</strong> has been applied to items 3 and 4.</p>` : ''}
+          <button id="btnOpenCheckout" class="btn btn-primary w-100 btn-lg">Proceed to Checkout</button>
         </div>
-        ${surchargeApplied ? `<p class="small text-muted mt-2">Note: A special surcharge of <strong>+20%</strong> has been applied to items 3 and 4.</p>` : ''}
-        <hr>
-        <form id="checkoutForm">
-          <div class="mb-3">
-            <label class="form-label">Shipping Address</label>
-            <textarea id="shipping_address" class="form-control" rows="3" placeholder="Enter your full shipping address" required></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Payment Mode</label>
-            <select id="payment_mode" class="form-select">
-              <option value="COD">Cash on Delivery (COD)</option>
-              <option value="Card" disabled>Credit/Debit Card (Not available)</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary w-100 btn-lg">Place Order</button>
-        </form>
-      `;
+        `;
         checkoutArea.style.display = "block";
 
-        document
-          .getElementById("checkoutForm")
-          .addEventListener("submit", placeOrder);
+        const checkoutModalEl = document.getElementById('checkoutModal');
+        let checkoutModal = bootstrap.Modal.getInstance(checkoutModalEl);
+        if (!checkoutModal) {
+          checkoutModal = new bootstrap.Modal(checkoutModalEl);
+        }
+
+        document.getElementById('btnOpenCheckout').addEventListener('click', () => {
+          checkoutModal.show();
+        });
       }
 
       // Helpers to generate HTML for full table or single row (used for diffing)
@@ -372,10 +488,17 @@
         const isDemoRow = typeof item._id === 'string' && item._id.startsWith('demo-');
         return `
               <tr data-id="${item._id}" class="${isDemoRow ? 'demo-row' : ''}">
-                <td>${isDemoRow ? `<span class="demo-name">${item.name}</span> <span class="demo-badge">Demo</span>` : `<a href="product.html?id=${item.productId}">${item.name}</a>`}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-3">
+                    <img src="${normalizeImageUrl(item.image)}" class="rounded animate-hover-scale" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--border);" onerror="this.src='image.png'" />
+                    <div>
+                      ${isDemoRow ? `<span class="demo-name fw-semibold text-white d-block">${item.name}</span> <span class="demo-badge">Demo</span>` : `<a href="product.html?id=${item.productId}" class="fw-semibold text-white hover-gold d-block">${item.name}</a>`}
+                    </div>
+                  </div>
+                </td>
                 <td>₹${displayPrice.toLocaleString()}${isSurcharge ? ` <span class="badge bg-warning text-dark small">+20%</span>` : ""}</td>
                 <td style="width: 120px;">
-                  <input type="number" class="form-control form-control-sm qty-input" value="${item.quantity}" min="1">
+                  <input type="number" class="form-control form-control-sm qty-input" value="${item.quantity}" min="1" style="background: var(--surface-2); border-color: var(--border); color: var(--text);">
                 </td>
                 <td class="item-total">₹${(item.quantity * adjustedPrice).toLocaleString()}</td>
                 <td>
@@ -602,6 +725,13 @@
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Checkout failed");
 
+          // Hide checkout modal
+          const checkoutModalEl = document.getElementById('checkoutModal');
+          const checkoutModal = bootstrap.Modal.getInstance(checkoutModalEl);
+          if (checkoutModal) {
+            checkoutModal.hide();
+          }
+
           cartArea.innerHTML = "";
           checkoutArea.innerHTML = "";
           postPurchase.innerHTML = `
@@ -620,6 +750,14 @@
           const hasDemo = cartItems.some(it => typeof it._id === 'string' && it._id.startsWith('demo-')) || demoInjected;
           if (hasDemo) {
             const mockOrderId = `demo_${Date.now()}`;
+            
+            // Hide checkout modal
+            const checkoutModalEl = document.getElementById('checkoutModal');
+            const checkoutModal = bootstrap.Modal.getInstance(checkoutModalEl);
+            if (checkoutModal) {
+              checkoutModal.hide();
+            }
+
             cartArea.innerHTML = "";
             checkoutArea.innerHTML = "";
             postPurchase.innerHTML = `
