@@ -144,37 +144,6 @@
               console.log('📝 Sending guestId (for merge or anonymous):', guestId);
             }
 
-            // If we have an auth token or firebase token, attempt auth/me first to provide user context
-            let isAuthenticated = false;
-            if (authToken || firebaseToken) {
-              let authCheck;
-              if (window.fetchWithFallback) {
-                authCheck = await window.fetchWithFallback('/auth/me', {
-                  credentials: 'include',
-                  headers
-                });
-              } else {
-                authCheck = await fetch(`${API}/auth/me`, {
-                  credentials: 'include',
-                  headers
-                });
-              }
-              if (authCheck.ok) {
-                const user = await authCheck.json();
-                console.log("✅ User authenticated:", user.email);
-                isAuthenticated = true;
-              } else {
-                console.warn('⚠️ Auth check failed, falling back to guest behavior if guestId present');
-                if (!guestId) {
-                  // Create a guestId and try again
-                  const newGuest = `guest_${Date.now()}`;
-                  localStorage.setItem('guestId', newGuest);
-                  headers['x-guest-id'] = newGuest;
-                  console.log('🆕 Created guestId after auth failure:', newGuest);
-                }
-              }
-            }
-
             // Now fetch cart. If guestId header is set, backend will return guest cart.
             let res;
             if (window.fetchWithFallback) {
