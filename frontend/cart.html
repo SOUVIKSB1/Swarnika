@@ -474,6 +474,13 @@
         }
 
         document.getElementById('btnOpenCheckout').addEventListener('click', () => {
+          const isLoggedIn = localStorage.getItem("authToken") || localStorage.getItem("firebaseIdToken");
+          if (!isLoggedIn) {
+            if (confirm("🔐 You must be logged in to checkout. Would you like to go to the login page now?")) {
+              window.location.href = "login.html";
+            }
+            return;
+          }
           if (window.currentUserProfile && window.currentUserProfile.address) {
             document.getElementById("shipping_address").value = window.currentUserProfile.address;
           }
