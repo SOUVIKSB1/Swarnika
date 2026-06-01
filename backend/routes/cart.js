@@ -27,7 +27,9 @@ router.get('/', maybeAuth, async (req, res) => {
           } else {
             // Merge items safely
             for (const gItem of guestCart.items) {
+              if (!gItem.product) continue;
               const existing = userCart.items.find(i => {
+                if (!i.product) return false;
                 const pId = i.product._id ? i.product._id.toString() : i.product.toString();
                 const gpId = gItem.product._id ? gItem.product._id.toString() : gItem.product.toString();
                 return pId === gpId;
@@ -152,6 +154,7 @@ router.post('/add', maybeAuth, async (req, res) => {
     }
 
     const existingItem = cart.items.find(item => {
+      if (!item.product) return false;
       const pId = item.product._id ? item.product._id.toString() : item.product.toString();
       return pId === productId;
     });
