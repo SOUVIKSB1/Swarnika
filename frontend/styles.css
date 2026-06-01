@@ -817,6 +817,14 @@ select.form-select option {
   color: var(--text-soft);
   border-color: var(--border);
 }
+.alert-warning {
+  background: rgba(201, 168, 76, 0.1);
+  color: var(--gold-light);
+  border-color: rgba(201, 168, 76, 0.25);
+}
+.text-muted {
+  color: var(--text-soft) !important;
+}
 
 /* ════════════════════════════════════════════════════════
    MODAL — Quick View

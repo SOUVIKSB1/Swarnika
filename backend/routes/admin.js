@@ -194,9 +194,11 @@ router.put('/orders/:id', adminMiddleware, async (req, res) => {
     // If status is changed to Cancelled, restore stock
     if (status === 'Cancelled' && order.status !== 'Cancelled') {
       for (const item of order.items) {
-        await Product.findByIdAndUpdate(item.product, {
-          $inc: { stock: item.quantity }
-        });
+        if (item.product) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { stock: item.quantity }
+          });
+        }
       }
     }
     if (status !== undefined && status !== order.status) {
@@ -218,17 +220,19 @@ router.put('/orders/:id', adminMiddleware, async (req, res) => {
         type = 'cancelled';
       }
 
-      await User.findByIdAndUpdate(order.user, {
-        $push: {
-          notifications: {
-            title,
-            message,
-            type,
-            read: false,
-            createdAt: new Date()
+      if (order.user) {
+        await User.findByIdAndUpdate(order.user, {
+          $push: {
+            notifications: {
+              title,
+              message,
+              type,
+              read: false,
+              createdAt: new Date()
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     if (status !== undefined) order.status = status;

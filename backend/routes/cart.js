@@ -13,24 +13,49 @@ router.get('/', maybeAuth, async (req, res) => {
     let cart = null;
     
     if (req.user) {
-      // First check if user has a cart
-        cart = await Cart.findOne({ user: req.user._id }).populate('items.product').populate('user', 'name email phone address');
-      console.log('📦 User cart found:', cart ? `${cart.items.length} items` : 'None');
-      
-      // If no user cart but we have guestId, merge guest cart
-      if (!cart && req.guestId) {
-        console.log('🔍 Attempting to merge guest cart with guestId:', req.guestId);
-        const guestCart = await Cart.findOne({ guestId: req.guestId }).populate('items.product').populate('user', 'name email phone address');
-        if (guestCart) {
-          console.log('🔄 Merging guest cart into user cart, items:', guestCart.items.length);
-          guestCart.user = req.user._id;
-          guestCart.guestId = undefined;
-          await guestCart.save();
-          cart = guestCart;
-        } else {
-          console.log('❌ No guest cart found for guestId:', req.guestId);
+      if (req.guestId) {
+        console.log('🔄 merging guest cart to user cart:', req.guestId);
+        const guestCart = await Cart.findOne({ guestId: req.guestId });
+        if (guestCart && guestCart.items.length > 0) {
+          let userCart = await Cart.findOne({ user: req.user._id });
+          if (!userCart) {
+            guestCart.user = req.user._id;
+            guestCart.guestId = undefined;
+            await guestCart.save();
+            cart = guestCart;
+            console.log('✅ Reassigned guest cart to user');
+          } else {
+            // Merge items safely
+            for (const gItem of guestCart.items) {
+              const existing = userCart.items.find(i => {
+                const pId = i.product._id ? i.product._id.toString() : i.product.toString();
+                const gpId = gItem.product._id ? gItem.product._id.toString() : gItem.product.toString();
+                return pId === gpId;
+              });
+              if (existing) {
+                existing.quantity += gItem.quantity;
+              } else {
+                userCart.items.push({
+                  product: gItem.product,
+                  quantity: gItem.quantity,
+                  price_at_add: gItem.price_at_add
+                });
+              }
+            }
+            await userCart.save();
+            await Cart.deleteOne({ _id: guestCart._id });
+            cart = userCart;
+            console.log('✅ Merged guest cart items into user cart');
+          }
         }
       }
+
+      if (!cart) {
+        cart = await Cart.findOne({ user: req.user._id }).populate('items.product').populate('user', 'name email phone address');
+      } else {
+        cart = await Cart.findById(cart._id).populate('items.product').populate('user', 'name email phone address');
+      }
+      console.log('📦 User cart loaded:', cart ? `${cart.items.length} items` : 'None');
     } else {
       // Guest user - look for cart by guestId
       cart = await Cart.findOne({ guestId: req.guestId }).populate('items.product');
@@ -126,7 +151,10 @@ router.post('/add', maybeAuth, async (req, res) => {
       }
     }
 
-    const existingItem = cart.items.find(item => item.product.toString() === productId);
+    const existingItem = cart.items.find(item => {
+      const pId = item.product._id ? item.product._id.toString() : item.product.toString();
+      return pId === productId;
+    });
     if (existingItem) {
       existingItem.quantity += quantity;
       console.log('🛒 Updated existing item quantity:', existingItem.quantity);
