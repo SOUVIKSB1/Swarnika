@@ -2,24 +2,195 @@
 <html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Orders — Swarnika Jewels</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Orders | Swarnika Jewellery</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="chat.css" />
     <script src="apiHelper.js" defer></script>
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
     <script defer src="chat.js"></script>
+    <style>
+      .order-card {
+        background: var(--grad-card);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        margin-bottom: 2rem;
+        padding: 2rem;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      .order-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 3px;
+        background: var(--grad-gold);
+        opacity: 0.75;
+      }
+      .order-card.cancelled::before {
+        background: var(--danger);
+      }
+      .order-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg), var(--shadow-gold);
+        border-color: rgba(201, 168, 76, 0.3);
+      }
+      
+      /* Stepper Timeline styles */
+      .stepper-container {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin: 2.5rem 0 1.5rem;
+      }
+      .stepper-bar {
+        position: absolute;
+        top: 15px; left: 5%; right: 5%;
+        height: 3px;
+        background: var(--surface-3);
+        z-index: 1;
+      }
+      .stepper-progress {
+        position: absolute;
+        top: 15px; left: 5%;
+        height: 3px;
+        background: var(--grad-gold);
+        z-index: 2;
+        width: 0%;
+        transition: width 0.8s ease-in-out;
+      }
+      .stepper-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 3;
+        width: 20%;
+        text-align: center;
+      }
+      .step-dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: var(--surface-3);
+        border: 2px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 700;
+        transition: all 0.4s ease;
+      }
+      .stepper-step.active .step-dot {
+        background: var(--surface-2);
+        border-color: var(--gold-light);
+        color: var(--gold-light);
+        box-shadow: 0 0 12px var(--gold-glow);
+      }
+      .stepper-step.completed .step-dot {
+        background: var(--gold-light);
+        border-color: var(--gold-light);
+        color: #0e0c0a;
+      }
+      .step-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        transition: color 0.4s ease;
+      }
+      .stepper-step.active .step-label {
+        color: var(--gold-light);
+      }
+      .stepper-step.completed .step-label {
+        color: var(--text);
+      }
 
+      /* Item list details styles */
+      .order-item-row {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-soft);
+      }
+      .order-item-row:last-child {
+        border-bottom: none;
+      }
+      .order-item-img {
+        width: 50px; height: 50px;
+        border-radius: var(--r-sm);
+        object-fit: cover;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+      }
+
+      /* Custom view transition animation helper classes */
+      .fade-slide-in {
+        animation: fadeSlideIn 0.5s ease forwards;
+        opacity: 0;
+      }
+      @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Navigation Tabs redesign */
+      .orders-nav-tabs {
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        margin-bottom: 2.5rem;
+      }
+      .orders-nav-link {
+        color: var(--text-soft);
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        padding: 0.75rem 0.5rem;
+        position: relative;
+        text-transform: uppercase;
+        transition: color 0.25s ease;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+      .orders-nav-link:hover,
+      .orders-nav-link.active {
+        color: var(--gold-light);
+      }
+      .orders-nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: -1px; left: 0; right: 0;
+        height: 2px;
+        background: var(--grad-gold);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+      .orders-nav-link.active::after {
+        transform: scaleX(1);
+      }
+
+      #ordersLoader {
+        position: fixed;
+        inset: 0;
+        background: var(--bg);
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+      }
+    </style>
   </head>
   <body>
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
@@ -41,10 +212,10 @@
               <a class="nav-link" href="profile.html">Profile</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="orders.html">Orders</a>
+              <a class="nav-link" id="navLinkActiveOrders" href="orders.html">Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="orders.html?history=true">Order History</a>
+              <a class="nav-link" id="navLinkHistory" href="orders.html?history=true">Order History</a>
             </li>
             <li class="nav-item d-none">
               <a class="nav-link" href="admin.html">Admin Panel</a>
@@ -63,225 +234,370 @@
       </div>
     </nav>
 
-    <div class="loader" id="ordersLoader"></div>
-    <div class="orders-container">
-      <h2 class="text-center mb-4">📦 My Orders</h2>
-      <div id="ordersArea" class="mt-4"></div>
+    <!-- Full-screen Loader -->
+    <div id="ordersLoader">
+      <div class="loader"></div>
+      <div class="text-muted small">Accessing your Orders...</div>
     </div>
 
+    <!-- Main Container -->
+    <main class="container my-5 flex-grow-1" style="max-width: 900px;">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1" style="font-family: var(--font-serif); color: var(--gold-light);" id="ordersTitle">My Orders</h2>
+        <p class="text-muted small">Track and view updates on all your orders</p>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="orders-nav-tabs">
+        <button class="orders-nav-link" id="tabActive" onclick="switchTab(false)">Active Orders</button>
+        <button class="orders-nav-link" id="tabHistory" onclick="switchTab(true)">Order History</button>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="row g-3 mb-4 align-items-center">
+        <div class="col-md-7">
+          <input type="text" id="orderSearch" class="form-control form-control-lg" placeholder="🔍 Search orders by item name or order ID..." style="font-size: 0.9rem;" />
+        </div>
+        <div class="col-md-5">
+          <select id="statusFilter" class="form-select form-select-lg" style="font-size: 0.9rem; background-color: var(--surface);">
+            <option value="all">All Payment Methods & Statuses</option>
+            <option value="COD">Cash on Delivery (COD)</option>
+            <option value="Online">Online Payments</option>
+            <option value="Processing">Status: Processing</option>
+            <option value="Shipped">Status: Shipped</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Orders Display Area -->
+      <div id="ordersArea"></div>
+    </main>
+
+    <!-- Footer -->
     <footer>
       <div style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;letter-spacing:1.5px;background:linear-gradient(135deg,#c9a84c,#e2c97e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.3rem">Swarnika Jewels</div>
       <div style="color:rgba(255,255,255,0.4);font-size:0.82rem">&copy; All rights reserved &middot; Developed by Souvik Sinhababu</div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
     <script>
-      // Dynamically determine API base URL (same as config.js)
       const API = (function () {
+        const host = window.location.hostname;
+        if (host === "localhost" || host.startsWith("127.")) {
+          return `${location.protocol}//${host}:5001/api`;
+        }
+        return "/api";
+      })();
+
+      let localCachedOrders = [];
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Run immediately without waiting for authentication
+        initPageData();
+        
+        // Listeners for search & filters
+        document.getElementById('orderSearch').addEventListener('input', applyFiltersAndRender);
+        document.getElementById('statusFilter').addEventListener('change', applyFiltersAndRender);
+      });
+
+      function initPageData() {
+        const params = new URLSearchParams(location.search);
+        const showHistory = params.get("history") === "true";
+        switchTab(showHistory, false);
+      }
+
+      function switchTab(historyMode, updateUrl = true) {
+        // Toggle tab highlights
+        const activeBtn = document.getElementById("tabActive");
+        const historyBtn = document.getElementById("tabHistory");
+        
+        // Dynamic Navbar Active highlights
+        const navActive = document.getElementById("navLinkActiveOrders");
+        const navHistory = document.getElementById("navLinkHistory");
+
+        if (historyMode) {
+          activeBtn.classList.remove("active");
+          historyBtn.classList.add("active");
+          if (navActive) navActive.classList.remove("active");
+          if (navHistory) navHistory.classList.add("active");
+          document.getElementById("ordersTitle").textContent = "Order History";
+        } else {
+          activeBtn.classList.add("active");
+          historyBtn.classList.remove("active");
+          if (navActive) navActive.classList.add("active");
+          if (navHistory) navHistory.classList.remove("active");
+          document.getElementById("ordersTitle").textContent = "Active Orders";
+        }
+
+        if (updateUrl) {
+          const newUrl = historyMode ? "orders.html?history=true" : "orders.html";
+          window.history.pushState({ path: newUrl }, "", newUrl);
+        }
+
+        loadOrders(historyMode);
+      }
+
+      function normalizeImageUrl(src) {
+        if (!src) return "image.png";
+        if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) return src;
+        
         let host = window.location.hostname;
         let protocol = location.protocol;
         if (protocol === "file:" || !host) {
           host = "localhost";
           protocol = "http:";
         }
-        if (host === "localhost" || host.startsWith("127.")) {
-            return `${protocol}//${host}:5001/api`;
-          }
-          return "/api";
-      })();
-
-      function initOrdersPage() {
-        const params = new URLSearchParams(location.search);
-        const showHistory = params.get("history") === "true";
-        
-        // Configure title and headers immediately to avoid layout flicker
-        const titleEl = document.querySelector("h2.text-center");
-        if (titleEl) {
-          titleEl.textContent = showHistory ? "📜 Order History" : "📦 My Active Orders";
-        }
-        document.title = showHistory ? "Order History | Swarnika Jewels" : "My Orders | Swarnika Jewels";
-
-        // Handle dynamic navbar active tab highlight underline
-        const ordersLink = document.querySelector('a[href="orders.html"]');
-        const historyLink = document.querySelector('a[href="orders.html?history=true"]');
-        if (ordersLink && historyLink) {
-          if (showHistory) {
-            ordersLink.classList.remove('active');
-            historyLink.classList.add('active');
-          } else {
-            ordersLink.classList.add('active');
-            historyLink.classList.remove('active');
-          }
-        }
-
-        updateCartCount();
-        loadOrders();
+        const port = 5001;
+        const apiHost = (host === "localhost" || host.startsWith("127.")) ? `${protocol}//${host}:${port}` : "";
+        return `${apiHost}${src.startsWith("/") ? "" : "/"}${src}`;
       }
-      document.addEventListener("DOMContentLoaded", () => {
-        initOrdersPage();
-      });
 
-      async function loadOrders() {
+      async function loadOrders(historyMode) {
         const area = document.getElementById("ordersArea");
         const loader = document.getElementById("ordersLoader");
-        area.innerHTML =
-          '<div class="text-muted py-5 text-center">⏳ Loading your orders...</div>';
+        area.innerHTML = '<div class="text-muted py-5 text-center fade-slide-in">⏳ Loading your orders...</div>';
+        
         try {
-          // Build auth headers - include JWT token and Firebase token fallbacks
           const headers = {};
           const authToken = localStorage.getItem("authToken");
           const firebaseToken = localStorage.getItem("firebaseIdToken");
-          if (authToken) {
-            headers["x-auth-token"] = authToken;
-            console.log("📝 Using JWT token for orders");
-          } else if (firebaseToken) {
-            headers["Authorization"] = `Bearer ${firebaseToken}`;
-            console.log("📝 Using Firebase token for orders (fallback)");
-          }
+          
+          if (authToken) headers["x-auth-token"] = authToken;
+          else if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
 
           let serverOrders = [];
           try {
             const fetchFn = window.fetchWithFallback || fetch;
-            const res = await fetchFn(`/orders`, { 
-              credentials: "include",
-              headers
-            });
-            if (res.status === 401) {
-              // If not authenticated, still allow demo orders from localStorage to show.
-              console.warn('Orders fetch returned 401 (not authenticated) — showing demo orders only');
-            } 
+            const res = await fetchFn('/orders', { credentials: "include", headers });
             const data = await res.json();
-            if (res.ok && Array.isArray(data)) {
-              serverOrders = data;
-            }
+            if (res.ok && Array.isArray(data)) serverOrders = data;
           } catch (e) {
-            console.warn('Backend orders fetch failed, will include demo orders if any', e);
+            console.warn("Backend order list fetch failed, falling back to cached/demo orders.");
           }
 
-          const params = new URLSearchParams(location.search);
-          const showHistory = params.get("history") === "true";
-
-          // Update page heading and title dynamically
-          const titleEl = document.querySelector("h2.text-center");
-          if (titleEl) {
-            titleEl.textContent = showHistory ? "📜 Order History" : "📦 My Active Orders";
-          }
-          document.title = showHistory ? "Order History | Swarnika Jewels" : "My Orders | Swarnika Jewels";
-
-          // Load demo orders from localStorage and merge (demo orders first)
+          // Combine with local demo checkout orders
           const demoOrders = JSON.parse(localStorage.getItem('demoOrders') || '[]');
-          const allOrders = [...(demoOrders || []), ...(serverOrders || [])];
+          localCachedOrders = [...demoOrders, ...serverOrders];
 
-          // Filter based on active vs completed/cancelled
-          const filteredOrders = allOrders.filter(o => {
-            const status = (o.status || "Processing").toLowerCase();
-            const isFinished = status === 'completed' || status === 'cancelled' || status === 'delivered' || status === 'refunded';
-            return showHistory ? isFinished : !isFinished;
-          });
-
-          // If we only have demo orders (backend not available / not authenticated), show a Demo Mode banner
-          const showDemoOnly = (serverOrders.length === 0) && (Array.isArray(demoOrders) && demoOrders.length > 0);
-
-          if (filteredOrders.length === 0) {
-            area.innerHTML = (showDemoOnly ? `<div class="alert alert-warning text-center">⚠️ Demo Mode — showing locally saved demo orders only. Login to view real orders.</div>` : '') + 
-              (showHistory 
-                ? '<div class="text-center text-muted py-5">🧾 Your order history is empty.</div>'
-                : '<div class="text-center text-muted py-5">🧾 You have no active orders.</div>');
-            return;
-          }
-
-          area.innerHTML = (showDemoOnly ? `<div class="alert alert-warning text-center">⚠️ Demo Mode — showing locally saved demo orders only. Login to view real orders.</div>` : '') + filteredOrders
-            .map(
-              (o) => {
-                let badgeClass = 'bg-info text-dark';
-                if (o.status === 'Cancelled' || o.status === 'demo-cancelled') {
-                  badgeClass = 'bg-danger text-white';
-                } else if (o.status === 'Completed' || o.status === 'demo-completed') {
-                  badgeClass = 'bg-success text-white';
-                } else if (o.status === 'Demo') {
-                  badgeClass = 'bg-warning text-dark';
-                }
-                return `
-          <div class="order-card p-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="mb-0">
-                <a href="order-details.html?id=${o.id || o._id}">Order #${o.id || o._id}</a>
-              </h5>
-              <span class="badge ${badgeClass}">${
-                o.status || "Processing"
-              }</span>
-            </div>
-            <p class="mb-1"><strong>Total:</strong> ₹${
-              o.order_total?.toLocaleString?.() || o.order_total
-            }</p>
-            <p class="mb-1"><strong>Address:</strong> ${
-              o.shipping_address || "N/A"
-            }</p>
-            <small class="text-muted d-block mb-3">📅 ${new Date(
-              o.created_at || o.createdAt
-            ).toLocaleString()}</small>
-            
-            <a href="order-details.html?id=${
-              o.id || o._id
-            }" class="btn btn-outline-primary btn-sm">View Details</a>
-            ${(!showHistory && o.status !== 'Cancelled') ? `<button class="btn btn-outline-danger btn-sm cancel-btn" data-id="${
-              o.id || o._id
-            }" data-demo="${o.status === 'Demo' ? '1' : '0'}">Cancel Order</button>` : ''}
-          </div>
-        `;
-              }
-            )
-            .join("");
-
-          // Attach cancel button listeners
-          document.querySelectorAll(".cancel-btn").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-              if (
-                !confirm(
-                  "Are you sure you want to cancel this order? This will remove it permanently."
-                )
-              )
-                return;
-              try {
-                const orderId = btn.dataset.id;
-                const isDemo = btn.dataset.demo === '1';
-                if (isDemo) {
-                  // remove from local demoOrders
-                  const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
-                  const filtered = (stored || []).filter(o => o.id !== orderId);
-                  localStorage.setItem('demoOrders', JSON.stringify(filtered));
-                  alert('❌ Demo order cancelled (local).');
-                  loadOrders();
-                  return;
-                }
-                const fetchFn = window.fetchWithFallback || fetch;
-                const res = await fetchFn(`/orders/${orderId}`, {
-                  method: "DELETE",
-                  credentials: "include",
-                });
-                const data = await res.json();
-                if (!res.ok)
-                  throw new Error(data.error || "Failed to cancel order");
-                alert("❌ Order cancelled successfully.");
-                loadOrders();
-              } catch (err) {
-                console.error("❌ Cancel order error:", err);
-                alert("⚠️ Unable to cancel order.");
-              }
-            });
-          });
+          applyFiltersAndRender();
         } catch (err) {
-          console.error("❌ Failed to load orders:", err);
-          area.innerHTML = `<div class="text-danger text-center py-5">⚠️ Unable to load orders.<br>${err.message}</div>`;
+          area.innerHTML = `<div class="text-danger text-center py-5 fade-slide-in">⚠️ Unable to load orders.<br>${err.message}</div>`;
         } finally {
-          loader.style.display = "none";
+          if (loader) loader.style.display = "none";
         }
       }
 
-      async function updateCartCount() {
-        if (typeof window.updateGlobalCartCount === "function") {
-          await window.updateGlobalCartCount();
+      function applyFiltersAndRender() {
+        const params = new URLSearchParams(location.search);
+        const historyMode = params.get("history") === "true";
+        const query = document.getElementById('orderSearch').value.trim().toLowerCase();
+        const filterVal = document.getElementById('statusFilter').value;
+        const area = document.getElementById("ordersArea");
+
+        // Filter active vs history
+        let filtered = localCachedOrders.filter(o => {
+          const status = (o.status || "Processing").toLowerCase();
+          const isFinished = status === 'completed' || status === 'cancelled' || status === 'delivered' || status === 'refunded';
+          return historyMode ? isFinished : !isFinished;
+        });
+
+        // Apply search query
+        if (query) {
+          filtered = filtered.filter(o => {
+            const matchesId = (o.id || o._id || '').toLowerCase().includes(query);
+            const matchesItems = o.items && o.items.some(item => {
+              const name = (item.product?.name || item.name || '').toLowerCase();
+              return name.includes(query);
+            });
+            return matchesId || matchesItems;
+          });
         }
+
+        // Apply dropdown filter
+        if (filterVal !== 'all') {
+          if (filterVal === 'COD') {
+            filtered = filtered.filter(o => (o.payment_mode || '').toUpperCase() === 'COD');
+          } else if (filterVal === 'Online') {
+            filtered = filtered.filter(o => (o.payment_mode || '').toUpperCase() !== 'COD');
+          } else {
+            filtered = filtered.filter(o => (o.status || '').toLowerCase() === filterVal.toLowerCase());
+          }
+        }
+
+        if (filtered.length === 0) {
+          area.innerHTML = `
+            <div class="text-center text-muted py-5 fade-slide-in" style="background: rgba(255,255,255,0.01); border: 1px dashed var(--border); border-radius: var(--r-md)">
+              🧾 No orders found matching the filter criteria.
+            </div>`;
+          return;
+        }
+
+        area.innerHTML = filtered.map((o, index) => renderOrderCard(o, index)).join('');
+
+        // Trigger stepper bar fills after DOM paint to animate them
+        setTimeout(() => {
+          filtered.forEach(o => {
+            const stepperProg = document.getElementById(`progress-${o.id || o._id}`);
+            if (stepperProg) {
+              const status = (o.status || "Processing").toLowerCase();
+              let pct = 10;
+              if (status === 'processing') pct = 40;
+              else if (status === 'shipped') pct = 70;
+              else if (status === 'completed' || status === 'delivered') pct = 100;
+              stepperProg.style.width = `${pct}%`;
+            }
+          });
+        }, 80);
+
+        // Attach cancel handlers
+        attachCancelHandlers();
+      }
+
+      function renderOrderCard(o, index) {
+        const orderId = o.id || o._id;
+        const isCancelled = (o.status || "Processing").toLowerCase() === 'cancelled';
+        const isCompleted = (o.status || "Processing").toLowerCase() === 'completed' || (o.status || "Processing").toLowerCase() === 'delivered';
+        const isDemo = String(orderId).startsWith('demo_');
+
+        let badgeClass = 'bg-info text-dark';
+        if (isCancelled) badgeClass = 'bg-danger text-white';
+        else if (isCompleted) badgeClass = 'bg-success text-white';
+        else if (o.status === 'Demo') badgeClass = 'bg-warning text-dark';
+
+        // Order Stepper details
+        const status = (o.status || 'Processing').toLowerCase();
+        
+        let s1 = 'completed', s2 = 'active', s3 = '', s4 = '';
+        if (status === 'processing') {
+          s1 = 'completed'; s2 = 'completed'; s3 = 'active';
+        } else if (status === 'shipped') {
+          s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'active';
+        } else if (isCompleted) {
+          s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'completed';
+        }
+
+        const itemsHTML = (o.items || []).map(item => {
+          const prodName = item.product?.name || item.name || 'Swarnika Jewellery Item';
+          const prodImg = item.product?.image || item.image || 'image.png';
+          const itemPrice = item.price || item.product?.price || 0;
+          return `
+            <div class="order-item-row">
+              <img src="${normalizeImageUrl(prodImg)}" class="order-item-img me-3 animate-hover-scale" onerror="this.src='image.png'">
+              <div class="flex-grow-1">
+                <span class="fw-semibold text-white d-block" style="font-size: 0.9rem;">${prodName}</span>
+                <span class="text-muted small">Qty: ${item.quantity || item.qty || 1} &middot; ₹${itemPrice.toLocaleString()} each</span>
+              </div>
+              <div class="fw-bold text-white">₹${((item.quantity || item.qty || 1) * itemPrice).toLocaleString()}</div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="order-card fade-slide-in ${isCancelled ? 'cancelled' : ''}" style="animation-delay: ${index * 0.08}s;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+              <div>
+                <h4 class="mb-0 fw-bold" style="font-family: var(--font-serif); font-size: 1.25rem;">
+                  <a href="order-details.html?id=${orderId}" class="hover-gold">Order #${orderId.substring(0, 12)}...</a>
+                </h4>
+                <small class="text-muted">Placed on ${new Date(o.created_at || o.createdAt).toLocaleString('en-IN')}</small>
+              </div>
+              <div class="mt-2 mt-sm-0">
+                <span class="badge ${badgeClass} px-3 py-2" style="font-size: 0.78rem; text-transform: uppercase;">${o.status || 'Processing'}</span>
+              </div>
+            </div>
+
+            <!-- Stepper Progress Tracker (Active Orders only) -->
+            ${!isCancelled ? `
+              <div class="stepper-container">
+                <div class="stepper-bar"></div>
+                <div class="stepper-progress" id="progress-${orderId}"></div>
+                <div class="stepper-step ${s1}">
+                  <div class="step-dot">1</div>
+                  <div class="step-label">Received</div>
+                </div>
+                <div class="stepper-step ${s2}">
+                  <div class="step-dot">2</div>
+                  <div class="step-label">Processing</div>
+                </div>
+                <div class="stepper-step ${s3}">
+                  <div class="step-dot">3</div>
+                  <div class="step-label">Shipped</div>
+                </div>
+                <div class="stepper-step ${s4}">
+                  <div class="step-dot">4</div>
+                  <div class="step-label">Delivered</div>
+                </div>
+              </div>
+            ` : `
+              <div class="alert alert-danger-custom py-2 px-3 my-3 small border-start border-danger border-3" style="background: rgba(224,92,75,0.05); color: var(--danger);">
+                ⚠️ This order was cancelled and cannot be tracked.
+              </div>
+            `}
+
+            <!-- Collapsible Items Section -->
+            <div class="mt-4 p-3 rounded" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-soft);">
+              <h6 class="fw-bold mb-2 pb-2 border-bottom border-secondary small" style="color: var(--gold-light); letter-spacing: 0.5px; text-transform: uppercase;">Ordered Items</h6>
+              ${itemsHTML}
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-3 border-top border-secondary">
+              <div>
+                <span class="text-muted small">Payment:</span> <strong class="text-white">${o.payment_mode || 'COD'}</strong>
+              </div>
+              <div class="text-end">
+                <span class="text-muted small d-block">Grand Total</span>
+                <span class="fw-bold text-white" style="font-size: 1.15rem;">₹${(o.order_total || 0).toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div class="mt-3 text-end d-flex gap-2 justify-content-end">
+              <a href="order-details.html?id=${orderId}" class="btn btn-outline-primary btn-sm">Full Details</a>
+              ${(!isCancelled && !isCompleted && o.status !== 'Shipped') ? `
+                <button class="btn btn-outline-danger btn-sm cancel-btn" data-id="${orderId}" data-demo="${isDemo ? '1' : '0'}">Cancel Order</button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      function attachCancelHandlers() {
+        document.querySelectorAll(".cancel-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to cancel this order? This will cancel shipping and processing.")) return;
+            
+            const orderId = btn.dataset.id;
+            const isDemo = btn.dataset.demo === '1';
+
+            try {
+              if (isDemo) {
+                const stored = JSON.parse(localStorage.getItem('demoOrders') || '[]');
+                const filtered = stored.map(o => {
+                  if (o.id === orderId) {
+                    o.status = 'Cancelled';
+                  }
+                  return o;
+                });
+                localStorage.setItem('demoOrders', JSON.stringify(filtered));
+                alert('❌ Demo order cancelled locally.');
+                loadOrders(false);
+                return;
+              }
+
+              const fetchFn = window.fetchWithFallback || fetch;
+              const res = await fetchFn(`/orders/${orderId}`, {
+                method: "DELETE",
+                credentials: "include",
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || "Failed to cancel order");
+              
+              alert("❌ Order cancelled successfully.");
+              loadOrders(false);
+            } catch (err) {
+              alert(`⚠️ Error: ${err.message}`);
+            }
+          });
+        });
       }
     </script>
     <script>
@@ -290,6 +606,5 @@
         if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
       }, { passive: true });
     </script>
-    <script defer src="chat.js"></script>
   </body>
 </html>

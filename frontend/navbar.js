@@ -583,6 +583,20 @@
     }
   }
 
+  // Listen for custom profile update events to dynamically refresh greeting
+  document.addEventListener("profileUpdated", (e) => {
+    const newName = e.detail && e.detail.name;
+    if (newName) {
+      const userNameDisplay = document.getElementById("userNameDisplay");
+      if (userNameDisplay) {
+        const span = userNameDisplay.querySelector("span");
+        if (span) {
+          span.textContent = `Hi, ${newName}`;
+        }
+      }
+    }
+  });
+
   // Initialize when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
