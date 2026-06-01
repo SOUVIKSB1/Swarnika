@@ -172,6 +172,8 @@ router.get("/me", async (req, res) => {
             id: firebaseUser._id,
             name: firebaseUser.name,
             email: firebaseUser.email,
+            phone: firebaseUser.phone || "",
+            address: firebaseUser.address || "",
             profileImage: firebaseUser.profileImage || "",
             role: firebaseUser.role || "user",
           });
@@ -202,6 +204,8 @@ router.get("/me", async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone || "",
+      address: user.address || "",
       profileImage: user.profileImage || "",
       role: user.role || "user",
     });

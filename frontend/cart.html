@@ -281,6 +281,7 @@
                 const user = await authCheck.json();
                 console.log("✅ User authenticated:", user.email);
                 isAuthenticated = true;
+                window.currentUserProfile = user;
               } else {
                 console.warn('⚠️ Auth check failed, falling back to guest behavior if guestId present');
                 if (!guestId) {
@@ -473,6 +474,9 @@
         }
 
         document.getElementById('btnOpenCheckout').addEventListener('click', () => {
+          if (window.currentUserProfile && window.currentUserProfile.address) {
+            document.getElementById("shipping_address").value = window.currentUserProfile.address;
+          }
           checkoutModal.show();
         });
       }
