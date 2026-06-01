@@ -200,7 +200,7 @@ router.put('/orders/:id', adminMiddleware, async (req, res) => {
       }
     }
     if (status !== undefined && status !== order.status) {
-      const title = `Order Status: ${status}`;
+      let title = `Order Status: ${status}`;
       let message = `Your order #${order._id} has been marked as ${status}.`;
       let type = 'info';
 

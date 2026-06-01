@@ -58,9 +58,9 @@ router.get('/', maybeAuth, async (req, res) => {
     if (cart.items.length > 0) {
       console.log('📦 Cart items:', cart.items.filter(i => i.product).map(i => ({ productId: i.product._id, qty: i.quantity })));
       
-      // Remove deleted products (where populate resulted in null)
+      // Remove deleted products (where populate resulted in null/undefined)
       const originalLength = cart.items.length;
-      cart.items = cart.items.filter(i => i.product !== null);
+      cart.items = cart.items.filter(i => i.product != null);
       if (cart.items.length < originalLength) {
         console.log(`🗑️ Removed ${originalLength - cart.items.length} deleted product(s) from cart`);
         await cart.save();
@@ -80,7 +80,7 @@ router.post('/add', maybeAuth, async (req, res) => {
     console.log('🛒 Adding to cart; auth user:', !!req.user, 'guestId:', req.guestId);
     const { productId, quantity, guestId } = req.body;
     console.log('🛒 Payload:', { productId, quantity, guestId });
-    if (!productId || !quantity || quantity < 1) {
+    if (!productId || !Number.isInteger(quantity) || quantity < 1) {
       return res.status(400).json({ error: 'Invalid product or quantity' });
     }
 
@@ -156,7 +156,7 @@ router.post('/add', maybeAuth, async (req, res) => {
 router.put('/items/:itemId', maybeAuth, async (req, res) => {
   try {
     const { quantity } = req.body;
-    if (!quantity || quantity < 1) {
+    if (!Number.isInteger(quantity) || quantity < 1) {
       return res.status(400).json({ error: 'Invalid quantity' });
     }
 

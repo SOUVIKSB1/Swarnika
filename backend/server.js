@@ -62,7 +62,7 @@ const defaultAllowed = [
   "http://localhost:5173", // if using Vite or React dev
   "https://swarnika-c2451.web.app", // Firebase Hosting production
   "https://swarnika-c2451.firebaseapp.com", // Firebase alternative domain
-  "https://swarnika-lemon.vercel.app/",
+  "https://swarnika-lemon.vercel.app",
 ];
 
 const envOrigins = process.env.ALLOWED_ORIGINS

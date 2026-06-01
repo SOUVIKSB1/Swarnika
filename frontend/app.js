@@ -281,7 +281,7 @@ function renderFilteredProducts() {
         const qvDesc = document.getElementById("qvDesc");
         const qvMeta = document.getElementById("qvMeta");
         if (qvTitle) qvTitle.textContent = prod.name || "Product";
-        if (qvImg) qvImg.src = prod.image || "image.png";
+        if (qvImg) qvImg.src = normalizeImageUrl(prod.image) || "image.png";
         if (qvPrice) qvPrice.textContent = prod.price ? "₹" + prod.price : "";
         if (qvDesc) qvDesc.textContent = prod.description || "";
         if (qvMeta) qvMeta.textContent = prod.category || "";

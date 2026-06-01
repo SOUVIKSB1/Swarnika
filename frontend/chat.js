@@ -250,8 +250,9 @@ function mountChatbot() {
   const muteBtn = document.getElementById('mute-btn');
   muteBtn.addEventListener('click', () => {
     isMuted = !isMuted;
-    muteBtn.textContent = isMuted ? '🔈' : '🔇';
-    speak(isMuted ? "Voice muted." : "Voice enabled.");
+    muteBtn.textContent = isMuted ? '🔇' : '🔔';
+    // Only speak when unmuting (speaking while muted is a no-op anyway)
+    if (!isMuted) speak('Voice enabled.');
   });
 
   panel.querySelector('#chatbot-send').addEventListener('click', () => {

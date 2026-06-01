@@ -328,11 +328,21 @@
       // Setup admin logout handler
       if (logoutBtn && !logoutBtn.dataset.adminLogoutHandler) {
         logoutBtn.dataset.adminLogoutHandler = '1';
-        logoutBtn.addEventListener('click', (e) => {
+        logoutBtn.addEventListener('click', async (e) => {
           e.preventDefault();
           console.log('🚪 Admin logout clicked');
+          try {
+            // Clear backend session cookie
+            const fetchFn = window.fetchWithFallback || fetch;
+            const logoutEndpoint = window.fetchWithFallback ? '/auth/logout' : `${API}/auth/logout`;
+            await fetchFn(logoutEndpoint, { method: 'POST', credentials: 'include' });
+          } catch (e) {
+            console.warn('Backend logout failed (admin):', e);
+          }
           localStorage.removeItem('localAdmin');
           localStorage.removeItem('localAdminEmail');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('firebaseIdToken');
           window.location.href = 'index.html';
         });
       }

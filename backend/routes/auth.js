@@ -25,13 +25,10 @@ router.post("/register", async (req, res) => {
     if (existingUser)
       return res.status(400).json({ error: "Email already registered" });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     const newUser = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password,
     });
     const token = generateToken(newUser);
 
@@ -285,10 +282,17 @@ router.put("/profile", async (req, res) => {
       return res.status(401).json({ error: "Invalid token" });
     }
 
+    // Build update object — only include fields that were explicitly provided
+    const updateData = {
+      phone: phone !== undefined ? phone : "",
+      address: address !== undefined ? address : ""
+    };
+    if (name && name.trim()) updateData.name = name.trim();
+
     // Update user
     const user = await User.findByIdAndUpdate(
       decoded.id,
-      { name: name || undefined, phone: phone || "", address: address || "" },
+      updateData,
       { new: true, runValidators: true }
     ).select("-password");
 

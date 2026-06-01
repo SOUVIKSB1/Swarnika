@@ -19,6 +19,9 @@ router.post('/checkout', authMiddleware, async (req, res) => {
 
     // Check stock availability
     for (const item of cart.items) {
+      if (!item.product) {
+        return res.status(400).json({ error: 'Your cart contains a product that no longer exists. Please remove it and try again.' });
+      }
       if (item.quantity > item.product.stock) {
         return res.status(400).json({ error: `Insufficient stock for ${item.product.name}` });
       }

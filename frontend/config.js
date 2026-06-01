@@ -32,7 +32,8 @@ async function detectBackendPort() {
   return 5001;
 }
 
-export const API = (function () {
+// Assign to window so all scripts can access it
+window.API = (function () {
   let host = window.location.hostname;
   let protocol = location.protocol;
 
@@ -58,10 +59,3 @@ export const API = (function () {
   // Default: same-origin API
   return "/api";
 })();
-
-// Expose globally for scripts that need it
-if (typeof window !== "undefined") {
-  window.API = API;
-}
-
-const API_BASE_URL = "https://swarnika.onrender.com";
