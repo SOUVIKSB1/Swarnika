@@ -253,12 +253,13 @@
                     <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
+                    <th>Est. Delivery</th>
                     <th class="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="ordersTableBody">
                   <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">Loading orders...</td>
+                    <td colspan="9" class="text-center py-4 text-muted">Loading orders...</td>
                   </tr>
                 </tbody>
               </table>
@@ -894,7 +895,7 @@
         });
 
         if (filtered.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No orders found matching filter criteria</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No orders found matching filter criteria</td></tr>`;
           return;
         }
 
@@ -915,20 +916,8 @@
           }).join('');
 
           // Badges
-          const statusLower = (o.status || 'processing').toLowerCase();
-          const statusBadgeClass = `badge-status ${statusLower}`;
           const paymentStatusLower = (o.payment_status || 'pending').toLowerCase();
           const paymentBadgeClass = `badge-payment ${paymentStatusLower}`;
-
-          // Action buttons depending on status
-          let actionBtns = '';
-          if (o.status === 'Processing') {
-            actionBtns += `<button class="btn btn-xs btn-success me-1 py-1 px-2 text-white" style="font-size:0.75rem;" onclick="updateOrderStatus('${o._id || o.id}', 'Shipped')">Ship</button>`;
-            actionBtns += `<button class="btn btn-xs btn-danger py-1 px-2" style="font-size:0.75rem;" onclick="updateOrderStatus('${o._id || o.id}', 'Cancelled')">Cancel</button>`;
-          } else if (o.status === 'Shipped') {
-            actionBtns += `<button class="btn btn-xs btn-primary me-1 py-1 px-2" style="font-size:0.75rem;" onclick="updateOrderStatus('${o._id || o.id}', 'Delivered')">Deliver</button>`;
-            actionBtns += `<button class="btn btn-xs btn-danger py-1 px-2" style="font-size:0.75rem;" onclick="updateOrderStatus('${o._id || o.id}', 'Cancelled')">Cancel</button>`;
-          }
 
           row.innerHTML = `
             <td class="small fw-semibold text-truncate" style="max-width: 100px;" title="${o._id || o.id}">${o._id || o.id}</td>
@@ -943,10 +932,28 @@
               <div class="small fw-semibold">${o.payment_mode || 'COD'}</div>
               <span class="${paymentBadgeClass}">${o.payment_status || 'Pending'}</span>
             </td>
-            <td><span class="${statusBadgeClass}">${o.status || 'Processing'}</span></td>
+            <td>
+              <select class="form-select form-select-sm" style="font-size: 0.76rem; max-width: 110px; background-color: var(--surface); color: var(--text);" onchange="quickUpdateOrder('${o._id || o.id}', this, null, null)">
+                <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+            <td>
+              <div class="d-flex flex-column gap-1" style="min-width: 140px;">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-muted" style="font-size: 0.7rem; width: 45px;">Date:</span>
+                  <input type="date" class="form-control form-control-sm p-1" style="font-size: 0.72rem; line-height: 1; height: auto;" value="${o.deliveryDate ? new Date(o.deliveryDate).toISOString().substring(0, 10) : ''}" onchange="quickUpdateOrder('${o._id || o.id}', null, this, null)">
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                  <span class="text-muted" style="font-size: 0.7rem; width: 45px;">Days:</span>
+                  <input type="number" class="form-control form-control-sm p-1" style="font-size: 0.72rem; line-height: 1; height: auto; width: 60px;" value="${o.estimatedDurationDays || 7}" onchange="quickUpdateOrder('${o._id || o.id}', null, null, this)">
+                </div>
+              </div>
+            </td>
             <td class="text-end">
               <div class="d-flex justify-content-end gap-1">
-                ${actionBtns}
                 <button class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size:0.75rem;" onclick="openEditOrderModal('${o._id || o.id}')">Edit</button>
               </div>
             </td>`;
@@ -956,6 +963,47 @@
 
       document.getElementById("orderSearch").addEventListener("input", renderOrders);
       document.getElementById("orderStatusFilter").addEventListener("change", renderOrders);
+
+      // Inline fast updates for status and scheduling
+      window.quickUpdateOrder = async function(id, statusSelect, dateInput, durationInput) {
+        const body = {};
+        if (statusSelect) body.status = statusSelect.value;
+        if (dateInput) body.deliveryDate = dateInput.value ? new Date(dateInput.value).toISOString() : null;
+        if (durationInput) body.estimatedDurationDays = durationInput.value ? parseInt(durationInput.value) : 7;
+
+        try {
+          const authHeaders = { "Content-Type": "application/json", ...getAuthHeaders() };
+          const res = await fetchWithFallback(`/admin/orders/${id}`, {
+            method: "PUT",
+            credentials: "include",
+            headers: authHeaders,
+            body: JSON.stringify(body)
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || "Failed to update order");
+          }
+          
+          // Toast or simple visual indicator on the changed input parent row
+          const ref = statusSelect || dateInput || durationInput;
+          const tr = ref ? ref.closest('tr') : null;
+          if (tr) {
+            tr.style.transition = "background-color 0.3s";
+            tr.style.backgroundColor = "rgba(76, 175, 130, 0.12)";
+            setTimeout(() => {
+              tr.style.backgroundColor = "";
+            }, 800);
+          }
+          
+          // Reload local list cache
+          const getRes = await fetchWithFallback("/admin/orders", { credentials: "include", headers: getAuthHeaders() });
+          if (getRes.ok) {
+            allOrders = await getRes.json();
+          }
+        } catch (err) {
+          alert("❌ " + err.message);
+        }
+      };
 
       // Fast status update from table buttons
       window.updateOrderStatus = async function(id, newStatus) {

@@ -115,19 +115,21 @@
         else if (n.type === 'cancelled') typeIcon = '❌';
         else if (n.type === 'admin_message') typeIcon = '✉️';
 
-        const unreadClass = n.read ? '' : 'bg-light border-start border-primary border-3';
+        const unreadStyle = n.read 
+          ? 'background: transparent;' 
+          : 'background: rgba(201, 168, 76, 0.08) !important; border-left: 3.5px solid var(--gold-light) !important;';
         
         return `
-          <li class="dropdown-item p-3 border-bottom text-wrap notif-item ${unreadClass}" style="cursor: pointer;" onclick="handleNotificationClick('${n._id || n.id}', '${n.type}', '${n.message}')">
+          <li class="dropdown-item p-3 border-bottom text-wrap notif-item" style="cursor: pointer; ${unreadStyle}" onclick="handleNotificationClick('${n._id || n.id}', '${n.type}', '${n.message}')">
             <div class="d-flex gap-2">
-              <div class="notif-icon-circle">${typeIcon}</div>
+              <div class="notif-icon-circle" style="font-size: 1.1rem; line-height: 1;">${typeIcon}</div>
               <div class="flex-grow-1" style="min-width: 0;">
-                <div class="fw-bold small text-dark d-flex justify-content-between align-items-center">
+                <div class="fw-bold small d-flex justify-content-between align-items-center" style="color: var(--gold-light) !important;">
                   <span>${n.title}</span>
-                  ${n.read ? '' : '<span class="notif-dot bg-primary"></span>'}
+                  ${n.read ? '' : '<span class="notif-dot bg-warning rounded-circle" style="width: 6px; height: 6px; display: inline-block;"></span>'}
                 </div>
-                <div class="text-muted small mt-1 text-wrap" style="font-size: 0.78rem; line-height: 1.3;">${n.message}</div>
-                <div class="text-muted text-end mt-1" style="font-size: 0.65rem;">${dateStr}</div>
+                <div class="small mt-1 text-wrap" style="font-size: 0.78rem; line-height: 1.35; color: var(--text) !important;">${n.message}</div>
+                <div class="text-end mt-1" style="font-size: 0.65rem; color: var(--text-soft) !important;">${dateStr}</div>
               </div>
             </div>
           </li>
@@ -300,6 +302,9 @@
       const existing = document.getElementById("userProfileDropdownNavItem");
       if (existing) existing.remove();
       
+      const existingLogout = document.getElementById("standaloneLogoutNavItem");
+      if (existingLogout) existingLogout.remove();
+      
       // Restore standard links
       const cartLink = document.querySelector('a[href="cart.html"]');
       const ordersLinks = document.querySelectorAll('a[href^="orders.html"]');
@@ -377,16 +382,23 @@
               📜 Order History
             </a>
           </li>
-          <li><hr class="dropdown-divider" style="border-color: rgba(201,168,76,0.15);"></li>
-          <li>
-            <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 text-danger" href="#" id="dropdownLogoutBtn" style="font-size: 0.85rem; font-weight: 600;">
-              🚪 Logout
-            </a>
-          </li>
         </ul>
       `;
+    }
 
-      // Attach click handler to the dropdown logout button
+    // Append standard logout link to navbar
+    let userLogoutLi = document.getElementById("standaloneLogoutNavItem");
+    if (!userLogoutLi) {
+      const navUl = document.querySelector("#navbarNav ul.navbar-nav");
+      if (navUl) {
+        userLogoutLi = document.createElement("li");
+        userLogoutLi.className = "nav-item ms-lg-2 mt-2 mt-lg-0";
+        userLogoutLi.id = "standaloneLogoutNavItem";
+        navUl.appendChild(userLogoutLi);
+      }
+    }
+    if (userLogoutLi) {
+      userLogoutLi.innerHTML = `<a class="nav-link" href="#" id="dropdownLogoutBtn" style="font-weight: 600;">Logout</a>`;
       const dropdownLogoutBtn = document.getElementById("dropdownLogoutBtn");
       if (dropdownLogoutBtn) {
         dropdownLogoutBtn.onclick = async (e) => {
