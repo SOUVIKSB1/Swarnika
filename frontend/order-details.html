@@ -276,6 +276,19 @@
 
       // Small renderer used for both demo and server orders
       function renderOrderTemplate(order, items) {
+        let subtotal = items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
+        let makingCharges = Math.round(subtotal * 0.10);
+        let gst = Math.round(subtotal * 0.03);
+        let grandTotal = subtotal + makingCharges + gst;
+
+        // Backtrack if legacy order total is saved
+        if (Math.abs(grandTotal - order.order_total) > 10) {
+          grandTotal = order.order_total;
+          subtotal = Math.round(grandTotal / 1.13);
+          makingCharges = Math.round(subtotal * 0.10);
+          gst = grandTotal - subtotal - makingCharges;
+        }
+
         return `
           <h2 class="mb-4 text-center">Details for Order #${order.id}</h2>
           
@@ -306,8 +319,20 @@
                   <strong class="text-warning">${order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Within ' + (order.estimatedDurationDays || 7) + ' Days'}</strong>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
-                  <span>Order Total:</span>
-                  <strong class="text-success h5 mb-0">₹${order.order_total?.toLocaleString?.() || order.order_total}</strong>
+                  <span>Subtotal:</span>
+                  <strong>₹${subtotal.toLocaleString()}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Making Charges (10%):</span>
+                  <strong>₹${makingCharges.toLocaleString()}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>GST (3%):</span>
+                  <strong>₹${gst.toLocaleString()}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between border-top border-secondary">
+                  <span>Order Grand Total:</span>
+                  <strong class="text-success h5 mb-0">₹${grandTotal.toLocaleString()}</strong>
                 </li>
               </ul>
             </div>

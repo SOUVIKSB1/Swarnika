@@ -437,12 +437,28 @@
           subtotal += item.quantity * adjustedPrice;
         });
 
+        const makingCharges = Math.round(subtotal * 0.10);
+        const gst = Math.round(subtotal * 0.03);
+        const grandTotal = subtotal + makingCharges + gst;
+
         checkoutArea.innerHTML = `
         <div class="card p-4 mt-4" style="background: var(--grad-card); border: 1px solid var(--border); border-radius: var(--r-lg);">
-          <h4 class="text-center mb-3 fw-bold" style="font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size: 1.5rem;">Order Summary</h4>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0 text-muted">Subtotal</h5>
-            <h4 class="mb-0 fw-bold text-white" id="subtotal">₹${subtotal.toLocaleString()}</h4>
+          <h4 class="text-center mb-4 fw-bold" style="font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size: 1.5rem; letter-spacing: 1px;">Order Summary</h4>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Subtotal</span>
+            <span class="fw-semibold text-white">₹${subtotal.toLocaleString()}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">Making Charges (10%)</span>
+            <span class="fw-semibold text-white">₹${makingCharges.toLocaleString()}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary" style="border-bottom-style: dashed !important;">
+            <span class="text-muted small">GST (3%)</span>
+            <span class="fw-semibold text-white">₹${gst.toLocaleString()}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0 fw-bold" style="color: var(--gold-light);">Grand Total</h5>
+            <h4 class="mb-0 fw-bold text-white" id="subtotal">₹${grandTotal.toLocaleString()}</h4>
           </div>
           ${surchargeApplied ? `<p class="small text-muted mt-2">Note: A special surcharge of <strong>+20%</strong> has been applied to items 3 and 4.</p>` : ''}
           <button id="btnOpenCheckout" class="btn btn-primary w-100 btn-lg">Proceed to Checkout</button>

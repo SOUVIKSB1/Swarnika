@@ -27,16 +27,19 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       }
     }
 
-    // Compute total
-    const total = cart.items.reduce(
+    // Compute total (with 10% making charges and 3% GST)
+    const subtotal = cart.items.reduce(
       (sum, item) => sum + item.quantity * item.price_at_add,
       0
     );
+    const makingCharges = Math.round(subtotal * 0.10);
+    const gst = Math.round(subtotal * 0.03);
+    const grandTotal = subtotal + makingCharges + gst;
 
     // Create order
     const newOrder = new Order({
       user: userId,
-      order_total: total,
+      order_total: grandTotal,
       payment_mode: payment_mode || 'COD',
       payment_status: 'Success',
       shipping_address: shipping_address || 'Not provided',
