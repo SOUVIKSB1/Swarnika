@@ -91,11 +91,7 @@
       let _loading = false;
 
       document.addEventListener("DOMContentLoaded", () => {
-        if (window.authStateSettled) {
-          loadCart();
-        } else {
-          document.addEventListener("authStateSettled", () => loadCart(), { once: true });
-        }
+        loadCart();
       });
 
       // showLoader: when false, skip showing the full-page loader to avoid flicker

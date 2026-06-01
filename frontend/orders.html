@@ -118,11 +118,7 @@
         loadOrders();
       }
       document.addEventListener("DOMContentLoaded", () => {
-        if (window.authStateSettled) {
-          initOrdersPage();
-        } else {
-          document.addEventListener("authStateSettled", initOrdersPage, { once: true });
-        }
+        initOrdersPage();
       });
 
       async function loadOrders() {
