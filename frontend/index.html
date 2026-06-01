@@ -4,65 +4,492 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Swarnika Jewels — Home</title>
+    <meta name="description" content="Discover Swarnika Jewels — exquisite gold, silver and platinum jewellery crafted with love for every occasion." />
 
     <!-- CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="productSeed.css" />
     <link rel="stylesheet" href="chat.css" />
 
-    <!-- Firebase modules (module scripts loaded as modules) -->
+    <!-- Inline styles for new slideshow + scroll-reveal -->
+    <style>
+      /* ── Full-viewport Hero Slideshow ── */
+      .hero-slideshow {
+        position: relative;
+        width: 100%;
+        height: 100svh;
+        min-height: 520px;
+        overflow: hidden;
+        background: #0d0b08;
+      }
+
+      .hs-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        z-index: 0;
+        /* Ken Burns is applied per-slide via the .kb-active class */
+      }
+
+      .hs-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transform: scale(1.08);
+        transition: transform 6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        will-change: transform;
+      }
+
+      .hs-slide.active {
+        z-index: 1;
+        animation: hsSlideIn 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .hs-slide.active img {
+        transform: scale(1);
+      }
+
+      .hs-slide.leaving {
+        z-index: 2;
+        animation: hsSlideOut 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      @keyframes hsSlideIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+
+      @keyframes hsSlideOut {
+        from { opacity: 1; }
+        to   { opacity: 0; }
+      }
+
+      /* Gradient overlays */
+      .hs-slide::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(10, 8, 5, 0.15) 0%,
+          rgba(10, 8, 5, 0.08) 40%,
+          rgba(10, 8, 5, 0.55) 75%,
+          rgba(10, 8, 5, 0.82) 100%
+        );
+        z-index: 1;
+      }
+
+      /* Slide content overlay */
+      .hs-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 3;
+        padding: 5rem 2rem 7rem;
+        text-align: center;
+        color: #fff;
+        transform: translateY(30px);
+        opacity: 0;
+        transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s,
+                    opacity 0.9s ease 0.3s;
+      }
+
+      .hs-slide.active .hs-content {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .hs-eyebrow {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold-light);
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      .hs-title {
+        font-size: clamp(2.2rem, 6vw, 4.5rem);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.25rem;
+        color: #fff;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        letter-spacing: -0.5px;
+      }
+
+      .hs-title em {
+        font-style: normal;
+        background: linear-gradient(135deg, var(--gold-light) 0%, #f5d87a 50%, var(--gold) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hs-subtitle {
+        font-size: clamp(0.95rem, 2vw, 1.2rem);
+        color: rgba(255,255,255,0.82);
+        margin-bottom: 2.25rem;
+        max-width: 560px;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: 400;
+        line-height: 1.65;
+      }
+
+      .hs-cta-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .hs-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 2.25rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--gold) 0%, #e0c68a 50%, var(--gold-dark) 100%);
+        color: #1a1510;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: 0 4px 24px rgba(197, 160, 89, 0.45);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        letter-spacing: 0.2px;
+      }
+
+      .hs-btn-primary:hover {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 8px 32px rgba(197, 160, 89, 0.6);
+        color: #1a1510;
+      }
+
+      .hs-btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 2.25rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        border-radius: 999px;
+        cursor: pointer;
+        text-decoration: none;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: all 0.25s ease;
+        letter-spacing: 0.2px;
+      }
+
+      .hs-btn-ghost:hover {
+        background: rgba(255,255,255,0.22);
+        border-color: rgba(255,255,255,0.6);
+        transform: translateY(-2px);
+        color: #fff;
+      }
+
+      /* Slide nav arrows */
+      .hs-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #fff;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        outline: none;
+        opacity: 0.7;
+      }
+
+      .hs-arrow:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        opacity: 1;
+        transform: translateY(-50%) scale(1.08);
+        box-shadow: 0 4px 20px rgba(197, 160, 89, 0.5);
+      }
+
+      .hs-arrow-prev { left: 1.5rem; }
+      .hs-arrow-next { right: 1.5rem; }
+
+      @media (max-width: 576px) {
+        .hs-arrow { width: 40px; height: 40px; font-size: 1.1rem; }
+        .hs-arrow-prev { left: 0.75rem; }
+        .hs-arrow-next { right: 0.75rem; }
+      }
+
+      /* Progress bar */
+      .hs-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        height: 3px;
+        background: rgba(255,255,255,0.15);
+      }
+
+      .hs-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+        width: 0%;
+        transition: width 0.1s linear;
+        border-radius: 2px;
+      }
+
+      /* Dot nav */
+      .hs-dots {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .hs-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.4);
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        outline: none;
+      }
+
+      .hs-dot.active {
+        width: 28px;
+        background: var(--gold-light);
+        box-shadow: 0 0 8px rgba(197,160,89,0.6);
+      }
+
+      /* Scroll indicator */
+      .hs-scroll-hint {
+        position: absolute;
+        bottom: 2.2rem;
+        right: 2rem;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,0.5);
+        font-size: 0.65rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 600;
+        user-select: none;
+      }
+
+      .hs-scroll-hint .scroll-line {
+        width: 1.5px;
+        height: 36px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.6), transparent);
+        border-radius: 2px;
+        animation: scrollPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes scrollPulse {
+        0%, 100% { opacity: 0.5; transform: scaleY(1); }
+        50% { opacity: 1; transform: scaleY(0.7); }
+      }
+
+      @media (max-width: 576px) {
+        .hs-scroll-hint { display: none; }
+        .hs-dots { bottom: 1.25rem; }
+      }
+
+      /* ── Scroll Reveal ── */
+      .reveal {
+        opacity: 0;
+        transform: translateY(36px);
+        transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .reveal-delay-1 { transition-delay: 0.1s; }
+      .reveal-delay-2 { transition-delay: 0.2s; }
+      .reveal-delay-3 { transition-delay: 0.3s; }
+      .reveal-left {
+        opacity: 0;
+        transform: translateX(-36px);
+        transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+      .reveal-scale {
+        opacity: 0;
+        transform: scale(0.93);
+        transition: opacity 0.65s ease, transform 0.65s ease;
+      }
+      .reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+      /* ── Section headings ── */
+      .section-eyebrow {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--gold-dark);
+        margin-bottom: 0.6rem;
+      }
+
+      .section-divider {
+        width: 56px;
+        height: 3px;
+        background: var(--gradient-gold);
+        border-radius: 2px;
+        margin: 1rem auto 0;
+      }
+
+      /* ── Collection banner strip ── */
+      .collections-strip {
+        background: linear-gradient(135deg, #fefcf8 0%, #f8f0e3 100%);
+        padding: 4.5rem 0;
+      }
+
+      /* ── Feature badges ── */
+      .feature-badges {
+        display: flex;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 2rem 0;
+        background: var(--bg-alt);
+        border-top: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
+      }
+
+      .feature-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        padding: 0.5rem 1.25rem;
+        border-radius: 9999px;
+        background: var(--surface);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-sm);
+        white-space: nowrap;
+      }
+
+      .feature-badge .badge-icon {
+        font-size: 1.1rem;
+      }
+
+      /* ── Catalog section polish ── */
+      #catalog {
+        scroll-margin-top: 80px;
+      }
+
+      .catalog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.75rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .catalog-header h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, var(--text) 0%, var(--gold-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .search-wrapper {
+        position: relative;
+        max-width: 280px;
+        width: 100%;
+      }
+
+      .search-wrapper svg {
+        position: absolute;
+        left: 0.9rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .search-wrapper input {
+        padding-left: 2.5rem !important;
+      }
+    </style>
+
+    <!-- Firebase modules -->
     <script type="module" src="firebase.js" defer></script>
     <script type="module" src="firebaseHelpers.js" defer></script>
-    <!-- apiHelper.js -->
     <script src="apiHelper.js" defer></script>
-    <!-- app script (non-module) -->
     <script defer src="app.js"></script>
-    <!-- auth helper for backend API calls -->
-    <!-- navbar script for auth state management -->
     <script defer src="navbar.js"></script>
-    <!-- chatbot script -->
     <script defer src="chat.js"></script>
   </head>
   <body>
+
+    <!-- ══════════════════════════════════
+         NAVBAR
+    ══════════════════════════════════ -->
     <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
           <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item">
-              <a class="nav-link active" href="index.html" aria-current="page">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html">Orders</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html?history=true">Order History</a>
-            </li>
-            <li class="nav-item d-none">
-              <a class="nav-link" href="admin.html">Admin Panel</a>
-            </li>
+            <li class="nav-item"><a class="nav-link active" href="index.html" aria-current="page">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a></li>
+            <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+            <li class="nav-item"><a class="nav-link" href="orders.html?history=true">Order History</a></li>
+            <li class="nav-item d-none"><a class="nav-link" href="admin.html">Admin Panel</a></li>
             <li class="nav-item d-none" id="userNameDisplay">
               <span class="nav-link text-primary fw-bold"></span>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" id="loginBtn" href="login.html">Login</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" id="loginBtn" href="login.html">Login</a></li>
             <li class="nav-item d-none" id="logoutContainer">
               <a class="nav-link" href="#" id="logoutBtn">Logout</a>
             </li>
@@ -71,226 +498,173 @@
       </div>
     </nav>
 
-    <div class="hero py-5">
+    <!-- ══════════════════════════════════
+         FULL-VIEWPORT HERO SLIDESHOW
+    ══════════════════════════════════ -->
+    <section class="hero-slideshow" id="heroSlideshow" aria-label="Featured jewellery collection" tabindex="0">
+
+      <!-- Slide 1 — Gold -->
+      <div class="hs-slide active" role="group" aria-label="Slide 1 of 3: Pure Gold Jewellery">
+        <img src="images/gold.avif" alt="Pure Gold Jewellery — Timeless elegance" loading="eager" fetchpriority="high" />
+        <div class="hs-content">
+          <span class="hs-eyebrow">✦ New Arrivals 2026</span>
+          <h1 class="hs-title">Fine Jewellery,<br><em>Crafted with Love</em></h1>
+          <p class="hs-subtitle">Discover our pure gold collection — rings, necklaces, and earrings designed for every occasion.</p>
+          <div class="hs-cta-group">
+            <a href="#catalog" class="hs-btn-primary" id="heroShopGold">
+              ✦ Shop Gold
+            </a>
+            <a href="#collections" class="hs-btn-ghost">Explore All</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 — Silver -->
+      <div class="hs-slide" role="group" aria-label="Slide 2 of 3: Pure Silver Jewellery">
+        <img src="images/silver.avif" alt="Pure Silver Jewellery — Modern elegance" loading="lazy" />
+        <div class="hs-content">
+          <span class="hs-eyebrow">✦ Bestsellers</span>
+          <h1 class="hs-title">Pure Silver,<br><em>Timeless Grace</em></h1>
+          <p class="hs-subtitle">Modern classics in sterling silver — bracelets, anklets, and pendants for every day glamour.</p>
+          <div class="hs-cta-group">
+            <a href="#catalog" class="hs-btn-primary" id="heroShopSilver">
+              ✦ Shop Silver
+            </a>
+            <a href="#collections" class="hs-btn-ghost">Explore All</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 — Platinum -->
+      <div class="hs-slide" role="group" aria-label="Slide 3 of 3: Pure Platinum Jewellery">
+        <img src="images/platinum.avif" alt="Pure Platinum Jewellery — Rare and radiant" loading="lazy" />
+        <div class="hs-content">
+          <span class="hs-eyebrow">✦ Exclusive Collection</span>
+          <h1 class="hs-title">Rare Platinum,<br><em>Pure Radiance</em></h1>
+          <p class="hs-subtitle">Rare, radiant platinum pieces for the truly special moments in your life.</p>
+          <div class="hs-cta-group">
+            <a href="#catalog" class="hs-btn-primary" id="heroShopPlatinum">
+              ✦ Shop Platinum
+            </a>
+            <a href="#collections" class="hs-btn-ghost">Explore All</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Arrows -->
+      <button class="hs-arrow hs-arrow-prev" id="hsPrev" aria-label="Previous slide">&#8249;</button>
+      <button class="hs-arrow hs-arrow-next" id="hsNext" aria-label="Next slide">&#8250;</button>
+
+      <!-- Dot Navigation -->
+      <div class="hs-dots" role="tablist" aria-label="Slide navigation">
+        <button class="hs-dot active" data-slide="0" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+        <button class="hs-dot" data-slide="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+        <button class="hs-dot" data-slide="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+      </div>
+
+      <!-- Scroll Hint -->
+      <div class="hs-scroll-hint" aria-hidden="true">
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="hs-progress" aria-hidden="true">
+        <div class="hs-progress-bar" id="hsProgressBar"></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         FEATURE BADGES STRIP
+    ══════════════════════════════════ -->
+    <div class="feature-badges reveal">
+      <div class="feature-badge"><span class="badge-icon">✦</span> 100% Pure Materials</div>
+      <div class="feature-badge"><span class="badge-icon">🚚</span> Free Delivery ₹5,000+</div>
+      <div class="feature-badge"><span class="badge-icon">🔁</span> Easy Returns</div>
+      <div class="feature-badge"><span class="badge-icon">🔒</span> Secure Checkout</div>
+      <div class="feature-badge"><span class="badge-icon">💎</span> Certified Quality</div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         COLLECTIONS SECTION
+    ══════════════════════════════════ -->
+    <section class="collections-strip" id="collections">
       <div class="container">
-        <div class="row align-items-center">
-          <div class="col-md-7">
-            <h1 class="display-5">Fine Jewellery, <em>Crafted with Love</em></h1>
-            <p class="lead">
-              Discover gold, silver, and diamond pieces designed for every
-              occasion.
-            </p>
-            <a href="#catalog" class="btn btn-primary btn-lg">Browse Collections</a>
-          </div>
-          <div class="col-md-5 d-none d-md-block text-center">
-            <img src="image.png" alt="Jewelry" class="img-fluid logo-img" loading="lazy" />
-          </div>
+        <div class="text-center mb-5 reveal">
+          <span class="section-eyebrow">Our Collections</span>
+          <h2 style="font-size:clamp(1.6rem,4vw,2.5rem);font-weight:800;">Shop by Metal</h2>
+          <div class="section-divider mx-auto"></div>
         </div>
-      </div>
-    </div>
 
-    <!-- ====== Slideshow Section ====== -->
-    <div class="slideshow-wrapper">
-      <div class="rose-slideshow" id="roseSlideshow" tabindex="0" aria-label="Jewellery slideshow">
-        <div class="rose-slide active">
-          <img src="images/gold.avif" alt="Gold jewelry" loading="lazy" />
-          <div class="rose-caption">Pure Gold Jewellery</div>
-        </div>
-        <div class="rose-slide">
-          <img src="images/silver.avif" alt="Silver Jewellery" loading="lazy" />
-          <div class="rose-caption">Pure Silver Jewellery</div>
-        </div>
-        <div class="rose-slide">
-          <img src="images/platinum.avif" alt="Platinum Jewellery" loading="lazy" />
-          <div class="rose-caption">Pure Platinum Jewellery</div>
-        </div>
-        <button class="slide-arrow prev" aria-label="Previous slide">&#8249;</button>
-        <button class="slide-arrow next" aria-label="Next slide">&#8250;</button>
-      </div>
-      <div class="rose-dots" role="tablist" aria-label="Slide navigation">
-        <button class="rose-dot active" data-slide="0" role="tab" aria-selected="true" aria-label="Slide 1"></button>
-        <button class="rose-dot" data-slide="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
-        <button class="rose-dot" data-slide="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
-      </div>
-    </div>
-
-    <div class="container py-3">
-      <div class="row g-4 justify-content-center">
-        <div class="col-12 col-md-4">
-          <div class="category-section h-100" onclick="loadProducts('gold')">
-            <img
-              src="images/gold.avif"
-              alt="Gold Jewellery"
-              class="category-img-anim"
-              loading="lazy"
-            />
-            <div class="px-3 pb-3 pt-2">
-              <div class="category-title">Gold Collection</div>
-              <div class="category-desc">
-                Timeless elegance in 100% pure gold. Explore rings, necklaces,
-                and more.
+        <div class="row g-4 justify-content-center">
+          <div class="col-12 col-md-4 reveal reveal-delay-1">
+            <div class="category-section h-100" onclick="loadProducts('gold')" role="button" tabindex="0"
+              aria-label="Browse Gold Collection" onkeypress="if(event.key==='Enter')loadProducts('gold')">
+              <img src="images/gold.avif" alt="Gold Jewellery" class="category-img-anim" loading="lazy" />
+              <div class="px-3 pb-3 pt-2">
+                <div class="category-title">✦ Gold Collection</div>
+                <div class="category-desc">Timeless elegance in 100% pure gold. Explore rings, necklaces, and more.</div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="category-section h-100" onclick="loadProducts('silver')">
-            <img
-              src="images/silver.avif"
-              alt="Silver Jewellery"
-              class="category-img-anim"
-              loading="lazy"
-            />
-            <div class="px-3 pb-3 pt-2">
-              <div class="category-title silver">Silver Collection</div>
-              <div class="category-desc">
-                Modern classics in pure silver. Discover bracelets, anklets, and
-                more.
+          <div class="col-12 col-md-4 reveal reveal-delay-2">
+            <div class="category-section h-100" onclick="loadProducts('silver')" role="button" tabindex="0"
+              aria-label="Browse Silver Collection" onkeypress="if(event.key==='Enter')loadProducts('silver')">
+              <img src="images/silver.avif" alt="Silver Jewellery" class="category-img-anim" loading="lazy" />
+              <div class="px-3 pb-3 pt-2">
+                <div class="category-title silver">✦ Silver Collection</div>
+                <div class="category-desc">Modern classics in pure silver. Discover bracelets, anklets, and more.</div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="col-12 col-md-4">
-          <div
-            class="category-section h-100"
-            onclick="loadProducts('platinum')"
-          >
-            <img
-              src="images/platinum.avif"
-              alt="Platinum Jewellery"
-              class="category-img-anim"
-              loading="lazy"
-            />
-            <div class="px-3 pb-3 pt-2">
-              <div class="category-title platinum">Platinum Collection</div>
-              <div class="category-desc">
-                Rare, radiant platinum pieces for the truly special moments.
+          <div class="col-12 col-md-4 reveal reveal-delay-3">
+            <div class="category-section h-100" onclick="loadProducts('platinum')" role="button" tabindex="0"
+              aria-label="Browse Platinum Collection" onkeypress="if(event.key==='Enter')loadProducts('platinum')">
+              <img src="images/platinum.avif" alt="Platinum Jewellery" class="category-img-anim" loading="lazy" />
+              <div class="px-3 pb-3 pt-2">
+                <div class="category-title platinum">✦ Platinum Collection</div>
+                <div class="category-desc">Rare, radiant platinum pieces for the truly special moments.</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <script>
-      // ====== Premium Slideshow with Auto-play, Arrows & Pause-on-Hover ======
-      (function() {
-        const slides = document.querySelectorAll('.rose-slide');
-        const dots = document.querySelectorAll('.rose-dot');
-        const prevBtn = document.querySelector('.slide-arrow.prev');
-        const nextBtn = document.querySelector('.slide-arrow.next');
-        const slideshowEl = document.getElementById('roseSlideshow');
-        let currentIndex = 0;
-        let autoPlayTimer = null;
-        let isHovering = false;
-        const INTERVAL = 4000;
-
-        function goToSlide(idx) {
-          if (idx === currentIndex) return;
-          slides[currentIndex].classList.remove('active');
-          dots[currentIndex].classList.remove('active');
-          dots[currentIndex].setAttribute('aria-selected', 'false');
-          currentIndex = (idx + slides.length) % slides.length;
-          slides[currentIndex].classList.add('active');
-          dots[currentIndex].classList.add('active');
-          dots[currentIndex].setAttribute('aria-selected', 'true');
-        }
-
-        function nextSlide() { goToSlide(currentIndex + 1); }
-        function prevSlide() { goToSlide(currentIndex - 1); }
-
-        function startAutoPlay() {
-          stopAutoPlay();
-          autoPlayTimer = setInterval(() => { if (!isHovering) nextSlide(); }, INTERVAL);
-        }
-
-        function stopAutoPlay() {
-          if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
-        }
-
-        // Arrow buttons
-        if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); startAutoPlay(); });
-        if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); startAutoPlay(); });
-
-        // Dot navigation
-        dots.forEach(dot => dot.addEventListener('click', () => {
-          goToSlide(parseInt(dot.getAttribute('data-slide')));
-          startAutoPlay();
-        }));
-
-        // Pause on hover
-        if (slideshowEl) {
-          slideshowEl.addEventListener('mouseenter', () => { isHovering = true; });
-          slideshowEl.addEventListener('mouseleave', () => { isHovering = false; });
-        }
-
-        // Touch support
-        let touchStartX = null;
-        if (slideshowEl) {
-          slideshowEl.addEventListener('touchstart', e => {
-            if (e.touches.length === 1) touchStartX = e.touches[0].clientX;
-          }, { passive: true });
-          slideshowEl.addEventListener('touchend', e => {
-            if (touchStartX === null) return;
-            const dx = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(dx) > 40) { dx > 0 ? prevSlide() : nextSlide(); startAutoPlay(); }
-            touchStartX = null;
-          });
-        }
-
-        // Keyboard
-        if (slideshowEl) {
-          slideshowEl.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft') { prevSlide(); startAutoPlay(); }
-            else if (e.key === 'ArrowRight') { nextSlide(); startAutoPlay(); }
-          });
-        }
-
-        startAutoPlay();
-      })();
-    </script>
-
-    <div class="container py-5" id="catalog">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="m-0">Browse Products</h2>
-        <input
-          id="search"
-          class="form-control"
-          placeholder="Search products..."
-          style="max-width: 260px"
-        />
+    <!-- ══════════════════════════════════
+         PRODUCT CATALOG
+    ══════════════════════════════════ -->
+    <section class="container py-5" id="catalog">
+      <div class="catalog-header reveal">
+        <div>
+          <span class="section-eyebrow">Browse Products</span>
+          <h2 class="catalog-header h2">All Jewellery</h2>
+        </div>
+        <div class="search-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+          </svg>
+          <input id="search" class="form-control" placeholder="Search jewellery..." aria-label="Search products" />
+        </div>
       </div>
       <div id="productsRow"></div>
-    </div>
+    </section>
 
-    <!-- Quick View Modal -->
-    <div
-      class="modal fade"
-      id="quickViewModal"
-      tabindex="-1"
-      aria-hidden="true"
-    >
+    <!-- ══════════════════════════════════
+         QUICK VIEW MODAL
+    ══════════════════════════════════ -->
+    <div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-overlay"></div>
           <div class="modal-header">
             <h5 class="modal-title" id="qvTitle">Products</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="row g-3">
               <div class="col-md-6">
-                <img
-                  id="qvImg"
-                  src=""
-                  alt=""
-                  class="img-fluid rounded border"
-                />
+                <img id="qvImg" src="" alt="" class="img-fluid rounded border" />
               </div>
               <div class="col-md-6">
                 <p class="small text-muted" id="qvMeta">.</p>
@@ -299,83 +673,220 @@
               </div>
             </div>
           </div>
-          <div
-            class="modal-footer d-flex justify-content-between flex-wrap gap-2"
-          >
+          <div class="modal-footer d-flex justify-content-between flex-wrap gap-2">
             <div class="d-flex gap-2">
               <button id="qvAddBtn" class="btn btn-success">Add to Cart</button>
-              <a id="qvViewBtn" class="btn btn-outline-primary"
-                >Open product page</a
-              >
+              <a id="qvViewBtn" class="btn btn-outline-primary">Open product page</a>
             </div>
-            <a href="#" class="btn btn-secondary" data-bs-dismiss="modal"
-              >Back to collection</a
-            >
+            <a href="#" class="btn btn-secondary" data-bs-dismiss="modal">Back to collection</a>
           </div>
         </div>
       </div>
     </div>
 
-    <script>
-      function initIndexPage() {
-        if (typeof updateCartCountUI === "function") updateCartCountUI();
-      }
-      document.addEventListener("DOMContentLoaded", () => {
-        if (typeof loadProducts === "function") loadProducts();
-        if (window.authStateSettled) {
-          initIndexPage();
-        } else {
-          document.addEventListener("authStateSettled", initIndexPage, { once: true });
-        }
-      });
-    </script>
-
-    <!-- Toast container for transient UI messages -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
-      <div
-        id="appToast"
-        class="toast align-items-center text-bg-primary border-0"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
+    <!-- Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1080">
+      <div id="appToast" class="toast align-items-center text-bg-primary border-0"
+        role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
           <div class="toast-body" id="appToastBody">Message</div>
-          <button
-            type="button"
-            class="btn-close btn-close-white me-2 m-auto"
-            data-bs-dismiss="toast"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
       </div>
     </div>
 
-    <footer class="mt-5 text-center">
-      <div
-        class="text-center"
-        style="font-size: 1.35rem; font-weight: 600; letter-spacing: 1.5px"
-      >
-        Swarnika Jewels
-      </div>
-      <div class="text-center">© all rights reserved</div>
-      <div class="text-center" style="font-size: smaller">
-        Project Developed by - Souvik Sinhababu
-      </div>
+    <!-- Footer -->
+    <footer class="mt-auto">
+      <div style="font-size:1.35rem;font-weight:700;letter-spacing:1.5px;margin-bottom:0.35rem;">Swarnika Jewels</div>
+      <div style="color:rgba(255,255,255,0.55);font-size:0.85rem;margin-bottom:0.25rem;">© All rights reserved</div>
+      <div style="color:var(--gold-light);font-size:0.78rem;">Project Developed by — Souvik Sinhababu</div>
     </footer>
 
-    <!-- Chatbot script (toggle + panel) -->
-    <script defer src="chat.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- ══════════════════════════════════
+         PREMIUM SLIDESHOW ENGINE
+    ══════════════════════════════════ -->
     <script>
-      // Navbar scroll effect
+    (function () {
+      const slides  = Array.from(document.querySelectorAll('.hs-slide'));
+      const dots    = Array.from(document.querySelectorAll('.hs-dot'));
+      const prevBtn = document.getElementById('hsPrev');
+      const nextBtn = document.getElementById('hsNext');
+      const progressBar = document.getElementById('hsProgressBar');
+      const slideshowEl = document.getElementById('heroSlideshow');
+
+      const INTERVAL   = 5500; // ms between auto-advances
+      const TRANS_DUR  = 1000; // must match CSS animation duration (ms)
+
+      let current    = 0;
+      let timer      = null;
+      let progTimer  = null;
+      let progStart  = null;
+      let isPaused   = false;
+      let isAnimating = false;
+
+      /* ── Transition to a slide ── */
+      function goTo(idx) {
+        if (isAnimating || idx === current) return;
+        isAnimating = true;
+
+        const prev = current;
+        current = (idx + slides.length) % slides.length;
+
+        // Mark leaving slide
+        slides[prev].classList.add('leaving');
+        slides[prev].classList.remove('active');
+
+        // Activate new slide
+        slides[current].classList.add('active');
+
+        // Update dots
+        dots[prev].classList.remove('active');
+        dots[prev].setAttribute('aria-selected', 'false');
+        dots[current].classList.add('active');
+        dots[current].setAttribute('aria-selected', 'true');
+
+        // Clean up after animation
+        setTimeout(() => {
+          slides[prev].classList.remove('leaving');
+          isAnimating = false;
+        }, TRANS_DUR);
+      }
+
+      /* ── Progress bar animation ── */
+      function startProgress() {
+        stopProgress();
+        progStart = performance.now();
+        function tick(now) {
+          const elapsed = now - progStart;
+          const pct = Math.min((elapsed / INTERVAL) * 100, 100);
+          if (progressBar) progressBar.style.width = pct + '%';
+          if (elapsed < INTERVAL) progTimer = requestAnimationFrame(tick);
+        }
+        progTimer = requestAnimationFrame(tick);
+      }
+
+      function stopProgress() {
+        if (progTimer) { cancelAnimationFrame(progTimer); progTimer = null; }
+        if (progressBar) progressBar.style.width = '0%';
+      }
+
+      /* ── Auto-play ── */
+      function startAuto() {
+        stopAuto();
+        startProgress();
+        timer = setInterval(() => {
+          if (!isPaused) { goTo(current + 1); startProgress(); }
+        }, INTERVAL);
+      }
+
+      function stopAuto() {
+        if (timer) { clearInterval(timer); timer = null; }
+        stopProgress();
+      }
+
+      function resetAuto() { startAuto(); }
+
+      /* ── Controls ── */
+      prevBtn.addEventListener('click', () => { goTo(current - 1); resetAuto(); });
+      nextBtn.addEventListener('click', () => { goTo(current + 1); resetAuto(); });
+
+      dots.forEach(dot => dot.addEventListener('click', () => {
+        goTo(parseInt(dot.dataset.slide));
+        resetAuto();
+      }));
+
+      /* ── Pause on hover ── */
+      slideshowEl.addEventListener('mouseenter', () => { isPaused = true; });
+      slideshowEl.addEventListener('mouseleave', () => { isPaused = false; });
+
+      /* ── Touch / swipe ── */
+      let touchX = null;
+      slideshowEl.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) touchX = e.touches[0].clientX;
+      }, { passive: true });
+      slideshowEl.addEventListener('touchend', e => {
+        if (touchX === null) return;
+        const dx = e.changedTouches[0].clientX - touchX;
+        if (Math.abs(dx) > 44) { dx > 0 ? goTo(current - 1) : goTo(current + 1); resetAuto(); }
+        touchX = null;
+      });
+
+      /* ── Keyboard ── */
+      slideshowEl.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft')  { goTo(current - 1); resetAuto(); }
+        if (e.key === 'ArrowRight') { goTo(current + 1); resetAuto(); }
+      });
+
+      /* ── CTA buttons filter catalog ── */
+      const ctaMap = {
+        'heroShopGold':     'gold',
+        'heroShopSilver':   'silver',
+        'heroShopPlatinum': 'platinum'
+      };
+      Object.keys(ctaMap).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', e => {
+          e.preventDefault();
+          const metal = ctaMap[id];
+          document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+          setTimeout(() => {
+            if (typeof loadProducts === 'function') loadProducts(metal);
+          }, 400);
+        });
+      });
+
+      /* ── Navbar scroll effect ── */
       window.addEventListener('scroll', () => {
         const navbar = document.querySelector('.navbar');
         if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
       }, { passive: true });
+
+      startAuto();
+    })();
     </script>
 
-    <!-- Scripts (bootstrap bundle last) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ══════════════════════════════════
+         SCROLL REVEAL ENGINE
+    ══════════════════════════════════ -->
+    <script>
+    (function () {
+      const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-scale');
+
+      if (!revealEls.length) return;
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target); // fire once
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      revealEls.forEach(el => observer.observe(el));
+    })();
+    </script>
+
+    <!-- Page init -->
+    <script>
+      function initIndexPage() {
+        if (typeof updateCartCountUI === 'function') updateCartCountUI();
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        if (typeof loadProducts === 'function') loadProducts();
+        if (window.authStateSettled) {
+          initIndexPage();
+        } else {
+          document.addEventListener('authStateSettled', initIndexPage, { once: true });
+        }
+      });
+    </script>
+
   </body>
 </html>
