@@ -2,406 +2,268 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Login — Swarnika Jewels</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <meta name="description" content="Sign in to Swarnika Jewels to access your account, orders and cart." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="styles.css" rel="stylesheet" />
     <script src="apiHelper.js" defer></script>
     <script type="module" src="firebase.js" defer></script>
     <script defer src="navbar.js"></script>
   </head>
-
   <body>
+
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg" role="navigation" aria-label="Main navigation">
       <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.html">
           <img src="image.png" alt="Swarnika Logo" class="brand-logo" />
           <span>Swarnika Jewels</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item">
-              <a class="nav-link" href="index.html">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="profile.html">Profile</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html">Orders</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="orders.html?history=true">Order History</a>
-            </li>
-            <li class="nav-item d-none">
-              <a class="nav-link" href="admin.html">Admin Panel</a>
-            </li>
-            <li class="nav-item d-none" id="userNameDisplay">
-              <span class="nav-link text-primary fw-bold"></span>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" id="loginBtn" href="login.html">Login</a>
-            </li>
-            <li class="nav-item d-none" id="logoutContainer">
-              <a class="nav-link" href="#" id="logoutBtn">Logout</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="cart.html">Cart <span class="cart-count"></span></a></li>
+            <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+            <li class="nav-item"><a class="nav-link" href="orders.html?history=true">Order History</a></li>
+            <li class="nav-item d-none"><a class="nav-link" href="admin.html">Admin Panel</a></li>
+            <li class="nav-item d-none" id="userNameDisplay"><span class="nav-link fw-bold" style="color:var(--gold-light)"></span></li>
+            <li class="nav-item"><a class="nav-link active" id="loginBtn" href="login.html">Login</a></li>
+            <li class="nav-item d-none" id="logoutContainer"><a class="nav-link" href="#" id="logoutBtn">Logout</a></li>
           </ul>
         </div>
       </div>
     </nav>
 
+    <!-- Split Layout -->
+    <div class="login-split">
 
-    <div class="login-container">
-      <h3>Welcome Back</h3>
-      <div id="msg" class="text-center mb-3 fw-semibold"></div>
-      <div class="mb-3">
-        <input
-          id="email"
-          class="form-control"
-          placeholder="Email"
-          type="email"
-        />
+      <!-- Left: Jewellery Visual -->
+      <div class="login-split-left" aria-hidden="true">
+        <img src="images/gold.avif" alt="" loading="eager" fetchpriority="high" />
+        <div class="login-split-left-overlay">
+          <div class="login-split-left-brand">Swarnika<br>Jewels</div>
+          <div class="login-split-left-tagline">Fine Jewellery, Crafted with Love</div>
+          <div style="display:flex;gap:1.5rem;margin-top:2rem">
+            <div style="text-align:center">
+              <div style="font-size:1.6rem;font-weight:700;color:#e2c97e">500+</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase">Products</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:1.6rem;font-weight:700;color:#e2c97e">100%</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase">Pure</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:1.6rem;font-weight:700;color:#e2c97e">Free</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase">Delivery</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="mb-3">
-        <input
-          id="pass"
-          type="password"
-          class="form-control"
-          placeholder="Password"
-        />
+
+      <!-- Right: Login Form -->
+      <div class="login-split-right">
+        <div class="login-card">
+          <h2>Welcome Back</h2>
+          <p>Sign in to your Swarnika account</p>
+
+          <div id="msg" class="mb-3" role="alert" aria-live="polite"></div>
+
+          <div class="mb-3">
+            <label class="form-label" for="email">Email Address</label>
+            <input id="email" class="form-control" placeholder="you@example.com" type="email"
+              autocomplete="email" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="pass">Password</label>
+            <div style="position:relative">
+              <input id="pass" type="password" class="form-control" placeholder="Your password"
+                autocomplete="current-password" style="padding-right:3rem" />
+              <button id="togglePass" type="button" aria-label="Toggle password visibility"
+                style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.1rem;padding:0;line-height:1">👁</button>
+            </div>
+          </div>
+
+          <button id="btn" class="btn btn-primary w-100" style="padding:0.8rem;font-size:0.95rem;letter-spacing:0.5px">Sign In</button>
+
+          <div class="login-divider">or</div>
+
+          <!-- Official Google Sign-In Button -->
+          <button id="googleBtn" class="btn-google" type="button" aria-label="Sign in with Google">
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.909-2.259c-.805.54-1.836.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+              <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.441 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+
+          <p class="mt-4 text-center" style="font-size:0.875rem;color:var(--text-muted)">
+            New here? <a href="register.html" style="color:var(--gold-light);font-weight:600">Create an account</a>
+          </p>
+        </div>
       </div>
-      <button id="btn" class="btn btn-primary w-100">Login</button>
-      <div class="d-grid gap-2 mt-3">
-        <button id="googleBtn" class="btn btn-outline-secondary">
-          Sign in with Google
-        </button>
-      </div>
-      <p class="mt-3 text-center">
-        New here? <a href="register.html">Create an account</a>
-      </p>
     </div>
 
-    <script type="module">
-      // Firebase Auth Login with Backend Sync
-      import { auth } from "./firebase.js";
-      import {
-        signInWithEmailAndPassword,
-        onAuthStateChanged,
-      } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-      import { API } from "./config.js";
-      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${API}${path}`, opts));
-      const emailInput = document.getElementById("email");
-      const passInput = document.getElementById("pass");
-      const loginBtn = document.getElementById("btn");
-      const msg = document.getElementById("msg");
+    <!-- Footer -->
+    <footer>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;letter-spacing:1.5px;background:linear-gradient(135deg,#c9a84c,#e2c97e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.3rem">Swarnika Jewels</div>
+      <div style="color:rgba(255,255,255,0.4);font-size:0.82rem">© All rights reserved &nbsp;·&nbsp; Developed by Souvik Sinhababu</div>
+    </footer>
 
-      loginBtn.addEventListener("click", async () => {
-        const email = emailInput.value.trim();
-        const password = passInput.value.trim();
-        const guestId = localStorage.getItem('guestId');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
 
-        msg.className = "text-center mb-3 fw-semibold text-danger";
-        msg.textContent = "";
-
-        if (!email || !password) {
-          msg.textContent = "⚠️ Please fill in both fields.";
-          return;
-        }
-
-        msg.textContent = "⏳ Logging in...";
-        loginBtn.disabled = true;
-
-        try {
-          // Try backend login first (handles both regular users and admin)
-          console.log("🔐 Attempting backend login...");
-          const loginRes = await fetchWithFallback('/auth/login', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ email, password, guestId }),
-          });
-
-          if (loginRes.ok) {
-            const loginData = await loginRes.json();
-            console.log("✅ Backend login successful", loginData.user);
-            
-            // Store token for fallback
-            if (loginData.token) {
-              localStorage.setItem("authToken", loginData.token);
-              console.log("💾 Token stored in localStorage");
-            }
-
-            // Check if user is admin
-            if (loginData.user.role === 'admin') {
-              localStorage.setItem('localAdmin', '1');
-              localStorage.setItem('localAdminEmail', email);
-              msg.className = "text-center mb-3 fw-semibold text-success";
-              msg.textContent = "✅ Admin logged in. Redirecting to admin panel...";
-              setTimeout(() => { location.href = 'admin.html'; }, 600);
-              return;
-            }
-
-            // Regular user: redirect to index
-            msg.className = "text-center mb-3 fw-semibold text-success";
-            msg.textContent = `✅ Welcome, ${loginData.user.name}! Redirecting...`;
-            setTimeout(() => { location.href = 'index.html'; }, 900);
-            return;
-          } else if (loginRes.status === 404 || loginRes.status === 401) {
-            // User not found or wrong password - fall through to Firebase
-            console.log("⚠️ Backend login failed (404/401), trying Firebase...");
-          } else {
-            // Other backend error, still try Firebase
-            console.warn("⚠️ Backend login error, falling back to Firebase...");
-          }
-
-          // Fallback to Firebase Auth for users not in backend
-          console.log("🔐 Signing in with Firebase...");
-          const userCredential = await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-          );
-          const user = userCredential.user;
-          console.log("✅ Firebase login successful");
-
-          // Step 2: Get Firebase ID token
-          const idToken = await user.getIdToken();
-          console.log("🎫 Got Firebase ID token");
-
-          // Step 3: Sync with backend to create session cookie
-          console.log("🔄 Syncing with backend...");
-          const syncRes = await fetchWithFallback('/auth/firebase', {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ idToken, guestId }),
-            });
-
-            if (!syncRes.ok) {
-              let errorText = 'Backend sync failed';
-              try {
-                const errorData = await syncRes.json();
-                errorText = errorData.error || JSON.stringify(errorData);
-              } catch (parseErr) {
-                // Not JSON (probably HTML); fall back to plain text
-                try {
-                  errorText = await syncRes.text();
-                } catch (tErr) {
-                  // ignore
-                }
-              }
-              throw new Error(errorText || "Backend sync failed");
-            }
-
-            const syncData = await syncRes.json();
-            console.log("✅ Backend session created");
-            console.log("📦 Sync response:", syncData);
-            console.log("🍪 Cookies after sync:", document.cookie);
-            
-            // Store tokens in localStorage for fallback
-            if (syncData.token) {
-              localStorage.setItem("authToken", syncData.token);
-              console.log("💾 Token stored in localStorage as fallback");
-            }
-            // Also store Firebase ID token for future Bearer auth if needed
-            localStorage.setItem("firebaseIdToken", idToken);
-            console.log("💾 Firebase ID token stored in localStorage");
-
-            // Wait a moment for cookie to be set
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log("🍪 Cookies after delay:", document.cookie);
-            msg.className = "text-center mb-3 fw-semibold text-success";
-          msg.textContent = `✅ Welcome, ${
-            user.displayName || user.email.split("@")[0]
-          }! Redirecting...`;
-
-          setTimeout(() => {
-            location.href = "index.html";
-          }, 900);
-        } catch (err) {
-          console.error("Login error:", err);
-          msg.className = "text-center mb-3 fw-semibold text-danger";
-
-          // Handle different Firebase Auth errors
-          switch (err.code) {
-            case "auth/invalid-email":
-              msg.textContent = "❌ Invalid email address format.";
-              break;
-            case "auth/user-disabled":
-              msg.textContent = "❌ This account has been disabled.";
-              break;
-            case "auth/user-not-found":
-              msg.textContent = "❌ No account found with this email. Please register.";
-              break;
-            case "auth/wrong-password":
-              msg.textContent = "❌ Incorrect password.";
-              break;
-            case "auth/invalid-credential":
-              msg.textContent =
-                "❌ Invalid credentials. Please check your email and password.";
-              break;
-            case "auth/invalid-login-credentials":
-              msg.textContent = "❌ Invalid email or password. Please check and try again.";
-              break;
-            case "auth/too-many-requests":
-              msg.textContent = "❌ Too many failed attempts. Try again later.";
-              break;
-            default:
-              msg.textContent = `❌ Login failed: ${err.message}`;
-          }
-        } finally {
-          loginBtn.disabled = false;
-        }
-      });
-
-      // Check if already logged in
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          try {
-            const checkRes = await fetchWithFallback('/auth/me', {
-              credentials: "include",
-            });
-            if (checkRes.ok) {
-              msg.className = "text-center mb-3 fw-semibold text-success";
-              msg.textContent = `👋 Welcome back, ${
-                user.displayName || user.email.split("@")[0]
-              }! Redirecting...`;
-              setTimeout(() => {
-                location.href = "index.html";
-              }, 900);
-            }
-          } catch (e) {
-            // Backend session doesn't exist, stay on login page
-          }
-        }
-      });
-    </script>
-    <!-- Firebase module + Google sign-in (module script) -->
-    <script type="module">
-      // Google Sign-in with Firebase and Backend Sync
-      import { auth } from "./firebase.js";
-      import {
-        GoogleAuthProvider,
-        signInWithPopup,
-      } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-      import { API } from "./config.js";
-      const googleBtn = document.getElementById("googleBtn");
-      if (googleBtn) {
-        googleBtn.addEventListener("click", async (e) => {
-          const msg = document.getElementById("msg");
-          try {
-            googleBtn.disabled = true;
-            msg.className = "text-center mb-3 fw-semibold text-primary";
-            msg.textContent = "⏳ Signing in with Google...";
-
-            // Step 1: Google Sign-in with Firebase
-            console.log("🔐 Starting Google sign-in...");
-            const provider = new GoogleAuthProvider();
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            console.log("✅ Google sign-in successful");
-
-            // Step 2: Get Firebase ID token
-            const idToken = await user.getIdToken();
-            console.log("🎫 Got Firebase ID token");
-
-            // Step 3: Sync with backend
-            console.log("🔄 Syncing with backend...");
-            const guestId = localStorage.getItem('guestId');
-            const syncRes = await fetchWithFallback('/auth/firebase', {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({ idToken, guestId }),
-            });
-
-            if (!syncRes.ok) {
-              let errorText = 'Backend sync failed';
-              try {
-                const errorData = await syncRes.json();
-                errorText = errorData.error || JSON.stringify(errorData);
-              } catch (parseErr) {
-                try {
-                  errorText = await syncRes.text();
-                } catch (tErr) {
-                  // ignore
-                }
-              }
-              throw new Error(errorText || "Backend sync failed");
-            }
-
-            const syncData = await syncRes.json();
-            console.log("✅ Backend session created");
-
-            // FALLBACK: Store tokens in localStorage for Bearer auth
-            if (syncData.token) {
-              localStorage.setItem("authToken", syncData.token);
-              console.log("💾 JWT token stored in localStorage");
-            }
-            localStorage.setItem("firebaseIdToken", idToken);
-            console.log("💾 Firebase ID token stored in localStorage");
-
-            // Wait for cookie to be set
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            msg.className = "text-center mb-3 fw-semibold text-success";
-            msg.textContent = `✅ Welcome, ${
-              user.displayName || user.email
-            }! Redirecting...`;
-
-            setTimeout(() => {
-              window.location.href = "index.html";
-            }, 900);
-          } catch (err) {
-            console.error("❌ Google sign-in failed", err);
-            console.error("Error code:", err.code);
-            console.error("Error message:", err.message);
-            msg.className = "text-center mb-3 fw-semibold text-danger";
-
-            if (err.code === "auth/popup-closed-by-user") {
-              msg.textContent = "⚠️ Sign-in cancelled.";
-            } else if (err.code === "auth/popup-blocked") {
-              msg.textContent = "⚠️ Popup blocked. Please allow popups for this site.";
-            } else if (err.message && err.message.includes("Failed to fetch")) {
-              msg.textContent = "❌ Network error. Is your backend running? Check console for details.";
-            } else if (err.code === "auth/network-request-failed") {
-              msg.textContent = "❌ Network error. Check your internet connection and Firebase configuration.";
-            } else if (err.message && err.message.includes("ERR_NGROK")) {
-              msg.textContent = "❌ Firebase config issue. Check authorized domains in Firebase Console.";
-            } else {
-              msg.textContent = `❌ Google sign-in failed: ${err.message || err.code || "Unknown error"}`;
-            }
-          } finally {
-            googleBtn.disabled = false;
-          }
-        });
-      }
-    </script>
+    <!-- Password toggle -->
     <script>
+      document.getElementById('togglePass').addEventListener('click', () => {
+        const p = document.getElementById('pass');
+        p.type = p.type === 'password' ? 'text' : 'password';
+      });
       window.addEventListener('scroll', () => {
         const navbar = document.querySelector('.navbar');
         if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
       }, { passive: true });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Login logic -->
+    <script type="module">
+      import { auth } from "./firebase.js";
+      import {
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${window.API || '/api'}${path}`, opts));
+      const emailInput = document.getElementById("email");
+      const passInput  = document.getElementById("pass");
+      const loginBtn   = document.getElementById("btn");
+      const msg        = document.getElementById("msg");
+
+      function showMsg(text, type = 'danger') {
+        msg.className = `alert alert-${type} py-2 px-3`;
+        msg.textContent = text;
+      }
+      function clearMsg() { msg.className = ''; msg.textContent = ''; }
+
+      loginBtn.addEventListener("click", async () => {
+        const email    = emailInput.value.trim();
+        const password = passInput.value.trim();
+        const guestId  = localStorage.getItem('guestId');
+        clearMsg();
+        if (!email || !password) { showMsg("Please fill in both fields."); return; }
+        showMsg("Signing in…", 'info');
+        loginBtn.disabled = true;
+        try {
+          const loginRes = await fetchWithFallback('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password, guestId }),
+          });
+          if (loginRes.ok) {
+            const d = await loginRes.json();
+            if (d.token) localStorage.setItem('authToken', d.token);
+            if (d.user.role === 'admin') {
+              localStorage.setItem('localAdmin', '1');
+              localStorage.setItem('localAdminEmail', email);
+              showMsg(`Welcome, Admin! Redirecting…`, 'success');
+              setTimeout(() => location.href = 'admin.html', 600); return;
+            }
+            showMsg(`Welcome, ${d.user.name}! Redirecting…`, 'success');
+            setTimeout(() => location.href = 'index.html', 800); return;
+          }
+          // Firebase fallback
+          const uc = await signInWithEmailAndPassword(auth, email, password);
+          const idToken = await uc.user.getIdToken();
+          const syncRes = await fetchWithFallback('/auth/firebase', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ idToken, guestId }),
+          });
+          if (!syncRes.ok) throw new Error((await syncRes.json()).error || 'Sync failed');
+          const sd = await syncRes.json();
+          if (sd.token) localStorage.setItem('authToken', sd.token);
+          localStorage.setItem('firebaseIdToken', idToken);
+          showMsg(`Welcome, ${uc.user.displayName || uc.user.email.split('@')[0]}! Redirecting…`, 'success');
+          setTimeout(() => location.href = 'index.html', 800);
+        } catch (err) {
+          const map = {
+            'auth/invalid-credential':       'Invalid email or password.',
+            'auth/invalid-login-credentials':'Invalid email or password.',
+            'auth/user-not-found':           'No account with this email.',
+            'auth/wrong-password':           'Incorrect password.',
+            'auth/too-many-requests':        'Too many attempts. Try later.',
+            'auth/user-disabled':            'Account disabled.',
+          };
+          showMsg(map[err.code] || err.message || 'Login failed.');
+        } finally { loginBtn.disabled = false; }
+      });
+
+      // Enter key submits
+      [emailInput, passInput].forEach(el =>
+        el.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); })
+      );
+
+      // Already logged in?
+      onAuthStateChanged(auth, async user => {
+        if (!user) return;
+        try {
+          const r = await fetchWithFallback('/auth/me', { credentials: 'include' });
+          if (r.ok) {
+            showMsg(`Welcome back! Redirecting…`, 'success');
+            setTimeout(() => location.href = 'index.html', 700);
+          }
+        } catch { /* stay on page */ }
+      });
+    </script>
+
+    <!-- Google sign-in -->
+    <script type="module">
+      import { auth } from "./firebase.js";
+      import {
+        GoogleAuthProvider, signInWithPopup,
+      } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+      const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${window.API || '/api'}${path}`, opts));
+      const googleBtn = document.getElementById("googleBtn");
+      const msg       = document.getElementById("msg");
+      function showMsg(text, type = 'danger') {
+        msg.className = `alert alert-${type} py-2 px-3`;
+        msg.textContent = text;
+      }
+      if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+          googleBtn.disabled = true;
+          showMsg('Opening Google sign-in…', 'info');
+          try {
+            const result  = await signInWithPopup(auth, new GoogleAuthProvider());
+            const idToken = await result.user.getIdToken();
+            const guestId = localStorage.getItem('guestId');
+            const syncRes = await fetchWithFallback('/auth/firebase', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ idToken, guestId }),
+            });
+            if (!syncRes.ok) throw new Error((await syncRes.json()).error || 'Sync failed');
+            const sd = await syncRes.json();
+            if (sd.token) localStorage.setItem('authToken', sd.token);
+            localStorage.setItem('firebaseIdToken', idToken);
+            showMsg(`Welcome, ${result.user.displayName || result.user.email}! Redirecting…`, 'success');
+            setTimeout(() => location.href = 'index.html', 800);
+          } catch (err) {
+            if (err.code === 'auth/popup-closed-by-user') showMsg('Sign-in cancelled.', 'warning');
+            else if (err.code === 'auth/popup-blocked') showMsg('Popup blocked — allow popups for this site.', 'warning');
+            else showMsg(err.message || 'Google sign-in failed.');
+          } finally { googleBtn.disabled = false; }
+        });
+      }
+    </script>
   </body>
-    <footer class="text-center py-4 mt-auto">
-      <div class="container">
-        <div style="font-size: 1.35rem; font-weight: 600; letter-spacing: 1.5px" class="mb-2">
-          Swarnika Jewels
-        </div>
-        <div class="mb-1">© Swarnika Jewels | All Rights Reserved</div>
-        <div style="font-size: 0.8rem;">
-          Project Developed by - Souvik Sinhababu
-        </div>
-      </div>
-    </footer>
 </html>
