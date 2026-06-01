@@ -1237,3 +1237,26 @@ footer a:hover { color: var(--gold); }
   color: var(--text) !important;
   backdrop-filter: blur(16px);
 }
+
+/* User Profile Dropdown Styling */
+.user-profile-dropdown-menu .dropdown-item {
+  transition: all 0.22s ease-in-out !important;
+  border-radius: var(--r-sm);
+  margin: 2px 8px;
+  width: auto;
+}
+.user-profile-dropdown-menu .dropdown-item:hover {
+  background: var(--gold-pale) !important;
+  color: var(--gold-light) !important;
+  transform: translateX(4px);
+}
+.user-profile-dropdown-menu .dropdown-item.text-danger:hover {
+  background: rgba(220, 53, 69, 0.1) !important;
+  color: #ff6b6b !important;
+}
+#userNavbarDropdown:hover {
+  border-color: var(--gold-light) !important;
+  box-shadow: 0 0 10px rgba(226, 201, 126, 0.2);
+  background: rgba(255,255,255,0.06) !important;
+}
+

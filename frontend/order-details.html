@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -143,7 +143,9 @@
               payment_status: demo.payment_status || 'Mock',
               created_at: demo.created_at || new Date().toISOString(),
               order_total: demo.order_total || items.reduce((s,i)=>s + (i.price * i.quantity),0),
-              shipping_address: demo.shipping_address || 'Demo Address'
+              shipping_address: demo.shipping_address || 'Demo Address',
+              deliveryDate: demo.deliveryDate || null,
+              estimatedDurationDays: demo.estimatedDurationDays || 7
             };
 
             // Render using the same template structure
@@ -194,7 +196,9 @@
               payment_status: data.payment_status,
               created_at: data.created_at || data.createdAt,
               order_total: data.order_total,
-              shipping_address: data.shipping_address
+              shipping_address: data.shipping_address,
+              deliveryDate: data.deliveryDate || null,
+              estimatedDurationDays: data.estimatedDurationDays || 7
             };
             items = (data.items || []).map(it => ({
               name: it.product?.name || it.name || 'Unknown Product',
@@ -296,6 +300,10 @@
                 <li class="list-group-item d-flex justify-content-between">
                   <span>Order Date:</span>
                   <strong>${new Date(order.created_at).toLocaleString()}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Estimated Delivery:</span>
+                  <strong class="text-warning">${order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Within ' + (order.estimatedDurationDays || 7) + ' Days'}</strong>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
                   <span>Order Total:</span>

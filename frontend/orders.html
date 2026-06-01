@@ -499,7 +499,13 @@
                 <h4 class="mb-0 fw-bold" style="font-family: var(--font-serif); font-size: 1.25rem;">
                   <a href="order-details.html?id=${orderId}" class="hover-gold">Order #${orderId.substring(0, 12)}...</a>
                 </h4>
-                <small class="text-muted">Placed on ${new Date(o.created_at || o.createdAt).toLocaleString('en-IN')}</small>
+                <div class="d-flex flex-column gap-1 mt-1">
+                  <small class="text-muted">Placed on ${new Date(o.created_at || o.createdAt).toLocaleString('en-IN')}</small>
+                  <small style="font-size: 0.82rem;">
+                    <span class="text-muted">Est. Delivery:</span>
+                    <strong class="text-warning">${o.deliveryDate ? new Date(o.deliveryDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Within ' + (o.estimatedDurationDays || 7) + ' Days'}</strong>
+                  </small>
+                </div>
               </div>
               <div class="mt-2 mt-sm-0">
                 <span class="badge ${badgeClass} px-3 py-2" style="font-size: 0.78rem; text-transform: uppercase;">${o.status || 'Processing'}</span>

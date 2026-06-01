@@ -295,6 +295,108 @@
     });
   }
 
+  function updateUserProfileDropdown(user, isAdmin) {
+    if (!user || isAdmin) {
+      const existing = document.getElementById("userProfileDropdownNavItem");
+      if (existing) existing.remove();
+      
+      // Restore standard links
+      const cartLink = document.querySelector('a[href="cart.html"]');
+      const ordersLinks = document.querySelectorAll('a[href^="orders.html"]');
+      const profileLink = document.querySelector('a[href="profile.html"]');
+      if (!isAdmin) {
+        if (cartLink) {
+          const li = cartLink.closest('li');
+          if (li) li.classList.remove('d-none');
+        }
+        ordersLinks.forEach(link => {
+          if (link) {
+            const li = link.closest('li');
+            if (li) li.classList.remove('d-none');
+          }
+        });
+        if (profileLink) {
+          const li = profileLink.closest('li');
+          if (li) li.classList.remove('d-none');
+        }
+      }
+      return;
+    }
+
+    // Hide top-level legacy nav links to avoid duplication
+    const profileLink = document.querySelector('a[href="profile.html"]');
+    const historyLink = document.querySelector('a[href="orders.html?history=true"]');
+    const logoutContainer = document.getElementById("logoutContainer");
+    if (profileLink) {
+      const li = profileLink.closest('li');
+      if (li) li.classList.add('d-none');
+    }
+    if (historyLink) {
+      const li = historyLink.closest('li');
+      if (li) li.classList.add('d-none');
+    }
+    if (logoutContainer) logoutContainer.classList.add('d-none');
+
+    const displayName = user.displayName || user.email.split("@")[0];
+    const avatarUrl = user.profileImage || localStorage.getItem('profileImage') || '';
+
+    let userDropdownLi = document.getElementById("userProfileDropdownNavItem");
+    if (!userDropdownLi) {
+      const navUl = document.querySelector("#navbarNav ul.navbar-nav");
+      if (navUl) {
+        userDropdownLi = document.createElement("li");
+        userDropdownLi.className = "nav-item dropdown ms-lg-3 mt-2 mt-lg-0";
+        userDropdownLi.id = "userProfileDropdownNavItem";
+        navUl.appendChild(userDropdownLi);
+      }
+    }
+
+    if (userDropdownLi) {
+      const initialLetter = displayName ? displayName[0].toUpperCase() : 'U';
+      userDropdownLi.innerHTML = `
+        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-2" href="#" id="userNavbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid var(--border-soft); border-radius: 30px; background: rgba(255,255,255,0.03); padding: 4px 12px !important; transition: all 0.3s ease;">
+          <div class="user-nav-avatar-container" style="position: relative; width: 28px; height: 28px; overflow: hidden; border-radius: 50%;">
+            ${avatarUrl ? 
+              `<img src="${avatarUrl}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover; border: 1.5px solid var(--gold-light);" onerror="this.outerHTML='<div class=\\'rounded-circle d-flex align-items-center justify-content-center text-dark fw-bold\\' style=\\'width: 100%; height: 100%; background: var(--grad-gold); font-size: 0.8rem; font-family: var(--font-serif);\\'>${initialLetter}</div>'">` :
+              `<div class="rounded-circle d-flex align-items-center justify-content-center text-dark fw-bold" style="width: 100%; height: 100%; background: var(--grad-gold); border: 1.5px solid var(--gold-light); font-size: 0.8rem; font-family: var(--font-serif);">${initialLetter}</div>`
+            }
+          </div>
+          <span class="d-inline fw-semibold text-white small" style="letter-spacing: 0.5px;">Hi, ${displayName}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 user-profile-dropdown-menu" aria-labelledby="userNavbarDropdown" style="background: rgba(20,17,10,0.98); border: 1px solid rgba(201,168,76,0.22) !important; backdrop-filter: blur(20px); border-radius: var(--r-md); min-width: 180px; margin-top: 8px;">
+          <li>
+            <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="profile.html" style="font-size: 0.85rem; color: var(--text-soft); font-weight: 500;">
+              👤 My Profile
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="orders.html?history=true" style="font-size: 0.85rem; color: var(--text-soft); font-weight: 500;">
+              📜 Order History
+            </a>
+          </li>
+          <li><hr class="dropdown-divider" style="border-color: rgba(201,168,76,0.15);"></li>
+          <li>
+            <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2 text-danger" href="#" id="dropdownLogoutBtn" style="font-size: 0.85rem; font-weight: 600;">
+              🚪 Logout
+            </a>
+          </li>
+        </ul>
+      `;
+
+      // Attach click handler to the dropdown logout button
+      const dropdownLogoutBtn = document.getElementById("dropdownLogoutBtn");
+      if (dropdownLogoutBtn) {
+        dropdownLogoutBtn.onclick = async (e) => {
+          e.preventDefault();
+          const legacyBtn = document.getElementById("logoutBtn");
+          if (legacyBtn) {
+            legacyBtn.click();
+          }
+        };
+      }
+    }
+  }
+
   function updateNavbarUI(user) {
     const loginBtn = document.getElementById("loginBtn");
     const logoutContainer = document.getElementById("logoutContainer");
@@ -312,6 +414,7 @@
     // Admin mode: show Admin Panel, hide Cart/Orders/Profile
     if (isAdmin) {
       console.log('👑 Admin mode detected');
+      updateUserProfileDropdown(null, true);
       if (adminLi) {
         adminLi.classList.remove('d-none');
         console.log('✅ Admin link shown');
@@ -382,24 +485,15 @@
     if (user && !isAdmin) {
       // Firebase user is logged in and NOT an admin
       console.log('🔥 Firebase user:', user.email);
+      updateUserProfileDropdown(user, false);
       if (loginBtn) {
         loginBtn.classList.add("d-none");
       }
       if (logoutContainer) {
-        logoutContainer.classList.remove("d-none");
+        logoutContainer.classList.add("d-none"); // Hidden legacy logout
       }
       if (userNameDisplay) {
-        const displayName = user.displayName || user.email.split("@")[0];
-        const avatarUrl = user.profileImage || localStorage.getItem('profileImage');
-        const span = userNameDisplay.querySelector("span");
-        if (span) {
-          if (avatarUrl) {
-            span.innerHTML = `<img src="${avatarUrl}" class="rounded-circle me-1" style="width: 26px; height: 26px; object-fit: cover; border: 1.5px solid var(--gold-border); vertical-align: middle;" onerror="this.style.display='none'"> Hi, ${displayName}`;
-          } else {
-            span.textContent = `Hi, ${displayName}`;
-          }
-        }
-        userNameDisplay.classList.remove("d-none");
+        userNameDisplay.classList.add("d-none"); // Hidden legacy user text
       }
 
       // Inject notification bell into navbar
@@ -500,6 +594,7 @@
     } else if (!user && !isAdmin) {
       // User is logged out
       console.log('🚫 User logged out');
+      updateUserProfileDropdown(null, false);
       if (loginBtn) {
         loginBtn.classList.remove("d-none");
       }
@@ -597,19 +692,9 @@
     const newAvatar = e.detail && e.detail.profileImage;
     if (newAvatar) localStorage.setItem('profileImage', newAvatar);
     else localStorage.removeItem('profileImage');
-    if (newName) {
-      const userNameDisplay = document.getElementById("userNameDisplay");
-      if (userNameDisplay) {
-        const span = userNameDisplay.querySelector("span");
-        if (span) {
-          if (newAvatar) {
-            span.innerHTML = `<img src="${newAvatar}" class="rounded-circle me-1" style="width: 26px; height: 26px; object-fit: cover; border: 1.5px solid var(--gold-border); vertical-align: middle;" onerror="this.style.display='none'"> Hi, ${newName}`;
-          } else {
-            span.textContent = `Hi, ${newName}`;
-          }
-        }
-      }
-    }
+    
+    // Dynamically refresh the professional profile dropdown
+    updateUserProfileDropdown({ displayName: newName, profileImage: newAvatar }, false);
   });
 
   // Initialize when DOM is ready
