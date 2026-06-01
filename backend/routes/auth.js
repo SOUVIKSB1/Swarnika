@@ -509,35 +509,21 @@ router.put("/notifications/read", authMiddleware, async (req, res) => {
   }
 });
 
-// Multer and file upload configuration
+// Multer and file upload configuration (in-memory storage for database persistence)
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, "avatar-" + uniqueSuffix + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
   fileFilter: function (req, file, cb) {
     const filetypes = /jpeg|jpg|png|webp|gif/;
     const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    if (mimetype && extname) {
+    const cbError = new Error("Only image files (jpeg, jpg, png, webp, gif) are allowed!");
+    if (mimetype) {
       return cb(null, true);
     }
-    cb(new Error("Only image files are allowed!"));
+    cb(cbError);
   },
   limits: { fileSize: 3 * 1024 * 1024 }, // 3MB limit
 });
@@ -549,20 +535,21 @@ router.post("/upload-avatar", authMiddleware, upload.single("avatar"), async (re
       return res.status(400).json({ error: "No image file uploaded" });
     }
     
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    // Convert buffer to base64 data URL
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
     
-    // Automatically update the user profileImage field
+    // Automatically update the user profileImage field in the database
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
     
-    user.profileImage = avatarUrl;
+    user.profileImage = base64Image;
     await user.save();
     
     res.json({
-      message: "Avatar uploaded successfully",
-      profileImage: avatarUrl
+      message: "Avatar uploaded and saved to database successfully",
+      profileImage: base64Image
     });
   } catch (err) {
     console.error("❌ POST /auth/upload-avatar error:", err);
