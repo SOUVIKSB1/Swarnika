@@ -1238,25 +1238,190 @@ footer a:hover { color: var(--gold); }
   backdrop-filter: blur(16px);
 }
 
-/* User Profile Dropdown Styling */
+/* User Profile Dropdown Styling — Futuristic Luxury Design */
+.user-nav-avatar-wrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 3px;
+  border-radius: 50%;
+  background: rgba(20, 17, 10, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.user-nav-avatar-wrapper::before {
+  content: '';
+  position: absolute;
+  width: 160%;
+  height: 160%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    var(--gold-light) 25%,
+    rgba(226, 201, 126, 0.1) 50%,
+    var(--gold-light) 75%,
+    transparent 100%
+  );
+  animation: spin-glow 4s linear infinite;
+  transition: all 0.3s ease;
+}
+
+.user-nav-avatar-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(226, 201, 126, 0.35);
+}
+
+.user-nav-avatar-wrapper:hover::before {
+  animation: spin-glow 1.5s linear infinite;
+  background: conic-gradient(
+    from 0deg,
+    #ff6b6b 0%,
+    var(--gold-light) 25%,
+    #4caf82 50%,
+    var(--gold-light) 75%,
+    #ff6b6b 100%
+  );
+}
+
+.user-nav-avatar-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #0e0c0a;
+  border-radius: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@keyframes spin-glow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.user-profile-dropdown-menu {
+  background: rgba(14, 12, 9, 0.96) !important;
+  border: 1px solid rgba(226, 201, 126, 0.25) !important;
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border-radius: 16px !important;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.85),
+    0 0 24px rgba(226, 201, 126, 0.1),
+    inset 0 0 15px rgba(226, 201, 126, 0.05) !important;
+  transform-origin: top right;
+  animation: futuristic-dropdown-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
+  padding: 8px 0 !important;
+}
+
+.user-profile-dropdown-menu::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(226, 201, 126, 0.05),
+    transparent
+  );
+  top: -100%;
+  animation: scanline 5s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes futuristic-dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes scanline {
+  0% { top: -40px; }
+  100% { top: 250px; }
+}
+
 .user-profile-dropdown-menu .dropdown-item {
-  transition: all 0.22s ease-in-out !important;
-  border-radius: var(--r-sm);
-  margin: 2px 8px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  border-radius: 8px;
+  margin: 4px 10px;
   width: auto;
+  overflow: hidden;
+  z-index: 1;
+  color: var(--text-soft) !important;
+  background: transparent !important;
 }
+
+.user-profile-dropdown-menu .dropdown-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(226, 201, 126, 0.12) 0%,
+    rgba(226, 201, 126, 0.02) 100%
+  );
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: -1;
+}
+
+.user-profile-dropdown-menu .dropdown-item:hover::before {
+  left: 0;
+}
+
 .user-profile-dropdown-menu .dropdown-item:hover {
-  background: var(--gold-pale) !important;
   color: var(--gold-light) !important;
-  transform: translateX(4px);
+  transform: translateX(6px);
+  box-shadow: -3px 0 0 var(--gold-light);
+  background: transparent !important;
 }
-.user-profile-dropdown-menu .dropdown-item.text-danger:hover {
-  background: rgba(220, 53, 69, 0.1) !important;
-  color: #ff6b6b !important;
+
+/* Online Indicator dot */
+.user-profile-dropdown-menu .status-pulse-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background-color: #39ff14; /* Cyber neon green */
+  border-radius: 50%;
+  box-shadow: 0 0 8px #39ff14;
+  margin-right: 8px;
+  animation: pulse-glow 2s infinite;
 }
-#userNavbarDropdown:hover {
-  border-color: var(--gold-light) !important;
-  box-shadow: 0 0 10px rgba(226, 201, 126, 0.2);
-  background: rgba(255,255,255,0.06) !important;
+
+@keyframes pulse-glow {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(57, 255, 20, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(57, 255, 20, 0);
+  }
 }
 
