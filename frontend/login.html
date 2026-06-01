@@ -142,6 +142,7 @@
         onAuthStateChanged,
       } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
       const fetchWithFallback = window.fetchWithFallback || ((path, opts) => fetch(`${window.API || '/api'}${path}`, opts));
+      const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
       const emailInput = document.getElementById("email");
       const passInput  = document.getElementById("pass");
       const loginBtn   = document.getElementById("btn");
@@ -178,7 +179,7 @@
               setTimeout(() => location.href = 'admin.html', 600); return;
             }
             showMsg(`Welcome, ${d.user.name}! Redirecting…`, 'success');
-            setTimeout(() => location.href = 'index.html', 800); return;
+            setTimeout(() => location.href = redirectUrl, 800); return;
           }
           // Firebase fallback
           const uc = await signInWithEmailAndPassword(auth, email, password);
@@ -193,7 +194,7 @@
           if (sd.token) localStorage.setItem('authToken', sd.token);
           localStorage.setItem('firebaseIdToken', idToken);
           showMsg(`Welcome, ${uc.user.displayName || uc.user.email.split('@')[0]}! Redirecting…`, 'success');
-          setTimeout(() => location.href = 'index.html', 800);
+          setTimeout(() => location.href = redirectUrl, 800);
         } catch (err) {
           const map = {
             'auth/invalid-credential':       'Invalid email or password.',
@@ -219,7 +220,7 @@
           const r = await fetchWithFallback('/auth/me', { credentials: 'include' });
           if (r.ok) {
             showMsg(`Welcome back! Redirecting…`, 'success');
-            setTimeout(() => location.href = 'index.html', 700);
+            setTimeout(() => location.href = redirectUrl, 700);
           }
         } catch { /* stay on page */ }
       });
@@ -256,7 +257,10 @@
             if (sd.token) localStorage.setItem('authToken', sd.token);
             localStorage.setItem('firebaseIdToken', idToken);
             showMsg(`Welcome, ${result.user.displayName || result.user.email}! Redirecting…`, 'success');
-            setTimeout(() => location.href = 'index.html', 800);
+            setTimeout(() => {
+              const r = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+              location.href = r;
+            }, 800);
           } catch (err) {
             if (err.code === 'auth/popup-closed-by-user') showMsg('Sign-in cancelled.', 'warning');
             else if (err.code === 'auth/popup-blocked') showMsg('Popup blocked — allow popups for this site.', 'warning');

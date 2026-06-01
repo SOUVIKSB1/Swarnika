@@ -477,7 +477,7 @@
           const isLoggedIn = localStorage.getItem("authToken") || localStorage.getItem("firebaseIdToken");
           if (!isLoggedIn) {
             if (confirm("🔐 You must be logged in to checkout. Would you like to go to the login page now?")) {
-              window.location.href = "login.html";
+              window.location.href = "login.html?redirect=cart.html";
             }
             return;
           }
