@@ -77,10 +77,9 @@
       <div style="color:rgba(255,255,255,0.4);font-size:0.82rem">&copy; All rights reserved &middot; Developed by Souvik Sinhababu</div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script type="module">
-      import { API } from "./config.js";
+      import "./config.js";
+      const API = window.API || "/api";
       const PLACEHOLDER_DATAURI = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="100%" height="100%" fill="%23f3f3f3"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23888" font-size="16">No%20image</text></svg>';
       const cartArea = document.getElementById("cartArea");
       const checkoutArea = document.getElementById("checkoutArea");
