@@ -191,12 +191,33 @@ async function loadProducts(filterMetal = null) {
   renderFilteredProducts();
 }
 
+// Global clear helper exposed to HTML onClick
+window.clearMetalFilter = function() {
+  loadProducts(null);
+};
+
 function renderFilteredProducts() {
   const container = document.getElementById("productsRow");
   if (!container || !cachedProducts) return;
 
   const searchInput = document.getElementById("search");
   const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+  // Update DOM active filter indicators
+  const filterIndicator = document.getElementById("activeFilterIndicator");
+  const filterName = document.getElementById("activeFilterName");
+  if (filterIndicator && filterName) {
+    if (currentMetalFilter) {
+      filterName.textContent = currentMetalFilter.charAt(0).toUpperCase() + currentMetalFilter.slice(1);
+      filterIndicator.style.display = "inline-block";
+      const catalogSub = document.querySelector("#catalog .catalog-header h2");
+      if (catalogSub) catalogSub.textContent = `${currentMetalFilter.charAt(0).toUpperCase() + currentMetalFilter.slice(1)} Jewellery`;
+    } else {
+      filterIndicator.style.display = "none";
+      const catalogSub = document.querySelector("#catalog .catalog-header h2");
+      if (catalogSub) catalogSub.textContent = "All Jewellery";
+    }
+  }
 
   let products = [...cachedProducts];
 

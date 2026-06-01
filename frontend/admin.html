@@ -388,6 +388,14 @@
                   <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
+              <div class="mb-3">
+                <label class="form-label">Estimated Delivery Date</label>
+                <input type="date" id="editOrderDeliveryDate" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Estimated Duration (Days)</label>
+                <input type="number" id="editOrderDuration" class="form-control" placeholder="7" min="1" />
+              </div>
             </form>
           </div>
           <div class="modal-footer border-top bg-light">
@@ -981,6 +989,15 @@
         document.getElementById("editOrderTotal").value = o.order_total || 0;
         document.getElementById("editOrderPaymentStatus").value = o.payment_status || "Pending";
         document.getElementById("editOrderStatus").value = o.status || "Processing";
+        
+        let dateVal = "";
+        if (o.deliveryDate) {
+          try {
+            dateVal = new Date(o.deliveryDate).toISOString().substring(0, 10);
+          } catch(e) {}
+        }
+        document.getElementById("editOrderDeliveryDate").value = dateVal;
+        document.getElementById("editOrderDuration").value = o.estimatedDurationDays || "";
 
         if (!orderModal) {
           orderModal = new bootstrap.Modal(document.getElementById("editOrderModal"));
@@ -990,11 +1007,15 @@
 
       document.getElementById("saveOrderBtn").addEventListener("click", async () => {
         const id = document.getElementById("editOrderId").value;
+        const deliveryDateInput = document.getElementById("editOrderDeliveryDate").value;
+        const durationInput = document.getElementById("editOrderDuration").value;
         const body = {
           shipping_address: document.getElementById("editOrderAddress").value.trim(),
           order_total: parseFloat(document.getElementById("editOrderTotal").value),
           payment_status: document.getElementById("editOrderPaymentStatus").value,
-          status: document.getElementById("editOrderStatus").value
+          status: document.getElementById("editOrderStatus").value,
+          deliveryDate: deliveryDateInput ? new Date(deliveryDateInput).toISOString() : null,
+          estimatedDurationDays: durationInput ? parseInt(durationInput) : 7
         };
 
         if (!id || isNaN(body.order_total)) {

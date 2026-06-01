@@ -67,9 +67,47 @@ router.post('/checkout', authMiddleware, async (req, res) => {
   }
 });
 
+async function autoUpdateOrdersDeliveryStatus(userId) {
+  try {
+    const now = new Date();
+    const orders = await Order.find({
+      user: userId,
+      status: { $nin: ['Delivered', 'Cancelled'] }
+    });
+    const User = require('../models/User');
+    for (const order of orders) {
+      let targetDeliveryDate = order.deliveryDate;
+      if (!targetDeliveryDate && order.createdAt) {
+        const duration = order.estimatedDurationDays || 7;
+        targetDeliveryDate = new Date(order.createdAt.getTime() + duration * 24 * 60 * 60 * 1000);
+      }
+      if (targetDeliveryDate && now >= new Date(targetDeliveryDate)) {
+        order.status = 'Delivered';
+        order.payment_status = 'Success';
+        await order.save();
+        
+        await User.findByIdAndUpdate(order.user, {
+          $push: {
+            notifications: {
+              title: `✅ Order Delivered: #${order._id}`,
+              message: `Your order #${order._id} has been delivered automatically (estimated delivery date reached).`,
+              type: 'delivery',
+              read: false,
+              createdAt: new Date()
+            }
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Error in autoUpdateOrdersDeliveryStatus:', err);
+  }
+}
+
 // ✅ GET / - Fetch all orders for logged-in user
 router.get('/', authMiddleware, async (req, res) => {
   try {
+    await autoUpdateOrdersDeliveryStatus(req.user._id);
     const orders = await Order.find({ user: req.user._id })
       .populate('items.product')
       .sort({ createdAt: -1 });
@@ -83,6 +121,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // ✅ GET /:id - Fetch a specific order
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
+    await autoUpdateOrdersDeliveryStatus(req.user._id);
     const order = await Order.findOne({
       _id: req.params.id,
       user: req.user._id

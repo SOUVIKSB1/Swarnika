@@ -174,7 +174,43 @@ router.get('/orders', adminMiddleware, async (req, res) => {
       .populate('user', 'name email')
       .populate('items.product')
       .sort({ createdAt: -1 });
-    res.json(orders);
+
+    const now = new Date();
+    const User = require('../models/User');
+    for (const order of orders) {
+      if (order.status !== 'Delivered' && order.status !== 'Cancelled') {
+        let targetDelivery = order.deliveryDate;
+        if (!targetDelivery && order.createdAt) {
+          const duration = order.estimatedDurationDays || 7;
+          targetDelivery = new Date(order.createdAt.getTime() + duration * 24 * 60 * 60 * 1000);
+        }
+        if (targetDelivery && now >= new Date(targetDelivery)) {
+          order.status = 'Delivered';
+          order.payment_status = 'Success';
+          await order.save();
+          if (order.user) {
+            await User.findByIdAndUpdate(order.user._id || order.user, {
+              $push: {
+                notifications: {
+                  title: `✅ Order Delivered: #${order._id}`,
+                  message: `Your order #${order._id} has been delivered automatically (estimated delivery date reached).`,
+                  type: 'delivery',
+                  read: false,
+                  createdAt: new Date()
+                }
+              }
+            });
+          }
+        }
+      }
+    }
+
+    const updatedOrders = await Order.find()
+      .populate('user', 'name email')
+      .populate('items.product')
+      .sort({ createdAt: -1 });
+
+    res.json(updatedOrders);
   } catch (error) {
     console.error('❌ Error fetching all orders:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -184,7 +220,7 @@ router.get('/orders', adminMiddleware, async (req, res) => {
 // ✅ Update order by ID (admin only)
 router.put('/orders/:id', adminMiddleware, async (req, res) => {
   try {
-    const { status, shipping_address, order_total, payment_status } = req.body;
+    const { status, shipping_address, order_total, payment_status, deliveryDate, estimatedDurationDays } = req.body;
     
     const order = await Order.findById(req.params.id);
     if (!order) {
@@ -239,6 +275,8 @@ router.put('/orders/:id', adminMiddleware, async (req, res) => {
     if (shipping_address !== undefined) order.shipping_address = shipping_address;
     if (order_total !== undefined) order.order_total = order_total;
     if (payment_status !== undefined) order.payment_status = payment_status;
+    if (deliveryDate !== undefined) order.deliveryDate = deliveryDate;
+    if (estimatedDurationDays !== undefined) order.estimatedDurationDays = estimatedDurationDays;
     
     await order.save();
     

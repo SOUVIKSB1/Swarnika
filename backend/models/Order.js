@@ -14,6 +14,8 @@ const orderSchema = new mongoose.Schema({
   payment_status: { type: String, default: 'Pending' },
   status: { type: String, default: 'Processing' },
   shipping_address: { type: String },
+  deliveryDate: { type: Date },
+  estimatedDurationDays: { type: Number, default: 7 },
   createdAt: { type: Date, default: Date.now }
 });
 

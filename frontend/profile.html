@@ -144,6 +144,20 @@
         </div>
 
         <form id="profileForm">
+          <div class="mb-4 text-center">
+            <label class="form-label d-block text-muted small mb-2">Select Account Avatar</label>
+            <div class="d-flex justify-content-center gap-3 mb-3">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><path d='M30 70 L70 70 L80 40 L65 55 L50 30 L35 55 L20 40 Z' fill='%23e2c97e'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23c9a84c' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><path d='M30 70 L70 70 L80 40 L65 55 L50 30 L35 55 L20 40 Z' fill='%23e2c97e'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23c9a84c' stroke-width='2'/></svg>">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,25 75,50 50,75 25,50' fill='%234caf82'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234caf82' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,25 75,50 50,75 25,50' fill='%234caf82'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234caf82' stroke-width='2'/></svg>">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,20 68,35 60,70 40,70 32,35' fill='%234a9fd4'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234a9fd4' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,20 68,35 60,70 40,70 32,35' fill='%234a9fd4'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234a9fd4' stroke-width='2'/></svg>">
+              <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23e8d080' stroke-width='8'/><circle cx='50' cy='24' r='9' fill='%23e05c4b'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23e8d080' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23e8d080' stroke-width='8'/><circle cx='50' cy='24' r='9' fill='%23e05c4b'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23e8d080' stroke-width='2'/></svg>">
+            </div>
+            <div class="form-floating">
+              <input type="url" id="profileImage" class="form-control" placeholder="Custom Avatar URL" style="font-size:0.85rem;" />
+              <label for="profileImage">Custom Avatar URL (Optional)</label>
+            </div>
+          </div>
+
           <div class="form-floating mb-3">
             <input type="text" id="name" class="form-control" placeholder="Full Name" required />
             <label for="name">Full Name</label>
@@ -253,10 +267,11 @@
           document.getElementById("email").value = user.email || "";
           document.getElementById("phone").value = user.phone || "";
           document.getElementById("address").value = user.address || "";
+          document.getElementById("profileImage").value = user.profileImage || "";
 
-          // Update initials circle
-          const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
-          document.getElementById("profileInitials").textContent = initials;
+          // Update initials circle / avatar
+          updateAvatarDisplay(user.profileImage, user.name);
+          updateAvatarHighlights(user.profileImage);
         } catch (err) {
           msg.textContent = "⚠️ Please log in to view your profile.";
           msg.className = "text-danger text-center mt-3";
@@ -265,6 +280,49 @@
           loader.style.display = "none";
         }
       }
+
+      function updateAvatarDisplay(imgUrl, name) {
+        const circle = document.getElementById("profileInitials");
+        if (imgUrl) {
+          circle.style.backgroundImage = `url('${imgUrl}')`;
+          circle.style.backgroundSize = 'cover';
+          circle.style.backgroundPosition = 'center';
+          circle.textContent = "";
+        } else {
+          circle.style.backgroundImage = "";
+          const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
+          circle.textContent = initials;
+        }
+      }
+
+      function updateAvatarHighlights(selectedUrl) {
+        document.querySelectorAll(".avatar-select-option").forEach(img => {
+          if (img.dataset.avatarUrl === selectedUrl) {
+            img.style.borderColor = "var(--gold-light)";
+            img.style.transform = "scale(1.15)";
+          } else {
+            img.style.borderColor = "transparent";
+            img.style.transform = "";
+          }
+        });
+      }
+
+      // Attach Avatar select options listeners
+      document.querySelectorAll(".avatar-select-option").forEach(img => {
+        img.addEventListener("click", () => {
+          const url = img.dataset.avatarUrl;
+          document.getElementById("profileImage").value = url;
+          updateAvatarDisplay(url, document.getElementById("name").value);
+          updateAvatarHighlights(url);
+        });
+      });
+
+      // Synchronize custom URL input to circle display on change
+      document.getElementById("profileImage").addEventListener("input", (e) => {
+        const url = e.target.value.trim();
+        updateAvatarDisplay(url, document.getElementById("name").value);
+        updateAvatarHighlights(url);
+      });
 
       document.getElementById("profileForm").addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -277,6 +335,7 @@
         const name = document.getElementById("name").value.trim();
         const phone = document.getElementById("phone").value.trim();
         const address = document.getElementById("address").value.trim();
+        const profileImage = document.getElementById("profileImage").value.trim();
 
         try {
           const headers = { "Content-Type": "application/json" };
@@ -290,7 +349,7 @@
             method: "PUT",
             headers,
             credentials: "include",
-            body: JSON.stringify({ name, phone, address }),
+            body: JSON.stringify({ name, phone, address, profileImage }),
           });
 
           const data = await res.json();
@@ -299,12 +358,11 @@
           msg.textContent = "✅ Profile updated successfully!";
           msg.className = "text-success text-center mt-3";
 
-          // Update Initials
-          const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-          document.getElementById("profileInitials").textContent = initials;
+          // Update Initials / Avatar preview
+          updateAvatarDisplay(profileImage, name);
 
-          // Dispatch custom event to navbar.js to update greeting instantly
-          const event = new CustomEvent("profileUpdated", { detail: { name } });
+          // Dispatch custom event to navbar.js to update greeting instantly with name + avatar
+          const event = new CustomEvent("profileUpdated", { detail: { name, profileImage } });
           document.dispatchEvent(event);
         } catch (err) {
           msg.textContent = `❌ ${err.message}`;

@@ -172,6 +172,7 @@ router.get("/me", async (req, res) => {
             id: firebaseUser._id,
             name: firebaseUser.name,
             email: firebaseUser.email,
+            profileImage: firebaseUser.profileImage || "",
             role: firebaseUser.role || "user",
           });
         } catch (firebaseErr) {
@@ -201,6 +202,7 @@ router.get("/me", async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      profileImage: user.profileImage || "",
       role: user.role || "user",
     });
   } catch (err) {
@@ -248,6 +250,7 @@ router.get("/profile", async (req, res) => {
       email: user.email,
       phone: user.phone || "",
       address: user.address || "",
+      profileImage: user.profileImage || "",
       role: user.role || "user"
     });
   } catch (err) {
@@ -260,7 +263,7 @@ router.get("/profile", async (req, res) => {
 router.put("/profile", async (req, res) => {
   try {
     console.log("✏️ PUT /auth/profile called");
-    const { name, phone, address } = req.body;
+    const { name, phone, address, profileImage } = req.body;
 
     // Extract token
     let token = null;
@@ -285,7 +288,8 @@ router.put("/profile", async (req, res) => {
     // Build update object — only include fields that were explicitly provided
     const updateData = {
       phone: phone !== undefined ? phone : "",
-      address: address !== undefined ? address : ""
+      address: address !== undefined ? address : "",
+      profileImage: profileImage !== undefined ? profileImage : ""
     };
     if (name && name.trim()) updateData.name = name.trim();
 
@@ -309,6 +313,7 @@ router.put("/profile", async (req, res) => {
         email: user.email,
         phone: user.phone || "",
         address: user.address || "",
+        profileImage: user.profileImage || "",
         role: user.role || "user"
       }
     });

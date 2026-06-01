@@ -248,31 +248,34 @@
       await refreshFirebaseToken(user);
       
       let finalUser = user;
-      if (!user) {
-        // Try backend /auth/me fetch if token exists in localStorage or cookies
-        const authToken = localStorage.getItem("authToken");
-        const firebaseToken = localStorage.getItem("firebaseIdToken");
-        if (authToken || firebaseToken) {
-          try {
-            const headers = {};
-            if (authToken) headers["x-auth-token"] = authToken;
-            if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
-            
-            const checkRes = window.fetchWithFallback 
-              ? await window.fetchWithFallback('/auth/me', { credentials: "include", headers })
-              : await fetch(`${API}/auth/me`, { credentials: "include", headers });
-            if (checkRes.ok) {
-              const meData = await checkRes.json();
-              finalUser = {
-                email: meData.email,
-                displayName: meData.name || meData.displayName,
-                isBackendUser: true
-              };
-              console.log('✅ Found backend user session:', meData.email);
-            }
-          } catch (e) {
-            console.warn('Backend session check failed:', e);
+      const authToken = localStorage.getItem("authToken");
+      const firebaseToken = localStorage.getItem("firebaseIdToken");
+      if (authToken || firebaseToken || user) {
+        try {
+          const headers = {};
+          if (authToken) headers["x-auth-token"] = authToken;
+          if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
+          else if (user) {
+            const token = await user.getIdToken();
+            headers["Authorization"] = `Bearer ${token}`;
           }
+          
+          const checkRes = window.fetchWithFallback 
+            ? await window.fetchWithFallback('/auth/me', { credentials: "include", headers })
+            : await fetch(`${API}/auth/me`, { credentials: "include", headers });
+          if (checkRes.ok) {
+            const meData = await checkRes.json();
+            finalUser = {
+              email: meData.email,
+              displayName: meData.name || meData.displayName,
+              profileImage: meData.profileImage || "",
+              role: meData.role,
+              isBackendUser: true
+            };
+            console.log('✅ Found backend user session:', meData.email);
+          }
+        } catch (e) {
+          console.warn('Backend session check failed:', e);
         }
       }
       
@@ -387,9 +390,14 @@
       }
       if (userNameDisplay) {
         const displayName = user.displayName || user.email.split("@")[0];
+        const avatarUrl = user.profileImage || localStorage.getItem('profileImage');
         const span = userNameDisplay.querySelector("span");
         if (span) {
-          span.textContent = `Hi, ${displayName}`;
+          if (avatarUrl) {
+            span.innerHTML = `<img src="${avatarUrl}" class="rounded-circle me-1" style="width: 26px; height: 26px; object-fit: cover; border: 1.5px solid var(--gold-border); vertical-align: middle;" onerror="this.style.display='none'"> Hi, ${displayName}`;
+          } else {
+            span.textContent = `Hi, ${displayName}`;
+          }
         }
         userNameDisplay.classList.remove("d-none");
       }
@@ -586,12 +594,19 @@
   // Listen for custom profile update events to dynamically refresh greeting
   document.addEventListener("profileUpdated", (e) => {
     const newName = e.detail && e.detail.name;
+    const newAvatar = e.detail && e.detail.profileImage;
+    if (newAvatar) localStorage.setItem('profileImage', newAvatar);
+    else localStorage.removeItem('profileImage');
     if (newName) {
       const userNameDisplay = document.getElementById("userNameDisplay");
       if (userNameDisplay) {
         const span = userNameDisplay.querySelector("span");
         if (span) {
-          span.textContent = `Hi, ${newName}`;
+          if (newAvatar) {
+            span.innerHTML = `<img src="${newAvatar}" class="rounded-circle me-1" style="width: 26px; height: 26px; object-fit: cover; border: 1.5px solid var(--gold-border); vertical-align: middle;" onerror="this.style.display='none'"> Hi, ${newName}`;
+          } else {
+            span.textContent = `Hi, ${newName}`;
+          }
         }
       }
     }
