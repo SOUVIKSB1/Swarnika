@@ -145,16 +145,22 @@
 
         <form id="profileForm">
           <div class="mb-4 text-center">
-            <label class="form-label d-block text-muted small mb-2">Select Account Avatar</label>
-            <div class="d-flex justify-content-center gap-3 mb-3">
+            <label class="form-label d-block text-muted small mb-2">Select Account Avatar or Upload Actual Image</label>
+            <div class="d-flex justify-content-center align-items-center gap-3 mb-3 flex-wrap">
               <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><path d='M30 70 L70 70 L80 40 L65 55 L50 30 L35 55 L20 40 Z' fill='%23e2c97e'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23c9a84c' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><path d='M30 70 L70 70 L80 40 L65 55 L50 30 L35 55 L20 40 Z' fill='%23e2c97e'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23c9a84c' stroke-width='2'/></svg>">
               <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,25 75,50 50,75 25,50' fill='%234caf82'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234caf82' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,25 75,50 50,75 25,50' fill='%234caf82'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234caf82' stroke-width='2'/></svg>">
               <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,20 68,35 60,70 40,70 32,35' fill='%234a9fd4'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234a9fd4' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><polygon points='50,20 68,35 60,70 40,70 32,35' fill='%234a9fd4'/><circle cx='50' cy='50' r='45' fill='none' stroke='%234a9fd4' stroke-width='2'/></svg>">
               <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23e8d080' stroke-width='8'/><circle cx='50' cy='24' r='9' fill='%23e05c4b'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23e8d080' stroke-width='2'/></svg>" class="rounded-circle avatar-select-option" style="width:50px; height:50px; cursor:pointer; transition: transform 0.2s; border: 2px solid transparent;" data-avatar-url="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231a1710'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23e8d080' stroke-width='8'/><circle cx='50' cy='24' r='9' fill='%23e05c4b'/><circle cx='50' cy='50' r='45' fill='none' stroke='%23e8d080' stroke-width='2'/></svg>">
+              
+              <!-- File Upload Trigger Circle -->
+              <div id="uploadAvatarBtn" class="rounded-circle d-flex align-items-center justify-content-center text-muted" style="width:50px; height:50px; cursor:pointer; transition: all 0.3s; border: 2px dashed var(--border); background: rgba(255,255,255,0.02); font-size: 1.25rem;" title="Upload custom photo">
+                📸
+              </div>
+              <input type="file" id="avatarFileInput" accept="image/*" class="d-none">
             </div>
             <div class="form-floating">
               <input type="url" id="profileImage" class="form-control" placeholder="Custom Avatar URL" style="font-size:0.85rem;" />
-              <label for="profileImage">Custom Avatar URL (Optional)</label>
+              <label for="profileImage">Avatar URL / Uploaded Path</label>
             </div>
           </div>
 
@@ -281,10 +287,25 @@
         }
       }
 
+      function normalizeImageUrl(src) {
+        if (!src) return "";
+        if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) return src;
+        
+        let host = window.location.hostname;
+        let protocol = location.protocol;
+        if (protocol === "file:" || !host) {
+          host = "localhost";
+          protocol = "http:";
+        }
+        const port = 5001;
+        const apiHost = (host === "localhost" || host.startsWith("127.")) ? `${protocol}//${host}:${port}` : "";
+        return `${apiHost}${src.startsWith("/") ? "" : "/"}${src}`;
+      }
+
       function updateAvatarDisplay(imgUrl, name) {
         const circle = document.getElementById("profileInitials");
         if (imgUrl) {
-          circle.style.backgroundImage = `url('${imgUrl}')`;
+          circle.style.backgroundImage = `url('${normalizeImageUrl(imgUrl)}')`;
           circle.style.backgroundSize = 'cover';
           circle.style.backgroundPosition = 'center';
           circle.textContent = "";
@@ -323,6 +344,68 @@
         updateAvatarDisplay(url, document.getElementById("name").value);
         updateAvatarHighlights(url);
       });
+
+      // Attach File Upload Event Handlers
+      const uploadAvatarBtn = document.getElementById("uploadAvatarBtn");
+      const avatarFileInput = document.getElementById("avatarFileInput");
+      
+      if (uploadAvatarBtn && avatarFileInput) {
+        uploadAvatarBtn.addEventListener("click", () => {
+          avatarFileInput.click();
+        });
+        
+        avatarFileInput.addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          
+          const msg = document.getElementById("msg");
+          msg.textContent = "⏳ Uploading image file...";
+          msg.className = "text-muted text-center mt-3";
+          
+          const formData = new FormData();
+          formData.append("avatar", file);
+          
+          try {
+            const headers = {};
+            const authToken = localStorage.getItem("authToken");
+            const firebaseToken = localStorage.getItem("firebaseIdToken");
+            if (authToken) headers["x-auth-token"] = authToken;
+            else if (firebaseToken) headers["Authorization"] = `Bearer ${firebaseToken}`;
+            
+            const fetchFn = window.fetchWithFallback || fetch;
+            const res = await fetchFn('/auth/upload-avatar', {
+              method: "POST",
+              headers,
+              credentials: "include",
+              body: formData
+            });
+            
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Upload failed");
+            
+            msg.textContent = "✅ Avatar picture uploaded successfully!";
+            msg.className = "text-success text-center mt-3";
+            
+            const uploadedUrl = data.profileImage;
+            document.getElementById("profileImage").value = uploadedUrl;
+            updateAvatarDisplay(uploadedUrl, document.getElementById("name").value);
+            updateAvatarHighlights(uploadedUrl);
+            
+            // Dispatch event to navbar
+            const event = new CustomEvent("profileUpdated", { 
+              detail: { 
+                name: document.getElementById("name").value.trim(), 
+                profileImage: uploadedUrl 
+              } 
+            });
+            document.dispatchEvent(event);
+            
+          } catch (err) {
+            msg.textContent = `❌ Upload failed: ${err.message}`;
+            msg.className = "text-danger text-center mt-3";
+          }
+        });
+      }
 
       document.getElementById("profileForm").addEventListener("submit", async (e) => {
         e.preventDefault();

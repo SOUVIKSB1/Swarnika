@@ -503,10 +503,70 @@ router.put("/notifications/read", authMiddleware, async (req, res) => {
 
     await user.save();
     res.json({ message: "Notifications marked as read" });
+  }
+});
+
+// Multer and file upload configuration
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../uploads");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "avatar-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    const filetypes = /jpeg|jpg|png|webp|gif/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error("Only image files are allowed!"));
+  },
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB limit
+});
+
+// ✅ POST /auth/upload-avatar
+router.post("/upload-avatar", authMiddleware, upload.single("avatar"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file uploaded" });
+    }
+    
+    const avatarUrl = `/uploads/${req.file.filename}`;
+    
+    // Automatically update the user profileImage field
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    user.profileImage = avatarUrl;
+    await user.save();
+    
+    res.json({
+      message: "Avatar uploaded successfully",
+      profileImage: avatarUrl
+    });
   } catch (err) {
-    console.error("❌ PUT /auth/notifications/read error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("❌ POST /auth/upload-avatar error:", err);
+    res.status(500).json({ error: err.message || "Failed to upload avatar" });
   }
 });
 
 module.exports = router;
+
+
