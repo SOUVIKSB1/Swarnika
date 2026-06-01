@@ -5,20 +5,29 @@ const CHAT_API = (function() {
   if (host === 'localhost' || host.startsWith('127.')) {
     return `${location.protocol}//${host}:5001/api`;
   }
-  // For hosted version, use the same domain or configure externally
   return window.API || '/api';
 })();
 const BOT_NAME = "Swarnika ChatBot";
 let recognition;
 let isListening = false;
-let isMuted = false;
+let isMuted = true; // ✅ Muted by default so users are not startled
+
+// ----------------------------
+// Strip HTML helper for clean TTS
+// ----------------------------
+function stripHtmlTags(html) {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
 
 // ----------------------------
 // Voice Output (Female Tone)
 // ----------------------------
 function speak(text) {
   if (isMuted) return;
-  const utterance = new SpeechSynthesisUtterance(text);
+  const cleanText = stripHtmlTags(text);
+  const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = 'en-IN';
   utterance.pitch = 1.1;
   utterance.rate = 1;
@@ -134,6 +143,16 @@ function chatRenderIntro(container) {
   handleQuickClicks(container);
 }
 
+// ----------------------------
+// Homepage suggestion popups database
+// ----------------------------
+const HOME_POPUP_SUGGESTIONS = [
+  "👋 Looking for certified 22K Gold Ornaments? Tap here to search!",
+  "✨ Need help finding the perfect Gift for a special occasion? Tap here!",
+  "💍 Explore customized silver bands & bridal necklaces. Tap to ask!",
+  "🔥 Limited time: Flat 10% off on Gold Jewellery. Tap to discover!"
+];
+
 function handleQuickClicks(container) {
   container.querySelectorAll('.quick-replies button').forEach(b => {
     b.addEventListener('click', () => {
@@ -221,12 +240,24 @@ async function submitQuery(text) {
 function mountChatbot() {
   if (document.getElementById('chatbot-toggle')) return;
 
+  // Toggle button
   const toggle = document.createElement('button');
   toggle.id = 'chatbot-toggle';
   toggle.className = 'btn btn-primary';
   toggle.innerHTML = '💬';
   document.body.appendChild(toggle);
 
+  // Home page dynamic popup bubble
+  const bubble = document.createElement('div');
+  bubble.id = 'chatbot-bubble';
+  bubble.style.display = 'none';
+  bubble.innerHTML = `
+    <span id="chatbot-bubble-close">&times;</span>
+    <div id="chatbot-bubble-text">👋 Welcome to Swarnika! Looking for premium gold designs? Tap here.</div>
+  `;
+  document.body.appendChild(bubble);
+
+  // Chat panel
   const panel = document.createElement('div');
   panel.id = 'chatbot-panel';
   panel.innerHTML = `
@@ -246,12 +277,23 @@ function mountChatbot() {
   document.body.appendChild(panel);
 
   const body = panel.querySelector('#chatbot-body');
-
   const muteBtn = document.getElementById('mute-btn');
+
+  // Load mute state from localStorage if available
+  const storedMute = localStorage.getItem('chatMuted');
+  if (storedMute !== null) {
+    isMuted = storedMute === '1';
+    muteBtn.textContent = isMuted ? '🔇' : '🔔';
+  } else {
+    // Default to muted
+    isMuted = true;
+    muteBtn.textContent = '🔇';
+  }
+
   muteBtn.addEventListener('click', () => {
     isMuted = !isMuted;
     muteBtn.textContent = isMuted ? '🔇' : '🔔';
-    // Only speak when unmuting (speaking while muted is a no-op anyway)
+    localStorage.setItem('chatMuted', isMuted ? '1' : '0');
     if (!isMuted) speak('Voice enabled.');
   });
 
@@ -269,17 +311,49 @@ function mountChatbot() {
 
   panel.querySelector('#chatbot-voice').addEventListener('click', () => startVoiceRecognition(submitQuery));
 
+  const openChat = () => {
+    panel.classList.add('open');
+    bubble.style.display = 'none'; // hide bubble when chat opens
+    const body = panel.querySelector('#chatbot-body');
+    if (!body.dataset.welcomed) {
+      chatRenderIntro(body);
+      body.dataset.welcomed = true;
+    }
+  };
+
   toggle.addEventListener('click', () => {
-    const isOpen = panel.classList.toggle('open');
-    if (isOpen) {
-      const body = panel.querySelector('#chatbot-body');
-      if (!body.dataset.welcomed) {
-        chatRenderIntro(body);
-        body.dataset.welcomed = true; // Ensure welcome message plays only once per open
-      }
+    if (panel.classList.contains('open')) {
+      panel.classList.remove('open');
+    } else {
+      openChat();
     }
   });
+
+  bubble.addEventListener('click', (e) => {
+    if (e.target.id === 'chatbot-bubble-close') {
+      e.stopPropagation();
+      bubble.style.display = 'none';
+      localStorage.setItem('chatBubbleClosed', '1');
+    } else {
+      openChat();
+    }
+  });
+
   panel.querySelector('#chatbot-close').addEventListener('click', () => panel.classList.remove('open'));
+
+  // Trigger bubble popup on homepage sometimes (5 seconds after landing)
+  const isHomepage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+  const wasBubbleClosed = localStorage.getItem('chatBubbleClosed') === '1';
+
+  if (isHomepage && !wasBubbleClosed) {
+    setTimeout(() => {
+      if (!panel.classList.contains('open')) {
+        const randIdx = Math.floor(Math.random() * HOME_POPUP_SUGGESTIONS.length);
+        document.getElementById('chatbot-bubble-text').textContent = HOME_POPUP_SUGGESTIONS[randIdx];
+        bubble.style.display = 'block';
+      }
+    }, 5000);
+  }
 }
 
 // Auto Mount
