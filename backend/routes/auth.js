@@ -503,6 +503,9 @@ router.put("/notifications/read", authMiddleware, async (req, res) => {
 
     await user.save();
     res.json({ message: "Notifications marked as read" });
+  } catch (err) {
+    console.error("❌ PUT /auth/notifications/read error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
