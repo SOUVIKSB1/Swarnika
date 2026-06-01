@@ -328,7 +328,19 @@
       return;
     }
 
-    // Hide top-level legacy nav links to avoid duplication
+    // Show standard Cart and Orders links when logged in
+    const cartLink = document.querySelector('a[href="cart.html"]');
+    const activeOrdersLink = document.querySelector('a[href="orders.html"]');
+    if (cartLink) {
+      const li = cartLink.closest('li');
+      if (li) li.classList.remove('d-none');
+    }
+    if (activeOrdersLink) {
+      const li = activeOrdersLink.closest('li');
+      if (li) li.classList.remove('d-none');
+    }
+
+    // Hide top-level duplicate/redundant nav links to avoid duplication
     const profileLink = document.querySelector('a[href="profile.html"]');
     const historyLink = document.querySelector('a[href="orders.html?history=true"]');
     const logoutContainer = document.getElementById("logoutContainer");
@@ -610,6 +622,32 @@
       // User is logged out
       console.log('🚫 User logged out');
       updateUserProfileDropdown(null, false);
+      
+      // Hide all standard user menu items when logged out (show only Home and Login)
+      const cartLink = document.querySelector('a[href="cart.html"]');
+      const profileLink = document.querySelector('a[href="profile.html"]');
+      const ordersLinks = document.querySelectorAll('a[href^="orders.html"]');
+      const adminLink = document.querySelector('a[href="admin.html"]');
+      
+      if (cartLink) {
+        const li = cartLink.closest('li');
+        if (li) li.classList.add('d-none');
+      }
+      if (profileLink) {
+        const li = profileLink.closest('li');
+        if (li) li.classList.add('d-none');
+      }
+      ordersLinks.forEach(link => {
+        if (link) {
+          const li = link.closest('li');
+          if (li) li.classList.add('d-none');
+        }
+      });
+      if (adminLink) {
+        const li = adminLink.closest('li');
+        if (li) li.classList.add('d-none');
+      }
+
       if (loginBtn) {
         loginBtn.classList.remove("d-none");
       }
