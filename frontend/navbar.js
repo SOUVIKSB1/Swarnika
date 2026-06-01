@@ -21,6 +21,18 @@
   })();
   console.log('📍 navbar.js using API base:', API);
 
+  // Trigger background ping to wake up the Render web service
+  (async function triggerRenderPing() {
+    try {
+      const fetchFn = window.fetchWithFallback || fetch;
+      const res = await fetchFn('/ping');
+      const text = await res.text();
+      console.log('🏓 Render wake-up ping response:', text);
+    } catch (e) {
+      console.warn('⚠️ Render wake-up ping failed:', e.message);
+    }
+  })();
+
   // Fetch cart count from backend using all available credentials
   async function fetchCartCount() {
     try {
