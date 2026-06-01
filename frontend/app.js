@@ -133,7 +133,7 @@ function renderProductCard(p) {
   const wrapper = document.createElement("div");
   wrapper.className = "product-card-wrapper";
   wrapper.innerHTML = `
-    <div class="card h-100">
+    <div class="card h-100 product-card-clickable" data-id="${p.id}" style="cursor: pointer;">
       <img src="${
         normalizeImageUrl(p.image) || "image.png"
       }" class="card-img-top" alt="${p.name || "Product"}" loading="lazy">
@@ -289,10 +289,13 @@ function renderFilteredProducts() {
     });
   });
 
-  // Quick view
-  container.querySelectorAll(".qv-btn").forEach((b) => {
-    b.addEventListener("click", async (e) => {
-      const id = b.getAttribute("data-id");
+  // Quick view triggers on card click
+  container.querySelectorAll(".product-card-clickable").forEach((card) => {
+    card.addEventListener("click", async (e) => {
+      // Avoid opening Quick View if user clicks the Add to Cart button
+      if (e.target.closest(".add-cart-btn")) return;
+      
+      const id = card.getAttribute("data-id");
       try {
         const prod = cachedProducts.find(p => p.id === id);
         if (!prod) return alert("Product not found");
