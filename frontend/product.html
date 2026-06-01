@@ -216,7 +216,7 @@
           
           if (!res.ok) throw new Error(data.error || "Failed to add product");
 
-          msg.textContent = "✅ Product added to cart!";
+          msg.innerHTML = '✅ Product added to cart! <a href="cart.html" class="btn btn-sm btn-success ms-2 fw-bold" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 6px; box-shadow: 0 2px 6px rgba(40,167,69,0.3);">Go to Cart →</a>';
           msg.className = "text-success text-center mt-3";
           updateCartCount();
         } catch (err) {

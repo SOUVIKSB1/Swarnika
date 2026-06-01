@@ -103,7 +103,7 @@ function showToast(message, variant = "primary") {
     const toastEl = document.getElementById("appToast");
     if (!toastEl || !body) return;
     toastEl.className = `toast align-items-center text-bg-${variant} border-0`;
-    body.textContent = message;
+    body.innerHTML = message;
     const bsToast = new bootstrap.Toast(toastEl);
     bsToast.show();
   } catch (e) {
@@ -271,7 +271,7 @@ function renderFilteredProducts() {
         document
           .querySelectorAll(".cart-count")
           .forEach((el) => (el.textContent = count > 0 ? `(${count})` : ""));
-        showToast("Added to cart", "success");
+        showToast('🛒 Added to cart! <a href="cart.html" class="btn btn-sm btn-light ms-2 fw-bold text-dark" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">Go to Cart →</a>', "success");
         btn.classList.remove("btn-success");
         btn.classList.add("btn-outline-success");
         btn.textContent = "Added";
@@ -443,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document
           .querySelectorAll(".cart-count")
           .forEach((el) => (el.textContent = count > 0 ? `(${count})` : ""));
-        showToast("Added to cart", "success");
+        showToast('🛒 Added to cart! <a href="cart.html" class="btn btn-sm btn-light ms-2 fw-bold text-dark" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">Go to Cart →</a>', "success");
         
         // Close the modal upon successful addition
         const modalEl = document.getElementById("quickViewModal");
