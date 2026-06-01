@@ -354,16 +354,19 @@
     if (userDropdownLi) {
       const initialLetter = displayName ? displayName[0].toUpperCase() : 'U';
       userDropdownLi.innerHTML = `
-        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-2" href="#" id="userNavbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid var(--border-soft); border-radius: 30px; background: rgba(255,255,255,0.03); padding: 4px 12px !important; transition: all 0.3s ease;">
-          <div class="user-nav-avatar-container" style="position: relative; width: 28px; height: 28px; overflow: hidden; border-radius: 50%;">
+        <a class="nav-link dropdown-toggle d-flex align-items-center p-1" href="#" id="userNavbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="transition: all 0.3s ease;">
+          <div class="user-nav-avatar-container" style="position: relative; width: 34px; height: 34px; overflow: hidden; border-radius: 50%; border: 1.5px solid var(--gold-border); box-shadow: 0 0 8px var(--gold-glow); transition: all 0.3s ease;">
             ${avatarUrl ? 
-              `<img src="${avatarUrl}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover; border: 1.5px solid var(--gold-light);" onerror="this.outerHTML='<div class=\\'rounded-circle d-flex align-items-center justify-content-center text-dark fw-bold\\' style=\\'width: 100%; height: 100%; background: var(--grad-gold); font-size: 0.8rem; font-family: var(--font-serif);\\'>${initialLetter}</div>'">` :
-              `<div class="rounded-circle d-flex align-items-center justify-content-center text-dark fw-bold" style="width: 100%; height: 100%; background: var(--grad-gold); border: 1.5px solid var(--gold-light); font-size: 0.8rem; font-family: var(--font-serif);">${initialLetter}</div>`
+              `<img src="${avatarUrl}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div class=\\'rounded-circle d-flex align-items-center justify-content-center text-dark fw-bold\\' style=\\'width: 100%; height: 100%; background: var(--grad-gold); font-size: 0.85rem; font-family: var(--font-serif);\\'>${initialLetter}</div>'">` :
+              `<div class="rounded-circle d-flex align-items-center justify-content-center text-dark fw-bold" style="width: 100%; height: 100%; background: var(--grad-gold); font-size: 0.85rem; font-family: var(--font-serif);">${initialLetter}</div>`
             }
           </div>
-          <span class="d-inline fw-semibold text-white small" style="letter-spacing: 0.5px;">Hi, ${displayName}</span>
         </a>
-        <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 user-profile-dropdown-menu" aria-labelledby="userNavbarDropdown" style="background: rgba(20,17,10,0.98); border: 1px solid rgba(201,168,76,0.22) !important; backdrop-filter: blur(20px); border-radius: var(--r-md); min-width: 180px; margin-top: 8px;">
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 user-profile-dropdown-menu" aria-labelledby="userNavbarDropdown" style="background: rgba(20,17,10,0.98); border: 1px solid rgba(201,168,76,0.22) !important; backdrop-filter: blur(20px); border-radius: var(--r-md); min-width: 190px; margin-top: 8px;">
+          <li class="px-3 py-2 mb-1 border-bottom" style="border-color: rgba(201,168,76,0.15) !important;">
+            <div class="text-muted" style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px;">Signed in as</div>
+            <div class="fw-bold text-white small text-truncate" style="max-width: 160px; font-family: var(--font-serif); color: var(--gold-light) !important;">${displayName}</div>
+          </li>
           <li>
             <a class="dropdown-item py-2 px-3 d-flex align-items-center gap-2" href="profile.html" style="font-size: 0.85rem; color: var(--text-soft); font-weight: 500;">
               👤 My Profile
