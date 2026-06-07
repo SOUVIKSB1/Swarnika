@@ -108,10 +108,6 @@ app.get("/", (req, res) => {
   res.send("✅ Backend is running correctly and ready for API calls!");
 });
 
-// ✅ Ping/Pong keep-alive endpoints
-app.get("/ping", (req, res) => res.send("pong"));
-app.get("/api/ping", (req, res) => res.send("pong"));
-
 // ✅ Diagnostic endpoint (for debugging auth issues)
 app.get("/api/debug/auth", (req, res) => {
   res.json({
